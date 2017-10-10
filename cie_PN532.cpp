@@ -136,7 +136,7 @@ bool cie_PN532::read_EF_ID_Servizi(uint8_t* contentBuffer, uint8_t* contentLengt
   if (!select_IAS_Application() || !select_CIE_DF()) {
     return false;
   }
-  uint8_t responseLength = 14;
+  uint8_t responseLength = EF_ID_SERVIZI_LENGTH;
   uint8_t response[responseLength];
   bool success = read_EF(0x01, response, &responseLength);	
   
