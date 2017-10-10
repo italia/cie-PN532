@@ -118,6 +118,7 @@ bool cie_PN532::read_EF_ATR(uint8_t* contentBuffer, uint8_t* contentLength) {
 */
 /**************************************************************************/
 bool cie_PN532::read_SN_ICC(uint8_t* contentBuffer, uint8_t* contentLength) {
+
 }
 
 
@@ -132,24 +133,15 @@ bool cie_PN532::read_SN_ICC(uint8_t* contentBuffer, uint8_t* contentLength) {
 */
 /**************************************************************************/
 bool cie_PN532::read_EF_ID_Servizi(uint8_t* contentBuffer, uint8_t* contentLength) {
-
   if (!select_IAS_Application() || !select_CIE_DF()) {
     return false;
   }
-  uint8_t responseLength = EF_ID_SERVIZI_LENGTH;
-  uint8_t response[responseLength];
-  bool success = read_EF(0x01, response, &responseLength);	
-  
-  if (!success || !hasSuccessStatusWord(response, responseLength)) {
+  *contentLength = EF_ID_SERVIZI_LENGTH;
+  bool success = read_EF(0x01, contentBuffer, *contentLength);
+  if (!success) {
     *contentLength = 0;
     return false;
   }
-   
-  *contentLength = responseLength-2;
-  for (uint8_t i = 0; i < *contentLength; i++) {
-    contentBuffer[i] = response[i];
-  }
-  
   return true;
 }
 
@@ -216,7 +208,14 @@ bool cie_PN532::select_ROOT(void) {
 */
 /**************************************************************************/
 bool cie_PN532::select_IAS_Application(void) {
-  uint8_t command[] = { 0x00, 0xA4, 0x04, 0x0C, 0x0D, 0xA0, 0x00, 0x00, 0x00, 0x30, 0x80, 0x00, 0x00, 0x00, 0x09, 0x81, 0x60, 0x01 };
+  uint8_t command[] = { 
+      0x00, //CLA
+      0xA4, //INS: SELECT FILE
+      0x04, //P1: Select by AID
+      0x0C, //P2: No data in response field
+      0x0D, //Lc: Length of AID
+      0xA0, 0x00, 0x00, 0x00, 0x30, 0x80, 0x00, 0x00, 0x00, 0x09, 0x81, 0x60, 0x01 //AID
+  };
   uint8_t responseLength = 2;
   uint8_t response[responseLength];
   bool commandResult = _nfc.inDataExchange(command, sizeof(command), response, &responseLength);
@@ -236,7 +235,14 @@ bool cie_PN532::select_IAS_Application(void) {
 */
 /**************************************************************************/
 bool cie_PN532::select_CIE_DF(void) {
-  uint8_t command[] = { 0x00, 0xA4, 0x04, 0x0C, 0x06, 0xA0, 0x00, 0x00, 0x00, 0x00, 0x39 };
+  uint8_t command[] = { 
+      0x00, //CLA
+      0xA4, //INS: SELECT FILE
+      0x04, //P1: Select by AID
+      0x0C, //P2: No data in response field
+      0x06, //Lc: length of AID
+      0xA0, 0x00, 0x00, 0x00, 0x00, 0x39 //AID
+  };
   uint8_t response[2];
   uint8_t contentLength = 2;
   bool commandResult = _nfc.inDataExchange(command, sizeof(command), response, &contentLength);
@@ -250,7 +256,7 @@ bool cie_PN532::select_CIE_DF(void) {
 
 /**************************************************************************/
 /*!
-    @brief  Reads the EF contents by its SFI under the current DF
+    @brief  Reads the binary content of the EF by its SFI under the current DF
 	
 	@param  sfi The short file id
 	@param  contentBuffer Pointer to the response data
@@ -259,14 +265,24 @@ bool cie_PN532::select_CIE_DF(void) {
     @returns  A value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
-bool cie_PN532::read_EF(uint8_t sfi, uint8_t* contentBuffer, uint8_t* contentLength) {
-
-  uint8_t command[] = { 0x00, 0xB0, 0x81, 0x00, 0x0c };
-  bool commandResult = _nfc.inDataExchange(command, sizeof(command), contentBuffer, contentLength);
-
-  bool success = commandResult && hasSuccessStatusWord(contentBuffer, *contentLength);
+bool cie_PN532::read_EF(uint8_t sfi, uint8_t* contentBuffer, uint8_t contentLength) {
+  uint8_t p1 = 0x80;
+  uint8_t command[] = {
+      0x00, //CLA
+      0xB0, //INS: READ BINARY
+      p1|sfi, //P1: Read by SFI | SFI
+      0x00, //P2: Offset 0
+      contentLength //Le: content length
+  };
+  uint8_t responseLength = contentLength + 2;
+  uint8_t responseBuffer[responseLength];
+  bool commandResult = _nfc.inDataExchange(command, sizeof(command), responseBuffer, &responseLength);
+  bool success = commandResult && hasSuccessStatusWord(responseBuffer, responseLength);
   if (!success) {
     PN532DEBUGPRINT.println("Couldn't select the file");
+  }
+  for (int8_t i = 0; i < contentLength; i++) {
+      contentBuffer[i] = responseBuffer[i];
   }
   return success;
 }

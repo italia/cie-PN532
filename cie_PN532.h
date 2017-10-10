@@ -42,7 +42,7 @@
 #endif
 
 
-#define EF_ID_SERVIZI_LENGTH                  (0x0E)
+#define EF_ID_SERVIZI_LENGTH                  (0x0C)
 
 class cie_PN532
 {
@@ -67,6 +67,6 @@ class cie_PN532
   bool     select_ROOT(void);
   bool     select_IAS_Application(void);
   bool     select_CIE_DF(void);
-  bool     read_EF(uint8_t sfi, uint8_t* contentBuffer, uint8_t* contentLength);
+  bool     read_EF(uint8_t sfi, uint8_t* contentBuffer, uint8_t contentLength);
   bool     hasSuccessStatusWord(uint8_t* response, uint8_t responseLength);
 };
