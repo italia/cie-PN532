@@ -66,15 +66,6 @@ bool cie_PN532::detectCard() {
     @brief  Dumps all values present in the CIE
 */
 /**************************************************************************/
-void cie_PN532::dumpAll() {
-  PN532DEBUGPRINT.println("*** DUMPING ALL VALUES ***");
-}
-
-/**************************************************************************/
-/*!
-    @brief  Dumps all values present in the CIE
-*/
-/**************************************************************************/
 void cie_PN532::printHex(uint8_t* buffer, uint8_t length) {
   _nfc.PrintHex(buffer, length);
 }
@@ -90,6 +81,17 @@ void cie_PN532::printHex(uint8_t* buffer, uint8_t length) {
 */
 /**************************************************************************/
 bool cie_PN532::read_EF_DH(uint8_t* contentBuffer, uint8_t* contentLength) {
+  if (!select_IAS_Application() || !select_ROOT()) {
+    return false;
+  }
+  *contentLength = EF_DH_LENGTH;
+  uint8_t efid[] = { 0xD0, 0x04 };
+  bool success = read_EF(efid, contentBuffer, *contentLength);
+  if (!success) {
+    *contentLength = 0;
+    return false;
+  }
+  return true;
 }
 
 
@@ -104,6 +106,17 @@ bool cie_PN532::read_EF_DH(uint8_t* contentBuffer, uint8_t* contentLength) {
 */
 /**************************************************************************/
 bool cie_PN532::read_EF_ATR(uint8_t* contentBuffer, uint8_t* contentLength) {
+  if (!select_IAS_Application() || !select_ROOT()) {
+    return false;
+  }
+  *contentLength = EF_ATR_LENGTH;
+  uint8_t efid[] = { 0x2F, 0x01 };
+  bool success = read_EF(efid, contentBuffer, *contentLength);
+  if (!success) {
+    *contentLength = 0;
+    return false;
+  }
+  return true;
 }
 
 
@@ -117,8 +130,18 @@ bool cie_PN532::read_EF_ATR(uint8_t* contentBuffer, uint8_t* contentLength) {
     @returns  The file content
 */
 /**************************************************************************/
-bool cie_PN532::read_SN_ICC(uint8_t* contentBuffer, uint8_t* contentLength) {
-
+bool cie_PN532::read_EF_SN_ICC(uint8_t* contentBuffer, uint8_t* contentLength) {
+  if (!select_IAS_Application() || !select_ROOT()) {
+    return false;
+  }
+  *contentLength = EF_SN_ICC_LENGTH;
+  uint8_t efid[] = { 0xD0, 0x03 };
+  bool success = read_EF(efid, contentBuffer, *contentLength);
+  if (!success) {
+    *contentLength = 0;
+    return false;
+  }
+  return true;
 }
 
 
@@ -137,7 +160,8 @@ bool cie_PN532::read_EF_ID_Servizi(uint8_t* contentBuffer, uint8_t* contentLengt
     return false;
   }
   *contentLength = EF_ID_SERVIZI_LENGTH;
-  bool success = read_EF(0x01, contentBuffer, *contentLength);
+  uint8_t efid[] = { 0x10, 0x01 };
+  bool success = read_EF(efid, contentBuffer, *contentLength);
   if (!success) {
     *contentLength = 0;
     return false;
@@ -157,6 +181,17 @@ bool cie_PN532::read_EF_ID_Servizi(uint8_t* contentBuffer, uint8_t* contentLengt
 */
 /**************************************************************************/
 bool cie_PN532::read_EF_Int_Kpub(uint8_t* contentBuffer, uint8_t* contentLength) {
+  if (!select_IAS_Application() || !select_CIE_DF()) {
+    return false;
+  }
+  *contentLength = EF_INT_KPUB_LENGTH;
+  uint8_t efid[] = { 0x10, 0x04 };
+  bool success = read_EF(efid, contentBuffer, *contentLength);
+  if (!success) {
+    *contentLength = 0;
+    return false;
+  }
+  return true;
 }
 
 
@@ -171,6 +206,17 @@ bool cie_PN532::read_EF_Int_Kpub(uint8_t* contentBuffer, uint8_t* contentLength)
 */
 /**************************************************************************/
 bool cie_PN532::read_EF_Servizi_Int_Kpub(uint8_t* contentBuffer, uint8_t* contentLength) {
+  if (!select_IAS_Application() || !select_CIE_DF()) {
+    return false;
+  }
+  *contentLength = EF_SERVIZI_INT_KPUB_LENGTH;
+  uint8_t efid[] = { 0x10, 0x05 };
+  bool success = read_EF(efid, contentBuffer, *contentLength);
+  if (!success) {
+    *contentLength = 0;
+    return false;
+  }
+  return true;
 }
 
 
@@ -185,6 +231,17 @@ bool cie_PN532::read_EF_Servizi_Int_Kpub(uint8_t* contentBuffer, uint8_t* conten
 */
 /**************************************************************************/
 bool cie_PN532::read_EF_SOD(uint8_t* contentBuffer, uint8_t* contentLength) {
+  if (!select_IAS_Application() || !select_CIE_DF()) {
+    return false;
+  }
+  *contentLength = EF_SOD_LENGTH;
+  uint8_t efid[] = { 0x10, 0x06 };
+  bool success = read_EF(efid, contentBuffer, *contentLength);
+  if (!success) {
+    *contentLength = 0;
+    return false;
+  }
+  return true;
 }
 
 
@@ -196,7 +253,22 @@ bool cie_PN532::read_EF_SOD(uint8_t* contentBuffer, uint8_t* contentLength) {
 */
 /**************************************************************************/
 bool cie_PN532::select_ROOT(void) {
-  return true;
+    uint8_t command[] = { 
+        0x00, //CLA
+        0xA4, //INS: SELECT FILE
+        0x00, //P1: Select root
+        0x0C, //P2: No data in response field
+        0x02, //Lc: Length of root id
+        0x3F, 0x00 //root id
+    };
+    uint8_t responseLength = 2;
+    uint8_t responseBuffer[responseLength];
+    bool success = _nfc.inDataExchange(command, sizeof(command), responseBuffer, &responseLength);
+    success = success && hasSuccessStatusWord(responseBuffer, responseLength);
+    if (!success) {
+      PN532DEBUGPRINT.println("Couldn't select root");
+    }
+    return success;
 }
 
 
@@ -217,13 +289,13 @@ bool cie_PN532::select_IAS_Application(void) {
       0xA0, 0x00, 0x00, 0x00, 0x30, 0x80, 0x00, 0x00, 0x00, 0x09, 0x81, 0x60, 0x01 //AID
   };
   uint8_t responseLength = 2;
-  uint8_t response[responseLength];
-  bool commandResult = _nfc.inDataExchange(command, sizeof(command), response, &responseLength);
-  bool result = commandResult && hasSuccessStatusWord(response, responseLength);
-  if (!result) {
+  uint8_t responseBuffer[responseLength];
+  bool success = _nfc.inDataExchange(command, sizeof(command), responseBuffer, &responseLength);
+  success = success && hasSuccessStatusWord(responseBuffer, responseLength);
+  if (!success) {
     PN532DEBUGPRINT.println("Couldn't select the IAS application");
   }
-  return result;
+  return success;
 }
 
 
@@ -243,14 +315,14 @@ bool cie_PN532::select_CIE_DF(void) {
       0x06, //Lc: length of AID
       0xA0, 0x00, 0x00, 0x00, 0x00, 0x39 //AID
   };
-  uint8_t response[2];
-  uint8_t contentLength = 2;
-  bool commandResult = _nfc.inDataExchange(command, sizeof(command), response, &contentLength);
-  bool result = commandResult && hasSuccessStatusWord(response, contentLength);
-  if (!result) {
+  uint8_t responseLength = 2;
+  uint8_t responseBuffer[responseLength];
+  bool success = _nfc.inDataExchange(command, sizeof(command), responseBuffer, &responseLength);
+  success = success && hasSuccessStatusWord(responseBuffer, responseLength);
+  if (!success) {
     PN532DEBUGPRINT.println("Couldn't select the CIE DF");
   }
-  return result;
+  return success;
 }
 
 
@@ -265,21 +337,37 @@ bool cie_PN532::select_CIE_DF(void) {
     @returns  A value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
-bool cie_PN532::read_EF(uint8_t sfi, uint8_t* contentBuffer, uint8_t contentLength) {
-  uint8_t p1 = 0x80;
-  uint8_t command[] = {
+bool cie_PN532::read_EF(uint8_t efid[], uint8_t* contentBuffer, uint8_t contentLength) {
+  uint8_t selectCommand[] = {
+      0x00, //CLA
+      0xA4, //INS: SELECT FILE
+      0x02, //P1: Select by EFID
+      0x0C, //P2: No data in response
+      0x02, //Lc: Length of EFID
+      efid[0], efid[1] //EFID
+  };
+  uint8_t selectResponseLength = 2;
+  uint8_t selectResponseBuffer[selectResponseLength];
+  bool selectCommandResult = _nfc.inDataExchange(selectCommand, sizeof(selectCommand), selectResponseBuffer, &selectResponseLength);
+  selectCommandResult = selectCommandResult && hasSuccessStatusWord(selectResponseBuffer, selectResponseLength);
+  if (!selectCommandResult) {
+    PN532DEBUGPRINT.println("Couldn't select the EF by its ID");
+    return false;
+  }
+
+  uint8_t readCommand[] = {
       0x00, //CLA
       0xB0, //INS: READ BINARY
-      p1|sfi, //P1: Read by SFI | SFI
+      0x00, //P1: Read currently selected file
       0x00, //P2: Offset 0
       contentLength //Le: content length
   };
   uint8_t responseLength = contentLength + 2;
   uint8_t responseBuffer[responseLength];
-  bool commandResult = _nfc.inDataExchange(command, sizeof(command), responseBuffer, &responseLength);
-  bool success = commandResult && hasSuccessStatusWord(responseBuffer, responseLength);
+  bool success = _nfc.inDataExchange(readCommand, sizeof(readCommand), responseBuffer, &responseLength);
+  success = success && hasSuccessStatusWord(responseBuffer, responseLength);
   if (!success) {
-    PN532DEBUGPRINT.println("Couldn't select the file");
+    PN532DEBUGPRINT.println("Couldn't read the file");
   }
   for (int8_t i = 0; i < contentLength; i++) {
       contentBuffer[i] = responseBuffer[i];
@@ -297,10 +385,9 @@ bool cie_PN532::read_EF(uint8_t sfi, uint8_t* contentBuffer, uint8_t contentLeng
 */
 /**************************************************************************/
 bool cie_PN532::hasSuccessStatusWord(uint8_t* response, uint8_t responseLength) {
-
-  uint8_t firstByte = response[responseLength-2];
-  uint8_t secondByte = response[responseLength-1];
-  bool success = firstByte == 0x90 && secondByte == 0x00;
+  uint8_t msByte = response[responseLength-2];
+  uint8_t lsByte = response[responseLength-1];
+  bool success = msByte == 0x90 && lsByte == 0x00;
   if (!success) {
     PN532DEBUGPRINT.print("Error ");
 	_nfc.PrintHex(response, responseLength);

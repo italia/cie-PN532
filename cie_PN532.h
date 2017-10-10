@@ -41,8 +41,16 @@
    #define Serial SerialUSB
 #endif
 
+//Lengths of Elementary Files found in root
+#define EF_DH_LENGTH                          (0x37)
+#define EF_ATR_LENGTH                         (0x37)
+#define EF_SN_ICC_LENGTH                      (0x0C)
 
+//Lengths of Elementary Files found in DF_CIE
 #define EF_ID_SERVIZI_LENGTH                  (0x0C)
+#define EF_INT_KPUB_LENGTH                    (0x37)
+#define EF_SERVIZI_INT_KPUB_LENGTH            (0x37)
+#define EF_SOD_LENGTH                         (0x37)
 
 class cie_PN532
 {
@@ -54,12 +62,11 @@ class cie_PN532
   // Binary read unencrypted elementary files
   bool     read_EF_DH(uint8_t* contentBuffer, uint8_t* contentLength);
   bool     read_EF_ATR(uint8_t* contentBuffer, uint8_t* contentLength);
-  bool     read_SN_ICC(uint8_t* contentBuffer, uint8_t* contentLength);
+  bool     read_EF_SN_ICC(uint8_t* contentBuffer, uint8_t* contentLength);
   bool     read_EF_ID_Servizi(uint8_t* contentBuffer, uint8_t* contentLength);
   bool     read_EF_Int_Kpub(uint8_t* contentBuffer, uint8_t* contentLength);
   bool     read_EF_Servizi_Int_Kpub(uint8_t* contentBuffer, uint8_t* contentLength);
   bool     read_EF_SOD(uint8_t* contentBuffer, uint8_t* contentLength);
-  void     dumpAll();
   void     printHex(uint8_t* buffer, uint8_t length);
 
  private:
@@ -67,6 +74,6 @@ class cie_PN532
   bool     select_ROOT(void);
   bool     select_IAS_Application(void);
   bool     select_CIE_DF(void);
-  bool     read_EF(uint8_t sfi, uint8_t* contentBuffer, uint8_t contentLength);
+  bool     read_EF(uint8_t efid[], uint8_t* contentBuffer, uint8_t contentLength);
   bool     hasSuccessStatusWord(uint8_t* response, uint8_t responseLength);
 };
