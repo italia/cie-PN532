@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*! 
-  @file     CIE-MemoryDump.ino
+  @file     CIE-Read.ino
   @author   Developers italia
   @license  BSD (see license) 
   This example will wait for any ISO14443A card or tag, and
@@ -53,12 +53,12 @@ void loop(void) {
 
   //Good! A card is present, let's dump some info!
   print_EF_ID_Servizi();
+  print_EF_SN_ICC();
   print_EF_Int_Kpub();
   print_EF_Servizi_Int_Kpub();
   print_EF_SOD();
   print_EF_DH();
   print_EF_ATR();
-  print_EF_SN_ICC();
 
   Serial.println();
   Serial.println("Work complete, remove the card");
