@@ -31,6 +31,8 @@ Check out the links above for our tutorials and wiring diagrams
 
 
 cie_PN532 cie(PN532_SCK, PN532_MISO, PN532_MOSI, PN532_SS);
+typedef bool (cie_PN532::*readValueFunc)(uint8_t*, uint8_t*);
+
 
 void setup(void) {
   #ifndef ESP8266
@@ -52,22 +54,25 @@ void loop(void) {
   }
 
   //Good! A card is present, let's dump some info!
-  print_EF_ID_Servizi();
-  print_EF_SN_ICC();
-  print_EF_Int_Kpub();
-  print_EF_Servizi_Int_Kpub();
-  print_EF_SOD();
-  print_EF_DH();
-  print_EF_ATR();
+  
+  readValue(&cie_PN532::read_EF_ID_Servizi, "EF_ID_Servizi", EF_ID_SERVIZI_LENGTH);
+  readValue(&cie_PN532::read_EF_SN_ICC, "EF_SN_ICC", EF_SN_ICC_LENGTH);
+  readValue(&cie_PN532::read_EF_Int_Kpub, "EF_Int_Kpub", EF_INT_KPUB_LENGTH);
+  readValue(&cie_PN532::read_EF_Servizi_Int_Kpub, "EF_Servizi_Int_Kpub", EF_SERVIZI_INT_KPUB_LENGTH);
+  readValue(&cie_PN532::read_EF_SOD, "EF_SOD", EF_SOD_LENGTH);
+  readValue(&cie_PN532::read_EF_DH, "EF_DH", EF_DH_LENGTH);
+  readValue(&cie_PN532::read_EF_ATR, "EF_ATR", EF_ATR_LENGTH);
 
   Serial.println();
-  Serial.println("Work complete, remove the card");
-  delay(1000);
+  Serial.println("Read complete, you can remove the card now");
+  delay(10000);
 }
 //This example should use function pointers to reduce the amount of lines of code
-/*void printValue(void (*pFunc)(uint8_t* buffer, uint8_t* bufferLength), char[] name, uint8_t bufferLength) {
+void readValue(readValueFunc func, const char* name, const uint8_t length) {
+  uint8_t bufferLength = length;
   uint8_t buffer[bufferLength];
-  if (!(*pFunc)(buffer, &bufferLength)) {
+  bool success = (cie.*func)(buffer, &bufferLength);
+  if (!success) {
     Serial.print("Error reading ");
     Serial.println(name);
     return;
@@ -75,8 +80,8 @@ void loop(void) {
   Serial.print(name);
   Serial.print(": ");
   cie.printHex(buffer, bufferLength);
-}*/
-
+}
+/*
 void print_EF_ID_Servizi() {
   uint8_t bufferLength = EF_ID_SERVIZI_LENGTH;
   uint8_t buffer[bufferLength];
@@ -152,4 +157,4 @@ void print_EF_SN_ICC() {
   }
   Serial.print("EF.SN.ICC: ");
   cie.printHex(buffer, bufferLength);
-}
+}*/

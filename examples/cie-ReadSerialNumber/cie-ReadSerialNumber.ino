@@ -62,6 +62,6 @@ void loop(void) {
   cie.printHex(buffer, bufferLength);
 
   Serial.println();
-  Serial.println("Work complete, remove the card");
+  Serial.println("Read complete, you can remove the card now");
   delay(1000);
 }

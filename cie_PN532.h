@@ -41,16 +41,16 @@
    #define Serial SerialUSB
 #endif
 
-//Lengths of Elementary Files found in root
-#define EF_DH_LENGTH                          (0x37)
-#define EF_ATR_LENGTH                         (0x37)
+//Lengths of Elementary Files found in Root DF
+#define EF_DH_LENGTH                          (0x36)
+#define EF_ATR_LENGTH                         (0x36)
 #define EF_SN_ICC_LENGTH                      (0x0C)
 
-//Lengths of Elementary Files found in DF_CIE
+//Lengths of Elementary Files found in CIE DF
 #define EF_ID_SERVIZI_LENGTH                  (0x0C)
-#define EF_INT_KPUB_LENGTH                    (0x37)
-#define EF_SERVIZI_INT_KPUB_LENGTH            (0x37)
-#define EF_SOD_LENGTH                         (0x37)
+#define EF_INT_KPUB_LENGTH                    (0x36)
+#define EF_SERVIZI_INT_KPUB_LENGTH            (0x36)
+#define EF_SOD_LENGTH                         (0x36)
 
 class cie_PN532
 {
@@ -71,9 +71,10 @@ class cie_PN532
 
  private:
   Adafruit_PN532 _nfc;
-  bool     select_ROOT(void);
   bool     select_IAS_Application(void);
+  bool     select_ROOT_DF(void);
   bool     select_CIE_DF(void);
   bool     read_EF(uint8_t efid[], uint8_t* contentBuffer, uint8_t contentLength);
   bool     hasSuccessStatusWord(uint8_t* response, uint8_t responseLength);
+  void     clamp(uint8_t* value, uint8_t maxValue);
 };

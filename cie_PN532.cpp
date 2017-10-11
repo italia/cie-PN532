@@ -31,7 +31,7 @@ _nfc(clk, miso, mosi, ss)
 
 /**************************************************************************/
 /*!
-    @brief  Setups the HW
+  @brief  Setups the HW
 */
 /**************************************************************************/
 void cie_PN532::begin() {
@@ -53,7 +53,7 @@ void cie_PN532::begin() {
 
 /**************************************************************************/
 /*!
-    @brief  Dumps all values present in the CIE. Call this in your loop
+  @brief  Dumps all values present in the CIE. Call this in your loop
 */
 /**************************************************************************/
 bool cie_PN532::detectCard() {
@@ -72,19 +72,19 @@ void cie_PN532::printHex(uint8_t* buffer, uint8_t length) {
 
 /**************************************************************************/
 /*!
-    @brief  Reads the binary content the EF_DH elementary file
+  @brief  Reads the binary content the EF_DH elementary file
 
-	@param  contentBuffer The pointer to data containing the contents of the file
-	@param  contentLength The lenght of the file
+  @param  contentBuffer The pointer to data containing the contents of the file
+  @param  contentLength The lenght of the file
 	
-	@returns  The file content
+  @returns  The file content
 */
 /**************************************************************************/
 bool cie_PN532::read_EF_DH(uint8_t* contentBuffer, uint8_t* contentLength) {
-  if (!select_IAS_Application() || !select_ROOT()) {
+  if (!select_IAS_Application() || !select_ROOT_DF()) {
     return false;
   }
-  *contentLength = EF_DH_LENGTH;
+  clamp(contentLength, EF_DH_LENGTH);
   uint8_t efid[] = { 0xD0, 0x04 };
   bool success = read_EF(efid, contentBuffer, *contentLength);
   if (!success) {
@@ -97,19 +97,19 @@ bool cie_PN532::read_EF_DH(uint8_t* contentBuffer, uint8_t* contentLength) {
 
 /**************************************************************************/
 /*!
-    @brief  Reads the binary content of the EF_ATR elementary file
+  @brief  Reads the binary content of the EF_ATR elementary file
 
-	@param  contentBuffer The pointer to data containing the contents of the file
-	@param  contentLength The lenght of the file
+  @param  contentBuffer The pointer to data containing the contents of the file
+  @param  contentLength The lenght of the file
 
-    @returns  The file content
+  @returns  The file content
 */
 /**************************************************************************/
 bool cie_PN532::read_EF_ATR(uint8_t* contentBuffer, uint8_t* contentLength) {
-  if (!select_IAS_Application() || !select_ROOT()) {
+  if (!select_IAS_Application() || !select_ROOT_DF()) {
     return false;
   }
-  *contentLength = EF_ATR_LENGTH;
+  clamp(contentLength, EF_ATR_LENGTH);
   uint8_t efid[] = { 0x2F, 0x01 };
   bool success = read_EF(efid, contentBuffer, *contentLength);
   if (!success) {
@@ -122,19 +122,19 @@ bool cie_PN532::read_EF_ATR(uint8_t* contentBuffer, uint8_t* contentLength) {
 
 /**************************************************************************/
 /*!
-    @brief  Reads the binary content of the SN_ICC elementary file
+  @brief  Reads the binary content of the SN_ICC elementary file
 
-	@param  contentBuffer The pointer to data containing the contents of the file
-	@param  contentLength The lenght of the file
+  @param  contentBuffer The pointer to data containing the contents of the file
+  @param  contentLength The lenght of the file
 
-    @returns  The file content
+  @returns  The file content
 */
 /**************************************************************************/
 bool cie_PN532::read_EF_SN_ICC(uint8_t* contentBuffer, uint8_t* contentLength) {
-  if (!select_IAS_Application() || !select_ROOT()) {
+  if (!select_IAS_Application() || !select_ROOT_DF()) {
     return false;
   }
-  *contentLength = EF_SN_ICC_LENGTH;
+  clamp(contentLength, EF_SN_ICC_LENGTH);
   uint8_t efid[] = { 0xD0, 0x03 };
   bool success = read_EF(efid, contentBuffer, *contentLength);
   if (!success) {
@@ -147,19 +147,19 @@ bool cie_PN532::read_EF_SN_ICC(uint8_t* contentBuffer, uint8_t* contentLength) {
 
 /**************************************************************************/
 /*!
-    @brief  Reads the binary content of the EF_ID_Servizi elementary file
+  @brief  Reads the binary content of the EF_ID_Servizi elementary file
 
-	@param  contentBuffer The pointer to data containing the contents of the file
-	@param  contentLength The lenght of the file
+  @param  contentBuffer The pointer to data containing the contents of the file
+  @param  contentLength The lenght of the file
 
-    @returns  The file content
+  @returns  The file content
 */
 /**************************************************************************/
 bool cie_PN532::read_EF_ID_Servizi(uint8_t* contentBuffer, uint8_t* contentLength) {
   if (!select_IAS_Application() || !select_CIE_DF()) {
     return false;
   }
-  *contentLength = EF_ID_SERVIZI_LENGTH;
+  clamp(contentLength, EF_ID_SERVIZI_LENGTH);
   uint8_t efid[] = { 0x10, 0x01 };
   bool success = read_EF(efid, contentBuffer, *contentLength);
   if (!success) {
@@ -172,19 +172,19 @@ bool cie_PN532::read_EF_ID_Servizi(uint8_t* contentBuffer, uint8_t* contentLengt
 
 /**************************************************************************/
 /*!
-    @brief  Reads the binary content of the EF_Int_Kpub elementary file
+  @brief  Reads the binary content of the EF_Int_Kpub elementary file
 
-	@param  contentBuffer The pointer to data containing the contents of the file
-	@param  contentLength The lenght of the file
+  @param  contentBuffer The pointer to data containing the contents of the file
+  @param  contentLength The lenght of the file
 
-    @returns  The file content
+  @returns  The file content
 */
 /**************************************************************************/
 bool cie_PN532::read_EF_Int_Kpub(uint8_t* contentBuffer, uint8_t* contentLength) {
   if (!select_IAS_Application() || !select_CIE_DF()) {
     return false;
   }
-  *contentLength = EF_INT_KPUB_LENGTH;
+  clamp(contentLength, EF_INT_KPUB_LENGTH);
   uint8_t efid[] = { 0x10, 0x04 };
   bool success = read_EF(efid, contentBuffer, *contentLength);
   if (!success) {
@@ -197,19 +197,19 @@ bool cie_PN532::read_EF_Int_Kpub(uint8_t* contentBuffer, uint8_t* contentLength)
 
 /**************************************************************************/
 /*!
-    @brief  Reads the binary content of the EF_Servizi_Int_Kpub elementary file
+  @brief  Reads the binary content of the EF_Servizi_Int_Kpub elementary file
 
-	@param  contentBuffer The pointer to data containing the contents of the file
-	@param  contentLength The lenght of the file
+  @param  contentBuffer The pointer to data containing the contents of the file
+  @param  contentLength The lenght of the file
 
-    @returns  The file content
+  @returns  The file content
 */
 /**************************************************************************/
 bool cie_PN532::read_EF_Servizi_Int_Kpub(uint8_t* contentBuffer, uint8_t* contentLength) {
   if (!select_IAS_Application() || !select_CIE_DF()) {
     return false;
   }
-  *contentLength = EF_SERVIZI_INT_KPUB_LENGTH;
+  clamp(contentLength, EF_SERVIZI_INT_KPUB_LENGTH);
   uint8_t efid[] = { 0x10, 0x05 };
   bool success = read_EF(efid, contentBuffer, *contentLength);
   if (!success) {
@@ -222,19 +222,19 @@ bool cie_PN532::read_EF_Servizi_Int_Kpub(uint8_t* contentBuffer, uint8_t* conten
 
 /**************************************************************************/
 /*!
-    @brief  Reads the binary content of the EF_SOD elementary file
+  @brief  Reads the binary content of the EF_SOD elementary file
 
-	@param  contentBuffer The pointer to data containing the contents of the file
-	@param  contentLength The lenght of the file
+  @param  contentBuffer The pointer to data containing the contents of the file
+  @param  contentLength The lenght of the file
 	
-    @returns  The file content
+  @returns  The file content
 */
 /**************************************************************************/
 bool cie_PN532::read_EF_SOD(uint8_t* contentBuffer, uint8_t* contentLength) {
   if (!select_IAS_Application() || !select_CIE_DF()) {
     return false;
   }
-  *contentLength = EF_SOD_LENGTH;
+  clamp(contentLength, EF_SOD_LENGTH);
   uint8_t efid[] = { 0x10, 0x06 };
   bool success = read_EF(efid, contentBuffer, *contentLength);
   if (!success) {
@@ -247,12 +247,12 @@ bool cie_PN532::read_EF_SOD(uint8_t* contentBuffer, uint8_t* contentLength) {
 
 /**************************************************************************/
 /*!
-    @brief  Selects the ROOT MF
+  @brief  Selects the ROOT MF
 	
-	@returns  A value indicating whether the operation succeeded or not
+  @returns  A value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
-bool cie_PN532::select_ROOT(void) {
+bool cie_PN532::select_ROOT_DF(void) {
     uint8_t command[] = { 
         0x00, //CLA
         0xA4, //INS: SELECT FILE
@@ -274,9 +274,9 @@ bool cie_PN532::select_ROOT(void) {
 
 /**************************************************************************/
 /*!
-    @brief  Selects the IAS Application
+  @brief  Selects the IAS Application
 	
-	@returns  A value indicating whether the operation succeeded or not
+  @returns  A value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
 bool cie_PN532::select_IAS_Application(void) {
@@ -301,9 +301,9 @@ bool cie_PN532::select_IAS_Application(void) {
 
 /**************************************************************************/
 /*!
-    @brief  Selects the CIE DF
+  @brief  Selects the CIE DF
 	
-	@returns  A value indicating whether the operation succeeded or not
+  @returns  A value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
 bool cie_PN532::select_CIE_DF(void) {
@@ -328,13 +328,13 @@ bool cie_PN532::select_CIE_DF(void) {
 
 /**************************************************************************/
 /*!
-    @brief  Reads the binary content of the EF by its SFI under the current DF
+  @brief  Reads the binary content of the EF by its SFI under the current DF
 	
 	@param  sfi The short file id
 	@param  contentBuffer Pointer to the response data
 	@param  response The maximum desired length of the response
 	
-    @returns  A value indicating whether the operation succeeded or not
+  @returns  A value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
 bool cie_PN532::read_EF(uint8_t efid[], uint8_t* contentBuffer, uint8_t contentLength) {
@@ -379,7 +379,7 @@ bool cie_PN532::read_EF(uint8_t efid[], uint8_t* contentBuffer, uint8_t contentL
 /*!
     @brief  Reads the EF contents by its SFI under the current DF
 	
-	@param  response Pointer to the response data
+	  @param  response Pointer to the response data
 	
     @returns  A value indicating whether the operation succeeded or not
 */
@@ -388,9 +388,41 @@ bool cie_PN532::hasSuccessStatusWord(uint8_t* response, uint8_t responseLength) 
   uint8_t msByte = response[responseLength-2];
   uint8_t lsByte = response[responseLength-1];
   bool success = msByte == 0x90 && lsByte == 0x00;
-  if (!success) {
-    PN532DEBUGPRINT.print("Error ");
-	_nfc.PrintHex(response, responseLength);
+  if (success)
+    return true;
+
+  if (msByte == 0x62 && msByte == 0x83) {
+    PN532DEBUGPRINT.print("Warning selected file deactivated");
+  } else if (msByte == 0x62 && msByte == 0x85) {
+    PN532DEBUGPRINT.print("The selected file is in terminate state");
+  } else if (msByte == 0x6A && msByte == 0x82) {
+    PN532DEBUGPRINT.print("File or application not found");
+  } else if (msByte == 0x6A && msByte == 0x86) {
+    PN532DEBUGPRINT.print("Incorrect parameters P1-P2");
+  } else if (msByte == 0x6A && msByte == 0x87) {
+    PN532DEBUGPRINT.print("Nc inconsistent with parameters P1-P2");
+  } else {
+    PN532DEBUGPRINT.print("Unknow error");
   }
-  return success;
+  PN532DEBUGPRINT.print(" ");
+  //uint8_t statusWord[2] = { msByte, lsByte };
+  //_nfc.PrintHex(statusWord, 2);
+  
+  return false;
+}
+
+
+/**************************************************************************/
+/*!
+    @brief  Ensures a value is less or equal than a max value
+	
+    @param  value The value that should be checked
+    @param  maxValue The maximum value
+
+*/
+/**************************************************************************/
+void cie_PN532::clamp(uint8_t* value, const uint8_t maxValue) {
+  if (*value > maxValue) {
+    *value = maxValue;
+  }
 }
