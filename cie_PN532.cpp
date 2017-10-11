@@ -373,12 +373,11 @@ bool cie_PN532::fetchElementaryFileContent(byte* contentBuffer, const word conte
   byte contentPageLength = 0;
   do {
     byte contentPageLength = contentLength-offset > PAGE_LENGTH ? PAGE_LENGTH : (byte) contentLength;
-
     byte readCommand[] = {
         0x00, //CLA
         0xB0, //INS: READ BINARY
-        0x00, //P1: Read currently selected file
-        (byte) offset, //P2: Current offset
+        (byte) (offset >> 8), //P1: Read currently selected file
+        (byte) (offset & 0xFF), //P2: Current offset
         contentPageLength //Le: content length
     };
 

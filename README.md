@@ -30,3 +30,5 @@ This library comes with an _examples_ directory. You can load and run examples f
  http://www.agid.gov.it/sites/default/files/documentazione/cie_3.0_-_specifiche_chip.pdf
  * Technical specification for the European Card for e-Services and National e-ID Applications
  http://www.unsads.com/specs/IASECC/IAS_ECC_v1.0.1_UK.pdf
+ * Specifiche tecniche del documento digitale unificato (italian)
+ http://www.agid.gov.it/sites/default/files/leggi_decreti_direttive/specifiche_tecniche_del_documento_digitale_unificato_v.1.0.0.pdf

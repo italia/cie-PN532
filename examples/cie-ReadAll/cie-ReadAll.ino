@@ -59,9 +59,9 @@ void loop(void) {
   readValue(&cie_PN532::read_EF_SN_ICC, "EF_SN_ICC");
   readValue(&cie_PN532::read_EF_Int_Kpub, "EF_Int_Kpub");
   readValue(&cie_PN532::read_EF_Servizi_Int_Kpub, "EF_Servizi_Int_Kpub");
-  readValue(&cie_PN532::read_EF_SOD, "EF_SOD");
+  //readValue(&cie_PN532::read_EF_SOD, "EF_SOD");
   readValue(&cie_PN532::read_EF_DH, "EF_DH");
-  readValue(&cie_PN532::read_EF_ATR, "EF_ATR");
+  //readValue(&cie_PN532::read_EF_ATR, "EF_ATR");
 
   Serial.println();
   Serial.println("Read complete, you can remove the card now");
@@ -69,7 +69,7 @@ void loop(void) {
 }
 //This example should use function pointers to reduce the amount of lines of code
 void readValue(readValueFunc func, const char* name) {
-  word bufferLength = 300;
+  word bufferLength = 600;
   byte* buffer = new byte[bufferLength];
   bool success = (cie.*func)(buffer, &bufferLength);
   if (!success) {
