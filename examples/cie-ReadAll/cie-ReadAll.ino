@@ -1,10 +1,10 @@
 /**************************************************************************/
 /*! 
-  @file     CIE-Read.ino
+  @file     CIE-ReadAll.ino
   @author   Developers italia
   @license  BSD (see license) 
-  This example will wait for any ISO14443A card or tag, and
-  depending on the size of the UID will attempt to read from it.
+  This example will wait for a CIE card and read all of its unencrypted
+  values.
  
 
 This is an example sketch for the Adafruit PN532 NFC/RFID breakout boards
