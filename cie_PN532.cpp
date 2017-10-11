@@ -23,8 +23,8 @@
 
 #define PN532DEBUGPRINT Serial
 
-cie_PN532::cie_PN532 (uint8_t clk, uint8_t miso, uint8_t mosi, uint8_t ss) :
-_nfc(clk, miso, mosi, ss) 
+cie_PN532::cie_PN532 (byte clk, byte miso, byte mosi, byte ss) :
+_nfc(clk, miso, mosi, ss)
 {
 }
 
@@ -38,16 +38,16 @@ void cie_PN532::begin() {
   _nfc.begin();
   uint32_t versiondata = _nfc.getFirmwareVersion();
   if (! versiondata) {
-    Serial.print("Didn't find PN53x board");
+    Serial.print(F("Didn't find PN53x board"));
     while (1); // halt
   }
   // Got ok data, print it out!
-  Serial.print("Found chip PN5"); Serial.println((versiondata>>24) & 0xFF, HEX); 
-  Serial.print("Firmware ver. "); Serial.print((versiondata>>16) & 0xFF, DEC); 
+  Serial.print(F("Found chip PN5")); Serial.println((versiondata>>24) & 0xFF, HEX); 
+  Serial.print(F("Firmware ver. ")); Serial.print((versiondata>>16) & 0xFF, DEC); 
   Serial.print('.'); Serial.println((versiondata>>8) & 0xFF, DEC);
   _nfc.SAMConfig();
 
-  Serial.println("Waiting for a CIE card...");
+  Serial.println(F("Waiting for a CIE card..."));
 }
 
 
@@ -66,7 +66,7 @@ bool cie_PN532::detectCard() {
     @brief  Dumps all values present in the CIE
 */
 /**************************************************************************/
-void cie_PN532::printHex(uint8_t* buffer, uint8_t length) {
+void cie_PN532::printHex(byte* buffer, word length) {
   _nfc.PrintHex(buffer, length);
 }
 
@@ -80,18 +80,9 @@ void cie_PN532::printHex(uint8_t* buffer, uint8_t length) {
   @returns  The file content
 */
 /**************************************************************************/
-bool cie_PN532::read_EF_DH(uint8_t* contentBuffer, uint8_t* contentLength) {
-  if (!select_IAS_Application() || !select_ROOT_DF()) {
-    return false;
-  }
-  clamp(contentLength, EF_DH_LENGTH);
-  uint8_t efid[] = { 0xD0, 0x04 };
-  bool success = read_EF(efid, contentBuffer, *contentLength);
-  if (!success) {
-    *contentLength = 0;
-    return false;
-  }
-  return true;
+bool cie_PN532::read_EF_DH(byte* contentBuffer, word* contentLength) {
+  byte efid[] = { 0xD0, 0x04 };
+  return readElementaryFile(ROOT_MF, efid, contentBuffer, contentLength, AUTODETECT_BER_LENGTH);
 }
 
 
@@ -105,18 +96,9 @@ bool cie_PN532::read_EF_DH(uint8_t* contentBuffer, uint8_t* contentLength) {
   @returns  The file content
 */
 /**************************************************************************/
-bool cie_PN532::read_EF_ATR(uint8_t* contentBuffer, uint8_t* contentLength) {
-  if (!select_IAS_Application() || !select_ROOT_DF()) {
-    return false;
-  }
-  clamp(contentLength, EF_ATR_LENGTH);
-  uint8_t efid[] = { 0x2F, 0x01 };
-  bool success = read_EF(efid, contentBuffer, *contentLength);
-  if (!success) {
-    *contentLength = 0;
-    return false;
-  }
-  return true;
+bool cie_PN532::read_EF_ATR(byte* contentBuffer, word* contentLength) {
+  byte efid[] = { 0x2F, 0x01 };
+  return readElementaryFile(ROOT_MF, efid, contentBuffer, contentLength, AUTODETECT_BER_LENGTH);
 }
 
 
@@ -130,18 +112,10 @@ bool cie_PN532::read_EF_ATR(uint8_t* contentBuffer, uint8_t* contentLength) {
   @returns  The file content
 */
 /**************************************************************************/
-bool cie_PN532::read_EF_SN_ICC(uint8_t* contentBuffer, uint8_t* contentLength) {
-  if (!select_IAS_Application() || !select_ROOT_DF()) {
-    return false;
-  }
+bool cie_PN532::read_EF_SN_ICC(byte* contentBuffer, word* contentLength) {
+  byte efid[] = { 0xD0, 0x03 };
   clamp(contentLength, EF_SN_ICC_LENGTH);
-  uint8_t efid[] = { 0xD0, 0x03 };
-  bool success = read_EF(efid, contentBuffer, *contentLength);
-  if (!success) {
-    *contentLength = 0;
-    return false;
-  }
-  return true;
+  return readElementaryFile(ROOT_MF, efid, contentBuffer, contentLength, FIXED_LENGTH);
 }
 
 
@@ -155,18 +129,10 @@ bool cie_PN532::read_EF_SN_ICC(uint8_t* contentBuffer, uint8_t* contentLength) {
   @returns  The file content
 */
 /**************************************************************************/
-bool cie_PN532::read_EF_ID_Servizi(uint8_t* contentBuffer, uint8_t* contentLength) {
-  if (!select_IAS_Application() || !select_CIE_DF()) {
-    return false;
-  }
+bool cie_PN532::read_EF_ID_Servizi(byte* contentBuffer, word* contentLength) {
+  byte efid[] = { 0x10, 0x01 };
   clamp(contentLength, EF_ID_SERVIZI_LENGTH);
-  uint8_t efid[] = { 0x10, 0x01 };
-  bool success = read_EF(efid, contentBuffer, *contentLength);
-  if (!success) {
-    *contentLength = 0;
-    return false;
-  }
-  return true;
+  return readElementaryFile(CIE_DF, efid, contentBuffer, contentLength, FIXED_LENGTH);
 }
 
 
@@ -180,18 +146,9 @@ bool cie_PN532::read_EF_ID_Servizi(uint8_t* contentBuffer, uint8_t* contentLengt
   @returns  The file content
 */
 /**************************************************************************/
-bool cie_PN532::read_EF_Int_Kpub(uint8_t* contentBuffer, uint8_t* contentLength) {
-  if (!select_IAS_Application() || !select_CIE_DF()) {
-    return false;
-  }
-  clamp(contentLength, EF_INT_KPUB_LENGTH);
-  uint8_t efid[] = { 0x10, 0x04 };
-  bool success = read_EF(efid, contentBuffer, *contentLength);
-  if (!success) {
-    *contentLength = 0;
-    return false;
-  }
-  return true;
+bool cie_PN532::read_EF_Int_Kpub(byte* contentBuffer, word* contentLength) {
+  byte efid[] = { 0x10, 0x04 };
+  return readElementaryFile(CIE_DF, efid, contentBuffer, contentLength, AUTODETECT_BER_LENGTH);
 }
 
 
@@ -205,18 +162,9 @@ bool cie_PN532::read_EF_Int_Kpub(uint8_t* contentBuffer, uint8_t* contentLength)
   @returns  The file content
 */
 /**************************************************************************/
-bool cie_PN532::read_EF_Servizi_Int_Kpub(uint8_t* contentBuffer, uint8_t* contentLength) {
-  if (!select_IAS_Application() || !select_CIE_DF()) {
-    return false;
-  }
-  clamp(contentLength, EF_SERVIZI_INT_KPUB_LENGTH);
-  uint8_t efid[] = { 0x10, 0x05 };
-  bool success = read_EF(efid, contentBuffer, *contentLength);
-  if (!success) {
-    *contentLength = 0;
-    return false;
-  }
-  return true;
+bool cie_PN532::read_EF_Servizi_Int_Kpub(byte* contentBuffer, word* contentLength) {
+  byte efid[] = { 0x10, 0x05 };
+  return readElementaryFile(CIE_DF, efid, contentBuffer, contentLength, AUTODETECT_BER_LENGTH);
 }
 
 
@@ -230,15 +178,86 @@ bool cie_PN532::read_EF_Servizi_Int_Kpub(uint8_t* contentBuffer, uint8_t* conten
   @returns  The file content
 */
 /**************************************************************************/
-bool cie_PN532::read_EF_SOD(uint8_t* contentBuffer, uint8_t* contentLength) {
-  if (!select_IAS_Application() || !select_CIE_DF()) {
+bool cie_PN532::read_EF_SOD(byte* contentBuffer, word* contentLength) {
+  byte efid[] = { 0x10, 0x06 };
+  return readElementaryFile(CIE_DF, efid, contentBuffer, contentLength, AUTODETECT_BER_LENGTH);
+}
+
+
+/**************************************************************************/
+/*!
+  @brief  Reads the binary content of the EF by its SFI under the current DF
+	
+  @param df The containing Dedicated File (either ROOT_MF or CIE_DF)
+  @param efid The efid of the Elementary File (must be two bytes)
+	@param contentBuffer Pointer to the response data
+  @param response The maximum desired length of the response
+  @param lengthStrategy How to determine the length of the file (either FIXED_LENGTH or AUTODETECT_BER_LENGTH)
+	
+  @returns  A value indicating whether the operation succeeded or not
+*/
+/**************************************************************************/
+bool cie_PN532::readElementaryFile(const byte df, const byte efid[], byte* contentBuffer, word* contentLength, const byte lengthStrategy) {
+
+  if (!selectElementaryFile(df, efid) || 
+      !determineLength(contentLength, lengthStrategy) ||
+      !fetchElementaryFileContent(contentBuffer, *contentLength)) {
     return false;
   }
-  clamp(contentLength, EF_SOD_LENGTH);
-  uint8_t efid[] = { 0x10, 0x06 };
-  bool success = read_EF(efid, contentBuffer, *contentLength);
+
+  return true;
+}
+
+
+/**************************************************************************/
+/*!
+  @brief  Selects an Elementary file
+  
+  @param df The containing Dedicated File (either ROOT_MF or CIE_DF)
+  @param efid The efid of the Elementary File (must be two bytes)
+  
+  @returns  A value indicating whether the operation succeeded or not
+*/
+/**************************************************************************/
+bool cie_PN532::selectElementaryFile(const byte df, const byte efid[]) {
+  if (!selectIasApplication()) {
+    return false;
+  }
+  
+  switch (df) {
+    case ROOT_MF:
+    if (!selectRootMasterFile()) {
+      return false;
+    }
+    break;
+
+    case CIE_DF:
+    if (!selectCieDedicatedFile()) {
+      return false;
+    }
+    break;
+
+    default:
+      PN532DEBUGPRINT.println(F("The DF must be either ROOT_MF or CIE_DF"));
+      return false;
+  }
+
+  byte selectCommand[] = {
+    0x00, //CLA
+    0xA4, //INS: SELECT FILE
+    0x02, //P1: Select by EFID
+    0x0C, //P2: No data in response
+    0x02, //Lc: Length of EFID
+    efid[0], efid[1] //EFID
+  };
+  byte selectResponseLength = 2;
+  byte* selectResponseBuffer = new byte[selectResponseLength];
+  bool success = _nfc.inDataExchange(selectCommand, sizeof(selectCommand), selectResponseBuffer, &selectResponseLength);
+  success = success && hasSuccessStatusWord(selectResponseBuffer, selectResponseLength);
+  delete [] selectResponseBuffer;
   if (!success) {
-    *contentLength = 0;
+    PN532DEBUGPRINT.print(F("Couldn't select the EF by its EFID "));
+    _nfc.PrintHex(efid, 2);
     return false;
   }
   return true;
@@ -247,13 +266,153 @@ bool cie_PN532::read_EF_SOD(uint8_t* contentBuffer, uint8_t* contentLength) {
 
 /**************************************************************************/
 /*!
-  @brief  Selects the ROOT MF
+  @brief  Sets the length value of a currently selected Elementary File
+	
+  @param contentLength The pointer to the length value
+  @param lengthStrategy The chosen strategy by user (either AUTODETECT_BER_LENGTH or FIXED_LENGTH)
+
+  @returns  A value indicating whether the operation succeeded or not
+*/
+/**************************************************************************/
+bool cie_PN532::determineLength(word* contentLength, const byte lengthStrategy) {
+  switch (lengthStrategy) {
+    case FIXED_LENGTH:
+    //do nothing, size is already known
+    break;
+
+    case AUTODETECT_BER_LENGTH:
+      autodetectBerLength(contentLength);
+    break;
+
+    default:
+      PN532DEBUGPRINT.println(F("The length strategy must be either AUTODETECT_BER_LENGTH or FIXED_LENGTH"));
+      return false;
+  }
+  return true;
+}
+
+
+/**************************************************************************/
+/*!
+  @brief  Detects the length of an Elementary File by reading its BET encoded content
+	
+  @param contentLength The pointer to the length value
+
+  @returns  A value indicating whether the operation succeeded or not
+*/
+/**************************************************************************/
+bool cie_PN532::autodetectBerLength(word* contentLength) {
+  //TODO: unit test this
+  //Please refer to https://en.wikipedia.org/wiki/X.690#Identifier_octets
+  const byte berHeaderLength = 6; //6 will do for the CIE
+  byte buffer[berHeaderLength];
+  if (!fetchElementaryFileContent(buffer, berHeaderLength)) {
+    return false;
+  }
+  
+  byte lengthOctectsOffset = 0;
+  if ((buffer[0] & 0x1F) == 0x1F)
+  {
+    //Tag is defined in the next octects
+    do
+    {
+      lengthOctectsOffset++;
+      //we keep going until we find an octet with a 0 in the bit 8
+      //that will be the last tag octect
+    } while ((buffer[lengthOctectsOffset] & 0x80) == 0x80);
+    //and then we move forward to the first length octet
+    lengthOctectsOffset++;
+  } else
+  {
+    //tag was made of a single octet
+    lengthOctectsOffset = 1;
+  }
+  
+  //Now we start reading the length octects
+  if (buffer[lengthOctectsOffset] == 0x80)
+  {
+      //Indefinite mode, we don't currently support this
+      PN532DEBUGPRINT.println(F("Indefinite length for BER encoded file not supported"));
+      return false;
+  }
+  else if ((buffer[lengthOctectsOffset] & 0x80) == 0x80)
+  {
+      //Definite, long
+      byte lengthOctets = buffer[lengthOctectsOffset] & (byte) 0x7F;
+      word length = 0;
+      for (byte i = 1; i <= lengthOctets; i++)
+      {
+          length += buffer[lengthOctectsOffset + i] << ((lengthOctets - i) * 8);
+      }
+      length += lengthOctectsOffset + lengthOctets + 1;
+      *contentLength = length;
+  } else  {
+      //Definite, short
+      word length = buffer[lengthOctectsOffset];
+      length += lengthOctectsOffset + 1;
+      *contentLength = length;
+  }
+  
+  return true;
+}
+
+
+/**************************************************************************/
+/*!
+  @brief Reads the binary content of the currently selected Elementary File
+  
+  @param contentBuffer The pointer to the data buffer
+  @param contentLength The number of bytes to read
+
+  @returns  A value indicating whether the operation succeeded or not
+*/
+/**************************************************************************/
+bool cie_PN532::fetchElementaryFileContent(byte* contentBuffer, const word contentLength) {
+  word offset = 0x0;
+  bool success = false;
+  byte contentPageLength = 0;
+  do {
+    byte contentPageLength = contentLength-offset > PAGE_LENGTH ? PAGE_LENGTH : (byte) contentLength;
+
+    byte readCommand[] = {
+        0x00, //CLA
+        0xB0, //INS: READ BINARY
+        0x00, //P1: Read currently selected file
+        (byte) offset, //P2: Current offset
+        contentPageLength //Le: content length
+    };
+
+    byte responseLength = contentPageLength + 2;
+    byte* responseBuffer = new byte[responseLength];
+    success = _nfc.inDataExchange(readCommand, sizeof(readCommand), responseBuffer, &responseLength);
+    success = success && hasSuccessStatusWord(responseBuffer, responseLength);
+
+    //Copy data over to the buffer
+    for (word i = 0; i < contentPageLength; i++) {
+      contentBuffer[offset+i] = responseBuffer[i];
+    }
+    delete [] responseBuffer;
+
+    offset += contentPageLength;
+    
+  } while(success && (offset < contentLength));
+
+  if (!success) {
+    PN532DEBUGPRINT.println(F("Couldn't fetch the elementary file content"));
+  }
+  return success;
+}
+
+
+/**************************************************************************/
+/*!
+  @brief  Selects the ROOT Master File
 	
   @returns  A value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
-bool cie_PN532::select_ROOT_DF(void) {
-    uint8_t command[] = { 
+bool cie_PN532::selectRootMasterFile(void) {
+    byte command[] = { 
         0x00, //CLA
         0xA4, //INS: SELECT FILE
         0x00, //P1: Select root
@@ -261,12 +420,13 @@ bool cie_PN532::select_ROOT_DF(void) {
         0x02, //Lc: Length of root id
         0x3F, 0x00 //root id
     };
-    uint8_t responseLength = 2;
-    uint8_t responseBuffer[responseLength];
+    byte responseLength = 2;
+    byte* responseBuffer = new byte[responseLength];
     bool success = _nfc.inDataExchange(command, sizeof(command), responseBuffer, &responseLength);
     success = success && hasSuccessStatusWord(responseBuffer, responseLength);
+    delete [] responseBuffer;
     if (!success) {
-      PN532DEBUGPRINT.println("Couldn't select root");
+      PN532DEBUGPRINT.println(F("Couldn't select root"));
     }
     return success;
 }
@@ -279,8 +439,8 @@ bool cie_PN532::select_ROOT_DF(void) {
   @returns  A value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
-bool cie_PN532::select_IAS_Application(void) {
-  uint8_t command[] = { 
+bool cie_PN532::selectIasApplication(void) {
+  byte command[] = { 
       0x00, //CLA
       0xA4, //INS: SELECT FILE
       0x04, //P1: Select by AID
@@ -288,12 +448,13 @@ bool cie_PN532::select_IAS_Application(void) {
       0x0D, //Lc: Length of AID
       0xA0, 0x00, 0x00, 0x00, 0x30, 0x80, 0x00, 0x00, 0x00, 0x09, 0x81, 0x60, 0x01 //AID
   };
-  uint8_t responseLength = 2;
-  uint8_t responseBuffer[responseLength];
+  byte responseLength = 2;
+  byte* responseBuffer = new byte[responseLength];
   bool success = _nfc.inDataExchange(command, sizeof(command), responseBuffer, &responseLength);
   success = success && hasSuccessStatusWord(responseBuffer, responseLength);
+  delete [] responseBuffer;
   if (!success) {
-    PN532DEBUGPRINT.println("Couldn't select the IAS application");
+    PN532DEBUGPRINT.println(F("Couldn't select the IAS application"));
   }
   return success;
 }
@@ -306,8 +467,8 @@ bool cie_PN532::select_IAS_Application(void) {
   @returns  A value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
-bool cie_PN532::select_CIE_DF(void) {
-  uint8_t command[] = { 
+bool cie_PN532::selectCieDedicatedFile(void) {
+  byte command[] = { 
       0x00, //CLA
       0xA4, //INS: SELECT FILE
       0x04, //P1: Select by AID
@@ -315,65 +476,17 @@ bool cie_PN532::select_CIE_DF(void) {
       0x06, //Lc: length of AID
       0xA0, 0x00, 0x00, 0x00, 0x00, 0x39 //AID
   };
-  uint8_t responseLength = 2;
-  uint8_t responseBuffer[responseLength];
+  byte responseLength = 2;
+  byte* responseBuffer = new byte[responseLength];
   bool success = _nfc.inDataExchange(command, sizeof(command), responseBuffer, &responseLength);
   success = success && hasSuccessStatusWord(responseBuffer, responseLength);
+  delete [] responseBuffer;
   if (!success) {
-    PN532DEBUGPRINT.println("Couldn't select the CIE DF");
+    PN532DEBUGPRINT.println(F("Couldn't select the CIE DF"));
   }
   return success;
 }
 
-
-/**************************************************************************/
-/*!
-  @brief  Reads the binary content of the EF by its SFI under the current DF
-	
-	@param  sfi The short file id
-	@param  contentBuffer Pointer to the response data
-	@param  response The maximum desired length of the response
-	
-  @returns  A value indicating whether the operation succeeded or not
-*/
-/**************************************************************************/
-bool cie_PN532::read_EF(uint8_t efid[], uint8_t* contentBuffer, uint8_t contentLength) {
-  uint8_t selectCommand[] = {
-      0x00, //CLA
-      0xA4, //INS: SELECT FILE
-      0x02, //P1: Select by EFID
-      0x0C, //P2: No data in response
-      0x02, //Lc: Length of EFID
-      efid[0], efid[1] //EFID
-  };
-  uint8_t selectResponseLength = 2;
-  uint8_t selectResponseBuffer[selectResponseLength];
-  bool selectCommandResult = _nfc.inDataExchange(selectCommand, sizeof(selectCommand), selectResponseBuffer, &selectResponseLength);
-  selectCommandResult = selectCommandResult && hasSuccessStatusWord(selectResponseBuffer, selectResponseLength);
-  if (!selectCommandResult) {
-    PN532DEBUGPRINT.println("Couldn't select the EF by its ID");
-    return false;
-  }
-
-  uint8_t readCommand[] = {
-      0x00, //CLA
-      0xB0, //INS: READ BINARY
-      0x00, //P1: Read currently selected file
-      0x00, //P2: Offset 0
-      contentLength //Le: content length
-  };
-  uint8_t responseLength = contentLength + 2;
-  uint8_t responseBuffer[responseLength];
-  bool success = _nfc.inDataExchange(readCommand, sizeof(readCommand), responseBuffer, &responseLength);
-  success = success && hasSuccessStatusWord(responseBuffer, responseLength);
-  if (!success) {
-    PN532DEBUGPRINT.println("Couldn't read the file");
-  }
-  for (int8_t i = 0; i < contentLength; i++) {
-      contentBuffer[i] = responseBuffer[i];
-  }
-  return success;
-}
 
 /**************************************************************************/
 /*!
@@ -384,29 +497,32 @@ bool cie_PN532::read_EF(uint8_t efid[], uint8_t* contentBuffer, uint8_t contentL
     @returns  A value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
-bool cie_PN532::hasSuccessStatusWord(uint8_t* response, uint8_t responseLength) {
-  uint8_t msByte = response[responseLength-2];
-  uint8_t lsByte = response[responseLength-1];
+bool cie_PN532::hasSuccessStatusWord(byte* response, const word responseLength) {
+  byte msByte = response[responseLength-2];
+  byte lsByte = response[responseLength-1];
   bool success = msByte == 0x90 && lsByte == 0x00;
-  if (success)
+  if (success) {
     return true;
-
-  if (msByte == 0x62 && msByte == 0x83) {
-    PN532DEBUGPRINT.print("Warning selected file deactivated");
-  } else if (msByte == 0x62 && msByte == 0x85) {
-    PN532DEBUGPRINT.print("The selected file is in terminate state");
-  } else if (msByte == 0x6A && msByte == 0x82) {
-    PN532DEBUGPRINT.print("File or application not found");
-  } else if (msByte == 0x6A && msByte == 0x86) {
-    PN532DEBUGPRINT.print("Incorrect parameters P1-P2");
-  } else if (msByte == 0x6A && msByte == 0x87) {
-    PN532DEBUGPRINT.print("Nc inconsistent with parameters P1-P2");
-  } else {
-    PN532DEBUGPRINT.print("Unknow error");
   }
-  PN532DEBUGPRINT.print(" ");
-  //uint8_t statusWord[2] = { msByte, lsByte };
-  //_nfc.PrintHex(statusWord, 2);
+
+  if (msByte == 0x62 && lsByte == 0x83) {
+    PN532DEBUGPRINT.print(F("Warning selected file deactivated"));
+  } else if (msByte == 0x62 && lsByte == 0x85) {
+    PN532DEBUGPRINT.print(F("The selected file is in terminate state"));
+  } else if (msByte == 0x62 && lsByte == 0x82) {
+    PN532DEBUGPRINT.print(F("End of file/record reached before reading Le bytes"));
+  } else if (msByte == 0x6A && lsByte == 0x82) {
+    PN532DEBUGPRINT.print(F("File or application not found"));
+  } else if (msByte == 0x6A && lsByte == 0x86) {
+    PN532DEBUGPRINT.print(F("Incorrect parameters P1-P2"));
+  } else if (msByte == 0x6A && lsByte == 0x87) {
+    PN532DEBUGPRINT.print(F("Nc inconsistent with parameters P1-P2"));
+  } else {
+    PN532DEBUGPRINT.print(F("Unknow error"));
+  }
+  PN532DEBUGPRINT.print(F(" "));
+  byte statusWord[2] = { msByte, lsByte };
+  _nfc.PrintHex(statusWord, 2);
   
   return false;
 }
@@ -421,7 +537,7 @@ bool cie_PN532::hasSuccessStatusWord(uint8_t* response, uint8_t responseLength) 
 
 */
 /**************************************************************************/
-void cie_PN532::clamp(uint8_t* value, const uint8_t maxValue) {
+void cie_PN532::clamp(word* value, const byte maxValue) {
   if (*value > maxValue) {
     *value = maxValue;
   }

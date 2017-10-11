@@ -31,7 +31,7 @@ Check out the links above for our tutorials and wiring diagrams
 
 
 cie_PN532 cie(PN532_SCK, PN532_MISO, PN532_MOSI, PN532_SS);
-typedef bool (cie_PN532::*readValueFunc)(uint8_t*, uint8_t*);
+typedef bool (cie_PN532::*readValueFunc)(byte*, word*);
 
 
 void setup(void) {
@@ -55,22 +55,22 @@ void loop(void) {
 
   //Good! A card is present, let's dump some info!
   
-  readValue(&cie_PN532::read_EF_ID_Servizi, "EF_ID_Servizi", EF_ID_SERVIZI_LENGTH);
-  readValue(&cie_PN532::read_EF_SN_ICC, "EF_SN_ICC", EF_SN_ICC_LENGTH);
-  readValue(&cie_PN532::read_EF_Int_Kpub, "EF_Int_Kpub", EF_INT_KPUB_LENGTH);
-  readValue(&cie_PN532::read_EF_Servizi_Int_Kpub, "EF_Servizi_Int_Kpub", EF_SERVIZI_INT_KPUB_LENGTH);
-  readValue(&cie_PN532::read_EF_SOD, "EF_SOD", EF_SOD_LENGTH);
-  readValue(&cie_PN532::read_EF_DH, "EF_DH", EF_DH_LENGTH);
-  readValue(&cie_PN532::read_EF_ATR, "EF_ATR", EF_ATR_LENGTH);
+  readValue(&cie_PN532::read_EF_ID_Servizi, "EF_ID_Servizi");
+  readValue(&cie_PN532::read_EF_SN_ICC, "EF_SN_ICC");
+  readValue(&cie_PN532::read_EF_Int_Kpub, "EF_Int_Kpub");
+  readValue(&cie_PN532::read_EF_Servizi_Int_Kpub, "EF_Servizi_Int_Kpub");
+  readValue(&cie_PN532::read_EF_SOD, "EF_SOD");
+  readValue(&cie_PN532::read_EF_DH, "EF_DH");
+  readValue(&cie_PN532::read_EF_ATR, "EF_ATR");
 
   Serial.println();
   Serial.println("Read complete, you can remove the card now");
-  delay(10000);
+  delay(2000);
 }
 //This example should use function pointers to reduce the amount of lines of code
-void readValue(readValueFunc func, const char* name, const uint8_t length) {
-  uint8_t bufferLength = length;
-  uint8_t buffer[bufferLength];
+void readValue(readValueFunc func, const char* name) {
+  word bufferLength = 300;
+  byte* buffer = new byte[bufferLength];
   bool success = (cie.*func)(buffer, &bufferLength);
   if (!success) {
     Serial.print("Error reading ");
@@ -78,83 +78,9 @@ void readValue(readValueFunc func, const char* name, const uint8_t length) {
     return;
   }
   Serial.print(name);
-  Serial.print(": ");
+  Serial.print(" (");
+  Serial.print(bufferLength);
+  Serial.print(" bytes): ");
   cie.printHex(buffer, bufferLength);
+  delete [] buffer;
 }
-/*
-void print_EF_ID_Servizi() {
-  uint8_t bufferLength = EF_ID_SERVIZI_LENGTH;
-  uint8_t buffer[bufferLength];
-  if (!cie.read_EF_ID_Servizi(buffer, &bufferLength)) {
-    Serial.print("Error reading EF.ID_SERVIZI");
-    return;
-  }
-  Serial.print("EF.ID_Servizi: ");
-  cie.printHex(buffer, bufferLength);
-}
-
-void print_EF_Int_Kpub() {
-  uint8_t bufferLength = EF_INT_KPUB_LENGTH;
-  uint8_t buffer[bufferLength];
-  if (!cie.read_EF_Int_Kpub(buffer, &bufferLength)) {
-    Serial.print("Error reading EF.Int.Kpub");
-    return;
-  }
-  Serial.print("EF.Int.Kpub: ");
-  cie.printHex(buffer, bufferLength);
-}
-
-void print_EF_Servizi_Int_Kpub() {
-  uint8_t bufferLength = EF_SERVIZI_INT_KPUB_LENGTH;
-  uint8_t buffer[bufferLength];
-  if (!cie.read_EF_Servizi_Int_Kpub(buffer, &bufferLength)) {
-    Serial.print("Error reading EF.Servizi_Int.Kpub");
-    return;
-  }
-  Serial.print("EF.Servizi_Int.Kpub: ");
-  cie.printHex(buffer, bufferLength);
-}
-
-void print_EF_SOD() {
-  uint8_t bufferLength = EF_SOD_LENGTH;
-  uint8_t buffer[bufferLength];
-  if (!cie.read_EF_SOD(buffer, &bufferLength)) {
-    Serial.print("Error reading EF.SOD");
-    return;
-  }
-  Serial.print("EF.SOD: ");
-  cie.printHex(buffer, bufferLength);
-}
-
-void print_EF_DH() {
-  uint8_t bufferLength = EF_DH_LENGTH;
-  uint8_t buffer[bufferLength];
-  if (!cie.read_EF_DH(buffer, &bufferLength)) {
-    Serial.print("Error reading EF.DH");
-    return;
-  }
-  Serial.print("EF.DH: ");
-  cie.printHex(buffer, bufferLength);
-}
-
-void print_EF_ATR() {
-  uint8_t bufferLength = EF_ATR_LENGTH;
-  uint8_t buffer[bufferLength];
-  if (!cie.read_EF_ATR(buffer, &bufferLength)) {
-    Serial.print("Error reading EF.ATR");
-    return;
-  }
-  Serial.print("EF.ATR: ");
-  cie.printHex(buffer, bufferLength);
-}
-
-void print_EF_SN_ICC() {
-  uint8_t bufferLength = EF_SN_ICC_LENGTH;
-  uint8_t buffer[bufferLength];
-  if (!cie.read_EF_SN_ICC(buffer, &bufferLength)) {
-    Serial.print("Error reading EF.SN.ICC");
-    return;
-  }
-  Serial.print("EF.SN.ICC: ");
-  cie.printHex(buffer, bufferLength);
-}*/

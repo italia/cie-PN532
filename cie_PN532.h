@@ -41,40 +41,46 @@
    #define Serial SerialUSB
 #endif
 
-//Lengths of Elementary Files found in Root DF
-#define EF_DH_LENGTH                          (0x36)
-#define EF_ATR_LENGTH                         (0x36)
+//Lengths of fixed size elementary Files
+#define EF_ID_SERVIZI_LENGTH                  (0x0C)
 #define EF_SN_ICC_LENGTH                      (0x0C)
 
-//Lengths of Elementary Files found in CIE DF
-#define EF_ID_SERVIZI_LENGTH                  (0x0C)
-#define EF_INT_KPUB_LENGTH                    (0x36)
-#define EF_SERVIZI_INT_KPUB_LENGTH            (0x36)
-#define EF_SOD_LENGTH                         (0x36)
+//Lengths
+#define PAGE_LENGTH                           (0x36)
+#define AUTODETECT_BER_LENGTH                 (0x00)
+#define FIXED_LENGTH                          (0x01)
+
+//Paths
+#define ROOT_MF                               (0x00)
+#define CIE_DF                                (0x01)
 
 class cie_PN532
 {
  public:
-  cie_PN532(uint8_t clk, uint8_t miso, uint8_t mosi, uint8_t ss);
+  cie_PN532(byte clk, byte miso, byte mosi, byte ss);
   void begin(void);
   bool detectCard();
   
   // Binary read unencrypted elementary files
-  bool     read_EF_DH(uint8_t* contentBuffer, uint8_t* contentLength);
-  bool     read_EF_ATR(uint8_t* contentBuffer, uint8_t* contentLength);
-  bool     read_EF_SN_ICC(uint8_t* contentBuffer, uint8_t* contentLength);
-  bool     read_EF_ID_Servizi(uint8_t* contentBuffer, uint8_t* contentLength);
-  bool     read_EF_Int_Kpub(uint8_t* contentBuffer, uint8_t* contentLength);
-  bool     read_EF_Servizi_Int_Kpub(uint8_t* contentBuffer, uint8_t* contentLength);
-  bool     read_EF_SOD(uint8_t* contentBuffer, uint8_t* contentLength);
-  void     printHex(uint8_t* buffer, uint8_t length);
+  bool     read_EF_DH(byte* contentBuffer, word* contentLength);
+  bool     read_EF_ATR(byte* contentBuffer, word* contentLength);
+  bool     read_EF_SN_ICC(byte* contentBuffer, word* contentLength);
+  bool     read_EF_ID_Servizi(byte* contentBuffer, word* contentLength);
+  bool     read_EF_Int_Kpub(byte* contentBuffer, word* contentLength);
+  bool     read_EF_Servizi_Int_Kpub(byte* contentBuffer, word* contentLength);
+  bool     read_EF_SOD(byte* contentBuffer, word* contentLength);
+  void     printHex(byte* buffer, word length);
 
  private:
   Adafruit_PN532 _nfc;
-  bool     select_IAS_Application(void);
-  bool     select_ROOT_DF(void);
-  bool     select_CIE_DF(void);
-  bool     read_EF(uint8_t efid[], uint8_t* contentBuffer, uint8_t contentLength);
-  bool     hasSuccessStatusWord(uint8_t* response, uint8_t responseLength);
-  void     clamp(uint8_t* value, uint8_t maxValue);
+  bool     readElementaryFile(const byte df, const byte efid[], byte* contentBuffer, word* contentLength, const byte lengthStrategy);
+  bool     selectIasApplication(void);
+  bool     selectRootMasterFile(void);
+  bool     selectCieDedicatedFile(void);
+  bool     selectElementaryFile(const byte df, const byte efid[]);
+  bool     determineLength(word* contentLength, const byte lengthStrategy);
+  bool     autodetectBerLength(word* contentLength);
+  bool     fetchElementaryFileContent(byte* contentBuffer, const word contentLength);
+  bool     hasSuccessStatusWord(byte* response, const word responseLength);
+  void     clamp(word* value, byte maxValue);
 };

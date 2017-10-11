@@ -52,7 +52,7 @@ void loop(void) {
 
   //Good! A card is present, let's read the serial number!
   uint8_t bufferLength = EF_SN_ICC_LENGTH;
-  uint8_t buffer[bufferLength];
+  uint8_t buffer[EF_SN_ICC_LENGTH];
   if (!cie.read_EF_SN_ICC(buffer, &bufferLength)) {
     Serial.print("Error reading EF.SN.ICC");
     delay(1000);
