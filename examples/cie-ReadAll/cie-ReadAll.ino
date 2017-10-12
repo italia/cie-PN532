@@ -40,7 +40,7 @@ void setup(void) {
   #endif
   Serial.begin(115200);
   cie.begin();  
-  Serial.println("PN532 initialized, waiting for a CIE card...");
+  Serial.println(F("PN532 initialized, waiting for a CIE card..."));
 }
 
 
@@ -59,12 +59,19 @@ void loop(void) {
   readValue(&cie_PN532::read_EF_SN_ICC, "EF_SN_ICC");
   readValue(&cie_PN532::read_EF_Int_Kpub, "EF_Int_Kpub");
   readValue(&cie_PN532::read_EF_Servizi_Int_Kpub, "EF_Servizi_Int_Kpub");
-  //readValue(&cie_PN532::read_EF_SOD, "EF_SOD");
   readValue(&cie_PN532::read_EF_DH, "EF_DH");
-  //readValue(&cie_PN532::read_EF_ATR, "EF_ATR");
+
+  //SOD is pretty large (1972 bytes), so we'll just print its raw value
+  Serial.println(F("EF_SOD"));
+  word ef_sod_length = 0;
+  cie.print_EF_SOD(&ef_sod_length);
+  Serial.print(F("EF_SOD length was "));
+  Serial.println(ef_sod_length);
+
+  //readValue(&cie_PN532::read_EF_ATR_Info, "EF_ATR");
 
   Serial.println();
-  Serial.println("Read complete, you can remove the card now");
+  Serial.println(F("Read complete, you can remove the card now"));
   delay(2000);
 }
 //This example should use function pointers to reduce the amount of lines of code
@@ -73,14 +80,14 @@ void readValue(readValueFunc func, const char* name) {
   byte* buffer = new byte[bufferLength];
   bool success = (cie.*func)(buffer, &bufferLength);
   if (!success) {
-    Serial.print("Error reading ");
+    Serial.print(F("Error reading "));
     Serial.println(name);
     return;
   }
   Serial.print(name);
   Serial.print(" (");
   Serial.print(bufferLength);
-  Serial.print(" bytes): ");
+  Serial.print(F(" bytes): "));
   cie.printHex(buffer, bufferLength);
   delete [] buffer;
 }

@@ -37,7 +37,7 @@ void setup(void) {
   #endif
   Serial.begin(115200);
   cie.begin();  
-  Serial.println("PN532 initialized, waiting for a CIE card...");
+  Serial.println(F("PN532 initialized, waiting for a CIE card..."));
 }
 
 
@@ -54,7 +54,7 @@ void loop(void) {
   uint8_t bufferLength = EF_SN_ICC_LENGTH;
   uint8_t buffer[EF_SN_ICC_LENGTH];
   if (!cie.read_EF_SN_ICC(buffer, &bufferLength)) {
-    Serial.print("Error reading EF.SN.ICC");
+    Serial.print(F("Error reading EF.SN.ICC"));
     delay(1000);
     return;
   }
@@ -62,6 +62,6 @@ void loop(void) {
   cie.printHex(buffer, bufferLength);
 
   Serial.println();
-  Serial.println("Read complete, you can remove the card now");
+  Serial.println(F("Read complete, you can remove the card now"));
   delay(1000);
 }

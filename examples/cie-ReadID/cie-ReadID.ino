@@ -38,7 +38,7 @@ void setup(void) {
   #endif
   Serial.begin(115200);
   cie.begin();  
-  Serial.println("PN532 initialized, waiting for a CIE card...");
+  Serial.println(F("PN532 initialized, waiting for a CIE card..."));
 }
 
 
@@ -55,14 +55,14 @@ void loop(void) {
   uint8_t bufferLength = EF_ID_SERVIZI_LENGTH;
   uint8_t buffer[EF_ID_SERVIZI_LENGTH];
   if (!cie.read_EF_ID_Servizi(buffer, &bufferLength)) {
-    Serial.print("Error reading EF.ID_SERVIZI");
+    Serial.print(F("Error reading EF.ID_SERVIZI"));
     delay(1000);
     return;
   }
-  Serial.print("EF.ID_Servizi: ");
+  Serial.print(F("EF.ID_Servizi: "));
   cie.printHex(buffer, bufferLength);
 
   Serial.println();
-  Serial.println("Read complete, you can remove the card now");
+  Serial.println(F("Read complete, you can remove the card now"));
   delay(1000);
 }

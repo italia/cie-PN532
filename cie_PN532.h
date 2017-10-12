@@ -49,6 +49,7 @@
 #define PAGE_LENGTH                           (0x36)
 #define AUTODETECT_BER_LENGTH                 (0x00)
 #define FIXED_LENGTH                          (0x01)
+#define READ_FROM_START                       (0x00)
 
 //Paths
 #define ROOT_MF                               (0x00)
@@ -68,8 +69,8 @@ class cie_PN532
   bool     read_EF_ID_Servizi(byte* contentBuffer, word* contentLength);
   bool     read_EF_Int_Kpub(byte* contentBuffer, word* contentLength);
   bool     read_EF_Servizi_Int_Kpub(byte* contentBuffer, word* contentLength);
-  bool     read_EF_SOD(byte* contentBuffer, word* contentLength);
   void     printHex(byte* buffer, word length);
+  bool     print_EF_SOD(word* contentLength);
 
  private:
   Adafruit_PN532 _nfc;
@@ -80,7 +81,7 @@ class cie_PN532
   bool     selectElementaryFile(const byte df, const byte efid[]);
   bool     determineLength(word* contentLength, const byte lengthStrategy);
   bool     autodetectBerLength(word* contentLength);
-  bool     fetchElementaryFileContent(byte* contentBuffer, const word contentLength);
+  bool     fetchElementaryFileContent(byte* contentBuffer, word offset, const word contentLength);
   bool     hasSuccessStatusWord(byte* response, const word responseLength);
-  void     clamp(word* value, byte maxValue);
+  word     clamp(const word value, const byte maxValue);
 };

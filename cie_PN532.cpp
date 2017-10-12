@@ -114,7 +114,7 @@ bool cie_PN532::read_EF_ATR(byte* contentBuffer, word* contentLength) {
 /**************************************************************************/
 bool cie_PN532::read_EF_SN_ICC(byte* contentBuffer, word* contentLength) {
   byte efid[] = { 0xD0, 0x03 };
-  clamp(contentLength, EF_SN_ICC_LENGTH);
+  *contentLength = clamp(*contentLength, EF_SN_ICC_LENGTH);
   return readElementaryFile(ROOT_MF, efid, contentBuffer, contentLength, FIXED_LENGTH);
 }
 
@@ -131,7 +131,7 @@ bool cie_PN532::read_EF_SN_ICC(byte* contentBuffer, word* contentLength) {
 /**************************************************************************/
 bool cie_PN532::read_EF_ID_Servizi(byte* contentBuffer, word* contentLength) {
   byte efid[] = { 0x10, 0x01 };
-  clamp(contentLength, EF_ID_SERVIZI_LENGTH);
+  *contentLength = clamp(*contentLength, EF_ID_SERVIZI_LENGTH);
   return readElementaryFile(CIE_DF, efid, contentBuffer, contentLength, FIXED_LENGTH);
 }
 
@@ -170,7 +170,7 @@ bool cie_PN532::read_EF_Servizi_Int_Kpub(byte* contentBuffer, word* contentLengt
 
 /**************************************************************************/
 /*!
-  @brief  Reads the binary content of the EF_SOD elementary file
+  @brief  Print the binary content of the EF_SOD elementary file
 
   @param  contentBuffer The pointer to data containing the contents of the file
   @param  contentLength The lenght of the file
@@ -178,9 +178,30 @@ bool cie_PN532::read_EF_Servizi_Int_Kpub(byte* contentBuffer, word* contentLengt
   @returns  The file content
 */
 /**************************************************************************/
-bool cie_PN532::read_EF_SOD(byte* contentBuffer, word* contentLength) {
+bool cie_PN532::print_EF_SOD(word* contentLength) {
   byte efid[] = { 0x10, 0x06 };
-  return readElementaryFile(CIE_DF, efid, contentBuffer, contentLength, AUTODETECT_BER_LENGTH);
+  if (!selectElementaryFile(CIE_DF, efid) || 
+      !determineLength(contentLength, AUTODETECT_BER_LENGTH)) {
+        return false;
+  }
+
+  word offset = READ_FROM_START;
+  while (offset < *contentLength) {
+    word contentPageLength = clamp(*contentLength-offset, PAGE_LENGTH);
+    byte* pageBuffer = new byte[contentPageLength];
+    bool success = fetchElementaryFileContent(pageBuffer, offset, contentPageLength);
+    if (success) {
+      _nfc.PrintHex(pageBuffer, contentPageLength);
+    }
+    delete [] pageBuffer;
+    
+    
+    offset += contentPageLength;
+    if (!success) {
+      return false;
+    }
+  }
+  return true;
 }
 
 
@@ -201,7 +222,7 @@ bool cie_PN532::readElementaryFile(const byte df, const byte efid[], byte* conte
 
   if (!selectElementaryFile(df, efid) || 
       !determineLength(contentLength, lengthStrategy) ||
-      !fetchElementaryFileContent(contentBuffer, *contentLength)) {
+      !fetchElementaryFileContent(contentBuffer, READ_FROM_START, *contentLength)) {
     return false;
   }
 
@@ -306,7 +327,7 @@ bool cie_PN532::autodetectBerLength(word* contentLength) {
   //Please refer to https://en.wikipedia.org/wiki/X.690#Identifier_octets
   const byte berHeaderLength = 6; //6 will do for the CIE
   byte buffer[berHeaderLength];
-  if (!fetchElementaryFileContent(buffer, berHeaderLength)) {
+  if (!fetchElementaryFileContent(buffer, READ_FROM_START, berHeaderLength)) {
     return false;
   }
   
@@ -367,28 +388,29 @@ bool cie_PN532::autodetectBerLength(word* contentLength) {
   @returns  A value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
-bool cie_PN532::fetchElementaryFileContent(byte* contentBuffer, const word contentLength) {
-  word offset = 0x0;
+bool cie_PN532::fetchElementaryFileContent(byte* contentBuffer, word startingOffset, const word contentLength) {
   bool success = false;
-  byte contentPageLength = 0;
+  word offset = startingOffset;
   do {
-    byte contentPageLength = contentLength-offset > PAGE_LENGTH ? PAGE_LENGTH : (byte) contentLength;
+    word contentPageLength = clamp(contentLength+startingOffset-offset, PAGE_LENGTH);
     byte readCommand[] = {
         0x00, //CLA
-        0xB0, //INS: READ BINARY
-        (byte) (offset >> 8), //P1: Read currently selected file
-        (byte) (offset & 0xFF), //P2: Current offset
-        contentPageLength //Le: content length
+        0xB0, //INS: READ BINARY (EVEN INS)
+        (byte) ((offset >> 8) & 0x7F) , //P1: First 7 bits of the offset
+        (byte) (offset & 0xFF), //P2: Remaining 8 bits of the offset
+        (byte) contentPageLength //Le: content length
     };
 
-    byte responseLength = contentPageLength + 2;
+    byte responseLength = ((byte) contentPageLength) + 2;
     byte* responseBuffer = new byte[responseLength];
     success = _nfc.inDataExchange(readCommand, sizeof(readCommand), responseBuffer, &responseLength);
     success = success && hasSuccessStatusWord(responseBuffer, responseLength);
 
     //Copy data over to the buffer
-    for (word i = 0; i < contentPageLength; i++) {
-      contentBuffer[offset+i] = responseBuffer[i];
+    if (success) {
+      for (word i = 0; i < contentPageLength; i++) {
+        contentBuffer[offset-startingOffset+i] = responseBuffer[i];
+      }
     }
     delete [] responseBuffer;
 
@@ -534,10 +556,14 @@ bool cie_PN532::hasSuccessStatusWord(byte* response, const word responseLength) 
     @param  value The value that should be checked
     @param  maxValue The maximum value
 
+    @returns The clamped value
+
 */
 /**************************************************************************/
-void cie_PN532::clamp(word* value, const byte maxValue) {
-  if (*value > maxValue) {
-    *value = maxValue;
+word cie_PN532::clamp(const word value, const byte maxValue) {
+  if (value > maxValue) {
+    return maxValue;
+  } else {
+    return value;
   }
 }
