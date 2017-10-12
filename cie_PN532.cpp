@@ -98,7 +98,7 @@ bool cie_PN532::read_EF_DH(byte* contentBuffer, word* contentLength) {
 /**************************************************************************/
 bool cie_PN532::read_EF_ATR(byte* contentBuffer, word* contentLength) {
   byte efid[] = { 0x2F, 0x01 };
-  return readElementaryFile(ROOT_MF, efid, contentBuffer, contentLength, AUTODETECT_BER_LENGTH);
+  return readElementaryFile(ROOT_MF, efid, contentBuffer, contentLength, AUTODETECT_ATR_LENGTH);
 }
 
 
@@ -164,7 +164,7 @@ bool cie_PN532::read_EF_Int_Kpub(byte* contentBuffer, word* contentLength) {
 /**************************************************************************/
 bool cie_PN532::read_EF_Servizi_Int_Kpub(byte* contentBuffer, word* contentLength) {
   byte efid[] = { 0x10, 0x05 };
-  return readElementaryFile(CIE_DF, efid, contentBuffer, contentLength, AUTODETECT_BER_LENGTH);
+  return readElementaryFile(CIE_DF, efid, contentBuffer, contentLength, AUTODETECT_ATR_LENGTH);
 }
 
 
@@ -305,6 +305,10 @@ bool cie_PN532::determineLength(word* contentLength, const byte lengthStrategy) 
       autodetectBerLength(contentLength);
     break;
 
+    case AUTODETECT_ATR_LENGTH:
+      autodetectAtrLength(contentLength);
+    break;
+
     default:
       PN532DEBUGPRINT.println(F("The length strategy must be either AUTODETECT_BER_LENGTH or FIXED_LENGTH"));
       return false;
@@ -375,6 +379,52 @@ bool cie_PN532::autodetectBerLength(word* contentLength) {
   }
   
   return true;
+}
+
+
+/**************************************************************************/
+/*!
+  @brief  Detects the length of the EF.ATR Elementary File
+	
+  @param contentLength The pointer to the length value
+
+  @returns  A value indicating whether the operation succeeded or not
+*/
+/**************************************************************************/
+bool cie_PN532::autodetectAtrLength(word* contentLength) {
+  //TODO: unit test this
+  //The EF.ATR record has a minimum of 33 bytes
+  //Please refer to EF.ATR content here http://www.unsads.com/specs/IASECC/IAS_ECC_v1.0.1_UK.pdf#page=19
+  const byte chunkSize = 4;
+  byte endingSequence[chunkSize] = { 0x82, 0x02, 0x90, 0x00 };
+  byte buffer[chunkSize];
+  word offset = 0x21;
+  int milli = millis();
+  while (true) {
+
+    if (!fetchElementaryFileContent(buffer, offset, chunkSize)) {
+      *contentLength = 0;
+      return false;
+    }
+    byte matchingOctets = 0;
+    for (byte i = 0; i < chunkSize; i++) {
+      if (buffer[i] == endingSequence[matchingOctets]) {
+        matchingOctets++;
+      } else {
+        matchingOctets = 0;
+      }
+    }
+    if (matchingOctets == chunkSize) {
+       //Match found for all octects in the sequence! We're at the end of the file.
+       *contentLength = offset + chunkSize;
+       Serial.print(millis()-milli);
+       return true;
+    } else {
+      //let's position ourself in a place where we can read all of the matching octects
+      offset += chunkSize - matchingOctets;
+    }
+  
+  }
 }
 
 

@@ -44,12 +44,15 @@
 //Lengths of fixed size elementary Files
 #define EF_ID_SERVIZI_LENGTH                  (0x0C)
 #define EF_SN_ICC_LENGTH                      (0x0C)
+#define EF_ATR_LENGTH                         (0x3D)
 
-//Lengths
+//Read lengths
 #define PAGE_LENGTH                           (0x36)
-#define AUTODETECT_BER_LENGTH                 (0x00)
-#define FIXED_LENGTH                          (0x01)
 #define READ_FROM_START                       (0x00)
+
+#define FIXED_LENGTH                          (0x00)
+#define AUTODETECT_BER_LENGTH                 (0x01)
+#define AUTODETECT_ATR_LENGTH                 (0x02)
 
 //Paths
 #define ROOT_MF                               (0x00)
@@ -81,6 +84,7 @@ class cie_PN532
   bool     selectElementaryFile(const byte df, const byte efid[]);
   bool     determineLength(word* contentLength, const byte lengthStrategy);
   bool     autodetectBerLength(word* contentLength);
+  bool     autodetectAtrLength(word* contentLength);
   bool     fetchElementaryFileContent(byte* contentBuffer, word offset, const word contentLength);
   bool     hasSuccessStatusWord(byte* response, const word responseLength);
   word     clamp(const word value, const byte maxValue);

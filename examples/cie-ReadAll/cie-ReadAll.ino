@@ -55,11 +55,12 @@ void loop(void) {
 
   //Good! A card is present, let's dump some info!
   
-  readValue(&cie_PN532::read_EF_ID_Servizi, "EF_ID_Servizi");
-  readValue(&cie_PN532::read_EF_SN_ICC, "EF_SN_ICC");
-  readValue(&cie_PN532::read_EF_Int_Kpub, "EF_Int_Kpub");
-  readValue(&cie_PN532::read_EF_Servizi_Int_Kpub, "EF_Servizi_Int_Kpub");
-  readValue(&cie_PN532::read_EF_DH, "EF_DH");
+  //readValue(&cie_PN532::read_EF_ID_Servizi, "EF_ID_Servizi");
+  //readValue(&cie_PN532::read_EF_SN_ICC, "EF_SN_ICC");
+  //readValue(&cie_PN532::read_EF_Int_Kpub, "EF_Int_Kpub");
+  //readValue(&cie_PN532::read_EF_Servizi_Int_Kpub, "EF_Servizi_Int_Kpub");
+  //readValue(&cie_PN532::read_EF_DH, "EF_DH");
+  readValue(&cie_PN532::read_EF_ATR, "EF_ATR");
 
   //SOD is pretty large (1972 bytes), so we'll just print its raw value
   Serial.println(F("EF_SOD"));
@@ -67,8 +68,6 @@ void loop(void) {
   cie.print_EF_SOD(&ef_sod_length);
   Serial.print(F("EF_SOD length was "));
   Serial.println(ef_sod_length);
-
-  //readValue(&cie_PN532::read_EF_ATR_Info, "EF_ATR");
 
   Serial.println();
   Serial.println(F("Read complete, you can remove the card now"));
