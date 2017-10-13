@@ -55,8 +55,9 @@
 #define AUTODETECT_ATR_LENGTH                 (0x02)
 
 //Paths
-#define ROOT_MF                               (0x00)
-#define CIE_DF                                (0x01)
+#define NULL_DF                               (0x00)
+#define ROOT_MF                               (0x01)
+#define CIE_DF                                (0x02)
 
 class cie_PN532
 {
@@ -77,7 +78,9 @@ class cie_PN532
 
  private:
   Adafruit_PN532 _nfc;
+  byte     _currentDedicatedFile;
   bool     readElementaryFile(const byte df, const byte efid[], byte* contentBuffer, word* contentLength, const byte lengthStrategy);
+  bool     selectDedicatedFile(const byte df);
   bool     selectIasApplication(void);
   bool     selectRootMasterFile(void);
   bool     selectCieDedicatedFile(void);

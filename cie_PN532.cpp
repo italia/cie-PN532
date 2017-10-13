@@ -24,7 +24,8 @@
 #define PN532DEBUGPRINT Serial
 
 cie_PN532::cie_PN532 (byte clk, byte miso, byte mosi, byte ss) :
-_nfc(clk, miso, mosi, ss)
+_nfc(clk, miso, mosi, ss),
+_currentDedicatedFile(NULL_DF)
 {
 }
 
@@ -47,7 +48,7 @@ void cie_PN532::begin() {
   Serial.print('.'); Serial.println((versiondata>>8) & 0xFF, DEC);
   _nfc.SAMConfig();
 
-  Serial.println(F("Waiting for a CIE card..."));
+  Serial.println(F("PN53x initialized, waiting for a CIE card..."));
 }
 
 
@@ -57,7 +58,11 @@ void cie_PN532::begin() {
 */
 /**************************************************************************/
 bool cie_PN532::detectCard() {
-  return _nfc.inListPassiveTarget();
+  bool success = _nfc.inListPassiveTarget();
+  if (success) {
+    _currentDedicatedFile = NULL_DF;
+  }
+  return success;
 }
 
 
@@ -225,7 +230,6 @@ bool cie_PN532::readElementaryFile(const byte df, const byte efid[], byte* conte
       !fetchElementaryFileContent(contentBuffer, READ_FROM_START, *contentLength)) {
     return false;
   }
-
   return true;
 }
 
@@ -241,6 +245,49 @@ bool cie_PN532::readElementaryFile(const byte df, const byte efid[], byte* conte
 */
 /**************************************************************************/
 bool cie_PN532::selectElementaryFile(const byte df, const byte efid[]) {
+  //We don't re-select the same DF if it's already the selected one
+  if (!selectDedicatedFile(df)) {
+    return false;
+  }
+
+  byte selectCommand[] = {
+    0x00, //CLA
+    0xA4, //INS: SELECT FILE
+    0x02, //P1: Select by EFID
+    0x0C, //P2: No data in response
+    0x02, //Lc: Length of EFID
+    efid[0], efid[1] //EFID
+  };
+  byte selectResponseLength = 2;
+  byte* selectResponseBuffer = new byte[selectResponseLength];
+  bool success = _nfc.inDataExchange(selectCommand, sizeof(selectCommand), selectResponseBuffer, &selectResponseLength);
+  success = success && hasSuccessStatusWord(selectResponseBuffer, selectResponseLength);
+  delete [] selectResponseBuffer;
+  if (!success) {
+    PN532DEBUGPRINT.print(F("Couldn't select the EF by its EFID "));
+    _nfc.PrintHex(efid, 2);
+    return false;
+  }
+  return true;
+
+}
+
+
+/**************************************************************************/
+/*!
+  @brief  Selects a dedicated file in the IAS application
+  
+  @param df The Dedicated File (either ROOT_MF or CIE_DF)
+  
+  @returns  A value indicating whether the operation succeeded or not
+*/
+/**************************************************************************/
+bool cie_PN532::selectDedicatedFile (const byte df) {
+  //No need to re-select the same df if it's already the selected one
+  if (_currentDedicatedFile == df) {
+    return true;
+  }
+
   if (!selectIasApplication()) {
     return false;
   }
@@ -262,25 +309,7 @@ bool cie_PN532::selectElementaryFile(const byte df, const byte efid[]) {
       PN532DEBUGPRINT.println(F("The DF must be either ROOT_MF or CIE_DF"));
       return false;
   }
-
-  byte selectCommand[] = {
-    0x00, //CLA
-    0xA4, //INS: SELECT FILE
-    0x02, //P1: Select by EFID
-    0x0C, //P2: No data in response
-    0x02, //Lc: Length of EFID
-    efid[0], efid[1] //EFID
-  };
-  byte selectResponseLength = 2;
-  byte* selectResponseBuffer = new byte[selectResponseLength];
-  bool success = _nfc.inDataExchange(selectCommand, sizeof(selectCommand), selectResponseBuffer, &selectResponseLength);
-  success = success && hasSuccessStatusWord(selectResponseBuffer, selectResponseLength);
-  delete [] selectResponseBuffer;
-  if (!success) {
-    PN532DEBUGPRINT.print(F("Couldn't select the EF by its EFID "));
-    _nfc.PrintHex(efid, 2);
-    return false;
-  }
+  _currentDedicatedFile = df;
   return true;
 }
 
@@ -399,7 +428,6 @@ bool cie_PN532::autodetectAtrLength(word* contentLength) {
   byte endingSequence[chunkSize] = { 0x82, 0x02, 0x90, 0x00 };
   byte buffer[chunkSize];
   word offset = 0x21;
-  int milli = millis();
   while (true) {
 
     if (!fetchElementaryFileContent(buffer, offset, chunkSize)) {
@@ -417,13 +445,11 @@ bool cie_PN532::autodetectAtrLength(word* contentLength) {
     if (matchingOctets == chunkSize) {
        //Match found for all octects in the sequence! We're at the end of the file.
        *contentLength = offset + chunkSize;
-       Serial.print(millis()-milli);
        return true;
     } else {
       //let's position ourself in a place where we can read all of the matching octects
       offset += chunkSize - matchingOctets;
     }
-  
   }
 }
 
@@ -441,6 +467,7 @@ bool cie_PN532::autodetectAtrLength(word* contentLength) {
 bool cie_PN532::fetchElementaryFileContent(byte* contentBuffer, word startingOffset, const word contentLength) {
   bool success = false;
   word offset = startingOffset;
+
   do {
     word contentPageLength = clamp(contentLength+startingOffset-offset, PAGE_LENGTH);
     byte readCommand[] = {
@@ -455,7 +482,6 @@ bool cie_PN532::fetchElementaryFileContent(byte* contentBuffer, word startingOff
     byte* responseBuffer = new byte[responseLength];
     success = _nfc.inDataExchange(readCommand, sizeof(readCommand), responseBuffer, &responseLength);
     success = success && hasSuccessStatusWord(responseBuffer, responseLength);
-
     //Copy data over to the buffer
     if (success) {
       for (word i = 0; i < contentPageLength; i++) {
@@ -471,6 +497,7 @@ bool cie_PN532::fetchElementaryFileContent(byte* contentBuffer, word startingOff
   if (!success) {
     PN532DEBUGPRINT.println(F("Couldn't fetch the elementary file content"));
   }
+
   return success;
 }
 
@@ -542,10 +569,10 @@ bool cie_PN532::selectCieDedicatedFile(void) {
   byte command[] = { 
       0x00, //CLA
       0xA4, //INS: SELECT FILE
-      0x04, //P1: Select by AID
+      0x04, //P1: Select by ID
       0x0C, //P2: No data in response field
-      0x06, //Lc: length of AID
-      0xA0, 0x00, 0x00, 0x00, 0x00, 0x39 //AID
+      0x06, //Lc: length of ID
+      0xA0, 0x00, 0x00, 0x00, 0x00, 0x39 //ID
   };
   byte responseLength = 2;
   byte* responseBuffer = new byte[responseLength];

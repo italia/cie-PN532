@@ -39,8 +39,7 @@ void setup(void) {
     while (!Serial); // for Leonardo/Micro/Zero
   #endif
   Serial.begin(115200);
-  cie.begin();  
-  Serial.println(F("PN532 initialized, waiting for a CIE card..."));
+  cie.begin();
 }
 
 
@@ -49,18 +48,19 @@ void loop(void) {
   bool cardDetected = cie.detectCard();
   if (!cardDetected) {
     //No card present, we wait for one
-    delay(100);
+    delay(1000);
     return;
   }
 
   //Good! A card is present, let's dump some info!
   
-  //readValue(&cie_PN532::read_EF_ID_Servizi, "EF_ID_Servizi");
-  //readValue(&cie_PN532::read_EF_SN_ICC, "EF_SN_ICC");
-  //readValue(&cie_PN532::read_EF_Int_Kpub, "EF_Int_Kpub");
-  //readValue(&cie_PN532::read_EF_Servizi_Int_Kpub, "EF_Servizi_Int_Kpub");
-  //readValue(&cie_PN532::read_EF_DH, "EF_DH");
+  readValue(&cie_PN532::read_EF_DH, "EF_DH");
   readValue(&cie_PN532::read_EF_ATR, "EF_ATR");
+  readValue(&cie_PN532::read_EF_SN_ICC, "EF_SN_ICC");
+
+  readValue(&cie_PN532::read_EF_ID_Servizi, "EF_ID_Servizi");
+  readValue(&cie_PN532::read_EF_Int_Kpub, "EF_Int_Kpub");
+  readValue(&cie_PN532::read_EF_Servizi_Int_Kpub, "EF_Servizi_Int_Kpub");
 
   //SOD is pretty large (1972 bytes), so we'll just print its raw value
   Serial.println(F("EF_SOD"));
@@ -71,12 +71,12 @@ void loop(void) {
 
   Serial.println();
   Serial.println(F("Read complete, you can remove the card now"));
-  delay(2000);
+  delay(5000);
 }
-//This example should use function pointers to reduce the amount of lines of code
 void readValue(readValueFunc func, const char* name) {
   word bufferLength = 600;
   byte* buffer = new byte[bufferLength];
+  unsigned long startedAt = millis();
   bool success = (cie.*func)(buffer, &bufferLength);
   if (!success) {
     Serial.print(F("Error reading "));
@@ -86,7 +86,9 @@ void readValue(readValueFunc func, const char* name) {
   Serial.print(name);
   Serial.print(" (");
   Serial.print(bufferLength);
-  Serial.print(F(" bytes): "));
+  Serial.print(F(" bytes, "));
+  Serial.print(millis()-startedAt);
+  Serial.print(F(" ms) "));
   cie.printHex(buffer, bufferLength);
-  delete [] buffer;
+  delete [] buffer; 
 }
