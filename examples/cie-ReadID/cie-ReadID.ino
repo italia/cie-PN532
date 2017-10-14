@@ -52,8 +52,8 @@ void loop(void) {
   }
 
   //Good! A card is present, let's read the ID!
-  uint8_t bufferLength = EF_ID_SERVIZI_LENGTH;
-  uint8_t buffer[EF_ID_SERVIZI_LENGTH];
+  word bufferLength = EF_ID_SERVIZI_LENGTH;
+  byte buffer[EF_ID_SERVIZI_LENGTH];
   if (!cie.read_EF_ID_Servizi(buffer, &bufferLength)) {
     Serial.print(F("Error reading EF.ID_SERVIZI"));
     delay(1000);
