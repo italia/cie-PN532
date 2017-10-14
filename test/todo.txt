@@ -1,5 +1,0 @@
-- When you select a file by EFID, don't issue the command if it's already the selected one
-- When you select a file by EFID, issue the command if the the selected file has the same efid but it's actually on another DF
-- BER length (see how it performs with malformed data)
-- ATR length (see how it performs with malformed data)
-- prepareReadBinaryCommand see if it generates values correctly

@@ -3,7 +3,7 @@
   @file     CIE-Turnstile.ino
   @author   Developers italia
   @license  BSD (see license) 
-  This example move a servo  when a CIE is read and display its ID_SERVIZI on
+  This example moves a servo when a CIE is read and print its ID_SERVIZI on
   a 7-segment led display.
 
   Here's the tutorial and wiring:
