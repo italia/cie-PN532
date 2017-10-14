@@ -183,7 +183,7 @@ bool cie_PN532::read_EF_Int_Kpub(byte* contentBuffer, word* contentLength) {
 /**************************************************************************/
 bool cie_PN532::read_EF_Servizi_Int_Kpub(byte* contentBuffer, word* contentLength) {
   EFPath filePath = { CIE_DF, SELECT_BY_SFI, 0x05 }; //efid 0x1005
-  return readElementaryFile(filePath, contentBuffer, contentLength, AUTODETECT_ATR_LENGTH);
+  return readElementaryFile(filePath, contentBuffer, contentLength, AUTODETECT_BER_LENGTH);
 }
 
 
@@ -432,7 +432,6 @@ bool cie_PN532::autodetectBerLength(const EFPath filePath, word* contentLength) 
       length += lengthOctectsOffset + 1;
       *contentLength = length;
   }
-  
   return true;
 }
 
