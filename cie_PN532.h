@@ -20,6 +20,7 @@
 */
 /**************************************************************************/
 #include "Adafruit_PN532.h"
+#include <EFPath.h>
 
 // If using the breakout with SPI, define the pins for SPI communication.
 #define PN532_SCK  (2)
@@ -44,18 +45,23 @@
 //Lengths of fixed size elementary Files
 #define EF_ID_SERVIZI_LENGTH                  (0x0C)
 #define EF_SN_ICC_LENGTH                      (0x0C)
-#define EF_ATR_LENGTH                         (0x3D)
 
 //Read lengths
-#define PAGE_LENGTH                           (0x36)
+#define PAGE_LENGTH                           (0x34)
 #define READ_FROM_START                       (0x00)
 
+//Elementary File length detection modes
 #define FIXED_LENGTH                          (0x00)
 #define AUTODETECT_BER_LENGTH                 (0x01)
 #define AUTODETECT_ATR_LENGTH                 (0x02)
 
+//Selection modes
+#define SELECT_BY_EFID                        (0x01)
+#define SELECT_BY_SFI                         (0x02)
+
 //Paths
 #define NULL_DF                               (0x00)
+#define NULL_EF                               (0x00)
 #define ROOT_MF                               (0x01)
 #define CIE_DF                                (0x02)
 
@@ -63,32 +69,40 @@ class cie_PN532
 {
  public:
   cie_PN532(byte clk, byte miso, byte mosi, byte ss);
+  cie_PN532(Adafruit_PN532 nfc);
   void begin(void);
   bool detectCard();
   
-  // Binary read unencrypted elementary files
+  // Read binary content of unencrypted Elementary Files
   bool     read_EF_DH(byte* contentBuffer, word* contentLength);
   bool     read_EF_ATR(byte* contentBuffer, word* contentLength);
   bool     read_EF_SN_ICC(byte* contentBuffer, word* contentLength);
   bool     read_EF_ID_Servizi(byte* contentBuffer, word* contentLength);
   bool     read_EF_Int_Kpub(byte* contentBuffer, word* contentLength);
   bool     read_EF_Servizi_Int_Kpub(byte* contentBuffer, word* contentLength);
+
+  // Utility
   void     printHex(byte* buffer, word length);
   bool     print_EF_SOD(word* contentLength);
 
  private:
   Adafruit_PN532 _nfc;
   byte     _currentDedicatedFile;
-  bool     readElementaryFile(const byte df, const byte efid[], byte* contentBuffer, word* contentLength, const byte lengthStrategy);
-  bool     selectDedicatedFile(const byte df);
+  word     _currentElementaryFile;
+  bool     readElementaryFile(const EFPath filePath, byte* contentBuffer, word* contentLength, const byte lengthStrategy);
+  bool     ensureSelected(const EFPath filePath);
+  bool     ensureDedicatedFileIsSelected(const byte df);
+  bool     ensureElementaryFileIsSelected(const EFPath filePath);
   bool     selectIasApplication(void);
   bool     selectRootMasterFile(void);
   bool     selectCieDedicatedFile(void);
-  bool     selectElementaryFile(const byte df, const byte efid[]);
-  bool     determineLength(word* contentLength, const byte lengthStrategy);
-  bool     autodetectBerLength(word* contentLength);
-  bool     autodetectAtrLength(word* contentLength);
-  bool     fetchElementaryFileContent(byte* contentBuffer, word offset, const word contentLength);
+  bool     determineLength(const EFPath filePath, word* contentLength, const byte lengthStrategy);
+  bool     autodetectBerLength(const EFPath filePath, word* contentLength);
+  bool     autodetectAtrLength(const EFPath filePath, word* contentLength);
+  bool     readBinaryContent(const EFPath filePath, byte* contentBuffer, word offset, const word contentLength);
   bool     hasSuccessStatusWord(byte* response, const word responseLength);
   word     clamp(const word value, const byte maxValue);
 };
+
+
+
