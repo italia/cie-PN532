@@ -31,6 +31,10 @@ Check out the links above for our tutorials and wiring diagrams
 #define PN532_SS   (4)
 #define PN532_MISO (5)
 
+#define SERVO      (9)
+#define GREEN_LED  (10)
+#define RED_LED    (11)
+
 // I2C is not supported in this release
 //#define PN532_IRQ   (2)
 //#define PN532_RESET (3)  // Not connected by default on the NFC Shield
@@ -38,6 +42,7 @@ Check out the links above for our tutorials and wiring diagrams
 
 cie_PN532 cie(PN532_SCK, PN532_MISO, PN532_MOSI, PN532_SS);
 Adafruit_7segment matrix = Adafruit_7segment();
+Servo servo;
 word count;
 
 void setup(void) {
@@ -49,6 +54,15 @@ void setup(void) {
   matrix.begin(0x70);
   count = 0;
   clearMatrix();
+
+  pinMode(GREEN_LED, OUTPUT);
+  pinMode(RED_LED, OUTPUT);
+
+  digitalWrite(RED_LED, LOW);
+  digitalWrite(GREEN_LED, LOW);
+
+  servo.attach(SERVO); 
+
   Serial.println(F("PN532 initialized, waiting for a CIE card..."));
 }
 
@@ -67,20 +81,26 @@ void loop(void) {
   byte buffer[EF_ID_SERVIZI_LENGTH];
   if (!cie.read_EF_ID_Servizi(buffer, &bufferLength)) {
     Serial.print(F("Error reading EF.ID_SERVIZI"));
-    delay(1000);
+    blinkRedLed();
+    delay(100);
     return;
   }
   Serial.print(F("EF.ID_Servizi: "));
   cie.printHex(buffer, bufferLength);
 
+  turnGreenLedOn();
+  openTurnstile();
   printHi();
   count++;
   delay(1000);
   clearMatrix();
   delay(200);
   printId(buffer);
-  delay(200);
+  delay(2000);
+  turnGreenLedOff();
+  closeTurnstile();
   printCount();
+  
 
 
   Serial.println();
@@ -183,4 +203,39 @@ void printId(byte* buffer) {
    delay(100);
  }
  delay(100);
+}
+
+void blinkRedLed() {
+  digitalWrite(RED_LED, HIGH);
+  delay(200);
+  digitalWrite(RED_LED, LOW);
+  delay(200);
+  digitalWrite(RED_LED, HIGH);
+  delay(200);
+  digitalWrite(RED_LED, LOW);
+}
+
+void turnGreenLedOn() {
+  digitalWrite(GREEN_LED, HIGH);
+}
+
+void turnGreenLedOff() {
+  digitalWrite(GREEN_LED, LOW);
+}
+
+void openTurnstile() {
+  for(byte angle = 90; angle > 0; angle--)    
+  {                                
+    servo.write(angle);           
+    delay(5);       
+  } 
+
+}
+
+void closeTurnstile() {
+  for(byte angle = 0; angle < 90; angle++)  
+  {                                  
+    servo.write(angle);               
+    delay(5);                   
+  }  
 }
