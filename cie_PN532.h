@@ -19,8 +19,16 @@
 	
 */
 /**************************************************************************/
-#include "Adafruit_PN532.h"
-#include <EFPath.h>
+#ifndef CIE_PN532
+#define CIE_PN532
+
+class cie_AtrReader;
+class cie_BerReader;
+
+#include <Adafruit_PN532.h>
+#include "cie_EFPath.h"
+#include "cie_AtrReader.h"
+#include "cie_BerReader.h"
 
 // If using the breakout with SPI, define the pins for SPI communication.
 #define PN532_SCK  (2)
@@ -81,28 +89,30 @@ class cie_PN532
   bool     read_EF_Int_Kpub(byte* contentBuffer, word* contentLength);
   bool     read_EF_Servizi_Int_Kpub(byte* contentBuffer, word* contentLength);
 
+  // File access
+  bool     readElementaryFile(const cie_EFPath filePath, byte* contentBuffer, word* contentLength, const byte lengthStrategy);
+  bool     readBinaryContent(const cie_EFPath filePath, byte* contentBuffer, word offset, const word contentLength);
+
   // Utility
   void     printHex(byte* buffer, word length);
   bool     print_EF_SOD(word* contentLength);
 
  private:
   Adafruit_PN532 _nfc;
+  cie_BerReader* _berReader;
+  cie_AtrReader* _atrReader;
   byte     _currentDedicatedFile;
   word     _currentElementaryFile;
-  bool     readElementaryFile(const EFPath filePath, byte* contentBuffer, word* contentLength, const byte lengthStrategy);
-  bool     ensureSelected(const EFPath filePath);
+  bool     ensureSelected(const cie_EFPath filePath);
   bool     ensureDedicatedFileIsSelected(const byte df);
-  bool     ensureElementaryFileIsSelected(const EFPath filePath);
+  bool     ensureElementaryFileIsSelected(const cie_EFPath filePath);
   bool     selectIasApplication(void);
   bool     selectRootMasterFile(void);
   bool     selectCieDedicatedFile(void);
-  bool     determineLength(const EFPath filePath, word* contentLength, const byte lengthStrategy);
-  bool     autodetectBerLength(const EFPath filePath, word* contentLength);
-  bool     autodetectAtrLength(const EFPath filePath, word* contentLength);
-  bool     readBinaryContent(const EFPath filePath, byte* contentBuffer, word offset, const word contentLength);
+  bool     determineLength(const cie_EFPath filePath, word* contentLength, const byte lengthStrategy);
   bool     hasSuccessStatusWord(byte* response, const word responseLength);
   word     clamp(const word value, const byte maxValue);
 };
 
-
+#endif
 

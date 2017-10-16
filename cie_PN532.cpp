@@ -18,9 +18,7 @@
 	v1.0  - Binary reading of unencrypted elementary files
 */
 /**************************************************************************/
-#include "Adafruit_PN532.h"
-#include <cie_PN532.h>
-//#include <EFPath.h>
+#include "cie_PN532.h"
 
 #define PN532DEBUGPRINT Serial
 
@@ -31,6 +29,8 @@ _nfc(clk, miso, mosi, ss),
 _currentDedicatedFile(NULL_DF),
 _currentElementaryFile(NULL_EF)
 {
+  _berReader = new cie_BerReader(this);
+  _atrReader = new cie_AtrReader(this);
 }
 
 cie_PN532::cie_PN532 (Adafruit_PN532 nfc) :
@@ -38,6 +38,8 @@ _nfc(nfc),
 _currentDedicatedFile(NULL_DF),
 _currentElementaryFile(NULL_EF)
 {
+  _berReader = new cie_BerReader(this);
+  _atrReader = new cie_AtrReader(this);
 }
 
 
@@ -99,8 +101,8 @@ void cie_PN532::printHex(byte* buffer, word length) {
 */
 /**************************************************************************/
 bool cie_PN532::read_EF_DH(byte* contentBuffer, word* contentLength) {
-  //EFPath filePath = { ROOT_MF, SELECT_BY_SFI, 0x1B }; //efid 0xD004
-  EFPath filePath = { ROOT_MF, SELECT_BY_EFID, 0xD004 }; //efid 0xD004
+  //cie_EFPath filePath = { ROOT_MF, SELECT_BY_SFI, 0x1B }; //efid 0xD004
+  cie_EFPath filePath = { ROOT_MF, SELECT_BY_EFID, 0xD004 }; //efid 0xD004
   return readElementaryFile(filePath, contentBuffer, contentLength, AUTODETECT_BER_LENGTH);
 }
 
@@ -116,7 +118,7 @@ bool cie_PN532::read_EF_DH(byte* contentBuffer, word* contentLength) {
 */
 /**************************************************************************/
 bool cie_PN532::read_EF_ATR(byte* contentBuffer, word* contentLength) {
-  EFPath filePath = { ROOT_MF, SELECT_BY_SFI, 0x1D }; //efid 0x2F01
+  cie_EFPath filePath = { ROOT_MF, SELECT_BY_SFI, 0x1D }; //efid 0x2F01
   return readElementaryFile(filePath, contentBuffer, contentLength, AUTODETECT_ATR_LENGTH);
 }
 
@@ -132,7 +134,7 @@ bool cie_PN532::read_EF_ATR(byte* contentBuffer, word* contentLength) {
 */
 /**************************************************************************/
 bool cie_PN532::read_EF_SN_ICC(byte* contentBuffer, word* contentLength) {
-  EFPath filePath = { ROOT_MF, SELECT_BY_EFID, 0xD003 }; //What's the sfi for this file?
+  cie_EFPath filePath = { ROOT_MF, SELECT_BY_EFID, 0xD003 }; //What's the sfi for this file?
   *contentLength = clamp(*contentLength, EF_SN_ICC_LENGTH);
   return readElementaryFile(filePath, contentBuffer, contentLength, FIXED_LENGTH);
 }
@@ -149,7 +151,7 @@ bool cie_PN532::read_EF_SN_ICC(byte* contentBuffer, word* contentLength) {
 */
 /**************************************************************************/
 bool cie_PN532::read_EF_ID_Servizi(byte* contentBuffer, word* contentLength) {
-  EFPath filePath = { CIE_DF, SELECT_BY_SFI, 0x01 }; //efid 0x1001
+  cie_EFPath filePath = { CIE_DF, SELECT_BY_SFI, 0x01 }; //efid 0x1001
   *contentLength = clamp(*contentLength, EF_ID_SERVIZI_LENGTH);
   return readElementaryFile(filePath, contentBuffer, contentLength, FIXED_LENGTH);
 }
@@ -166,7 +168,7 @@ bool cie_PN532::read_EF_ID_Servizi(byte* contentBuffer, word* contentLength) {
 */
 /**************************************************************************/
 bool cie_PN532::read_EF_Int_Kpub(byte* contentBuffer, word* contentLength) {
-  EFPath filePath = { CIE_DF, SELECT_BY_SFI, 0x04 }; //efid 0x1004
+  cie_EFPath filePath = { CIE_DF, SELECT_BY_SFI, 0x04 }; //efid 0x1004
   return readElementaryFile(filePath, contentBuffer, contentLength, AUTODETECT_BER_LENGTH);
 }
 
@@ -182,7 +184,7 @@ bool cie_PN532::read_EF_Int_Kpub(byte* contentBuffer, word* contentLength) {
 */
 /**************************************************************************/
 bool cie_PN532::read_EF_Servizi_Int_Kpub(byte* contentBuffer, word* contentLength) {
-  EFPath filePath = { CIE_DF, SELECT_BY_SFI, 0x05 }; //efid 0x1005
+  cie_EFPath filePath = { CIE_DF, SELECT_BY_SFI, 0x05 }; //efid 0x1005
   return readElementaryFile(filePath, contentBuffer, contentLength, AUTODETECT_BER_LENGTH);
 }
 
@@ -198,7 +200,7 @@ bool cie_PN532::read_EF_Servizi_Int_Kpub(byte* contentBuffer, word* contentLengt
 */
 /**************************************************************************/
 bool cie_PN532::print_EF_SOD(word* contentLength) {
-  EFPath filePath = { CIE_DF, SELECT_BY_SFI, 0x06 }; //efid 0x1006
+  cie_EFPath filePath = { CIE_DF, SELECT_BY_SFI, 0x06 }; //efid 0x1006
   if (!determineLength(filePath, contentLength, AUTODETECT_BER_LENGTH)) {
         return false;
   }
@@ -234,7 +236,7 @@ bool cie_PN532::print_EF_SOD(word* contentLength) {
   @returns  A value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
-bool cie_PN532::readElementaryFile(EFPath filePath, byte* contentBuffer, word* contentLength, const byte lengthStrategy) {
+bool cie_PN532::readElementaryFile(cie_EFPath filePath, byte* contentBuffer, word* contentLength, const byte lengthStrategy) {
   //Some arguments passed around but more testable
   if (!determineLength(filePath, contentLength, lengthStrategy) ||
       !readBinaryContent(filePath, contentBuffer, READ_FROM_START, *contentLength)) {
@@ -254,7 +256,7 @@ bool cie_PN532::readElementaryFile(EFPath filePath, byte* contentBuffer, word* c
   @returns  A value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
-bool cie_PN532::ensureElementaryFileIsSelected(EFPath filePath) {
+bool cie_PN532::ensureElementaryFileIsSelected(cie_EFPath filePath) {
 
   if (filePath.selectionMode != SELECT_BY_EFID) {
     PN532DEBUGPRINT.println(F("This method should be called just for EFID selection"));
@@ -349,18 +351,22 @@ bool cie_PN532::ensureDedicatedFileIsSelected (const byte df) {
   @returns  A value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
-bool cie_PN532::determineLength(const EFPath filePath, word* contentLength, const byte lengthStrategy) {
+bool cie_PN532::determineLength(const cie_EFPath filePath, word* contentLength, const byte lengthStrategy) {
   switch (lengthStrategy) {
     case FIXED_LENGTH:
     //do nothing, size is already known
     break;
 
     case AUTODETECT_BER_LENGTH:
-      autodetectBerLength(filePath, contentLength);
+    if (!_berReader->detectLength(filePath, contentLength)) {
+      return false;
+    }
     break;
 
     case AUTODETECT_ATR_LENGTH:
-      autodetectAtrLength(filePath, contentLength);
+      if (!_atrReader->detectLength(filePath, contentLength)) {
+        return false;
+      }
     break;
 
     default:
@@ -368,115 +374,6 @@ bool cie_PN532::determineLength(const EFPath filePath, word* contentLength, cons
       return false;
   }
   return true;
-}
-
-
-/**************************************************************************/
-/*!
-  @brief  Detects the length of an Elementary File by reading its BET encoded content
-  
-  @param filePath a structure indicating the parent Dedicated File (either ROOT_MF or CIE_DF), the selection mode (either SELECT_BY_EFID or SELECT_BY_SFI) and the file identifier (either a sfi or an efid)	
-  @param contentLength The pointer to the length value
-
-  @returns  A value indicating whether the operation succeeded or not
-*/
-/**************************************************************************/
-bool cie_PN532::autodetectBerLength(const EFPath filePath, word* contentLength) {
-  //TODO: unit test this
-  //Please refer to https://en.wikipedia.org/wiki/X.690#Identifier_octets
-  const byte berHeaderLength = 6; //6 will do for the CIE
-  byte buffer[berHeaderLength];
-  if (!readBinaryContent(filePath, buffer, READ_FROM_START, berHeaderLength)) {
-    return false;
-  }
-  
-  byte lengthOctectsOffset = 0;
-  if ((buffer[0] & 0x1F) == 0x1F)
-  {
-    //Tag is defined in the next octects
-    do
-    {
-      lengthOctectsOffset++;
-      //we keep going until we find an octet with a 0 in the bit 8
-      //that will be the last tag octect
-    } while ((buffer[lengthOctectsOffset] & 0x80) == 0x80);
-    //and then we move forward to the first length octet
-    lengthOctectsOffset++;
-  } else
-  {
-    //tag was made of a single octet
-    lengthOctectsOffset = 1;
-  }
-  
-  //Now we start reading the length octects
-  if (buffer[lengthOctectsOffset] == 0x80)
-  {
-      //Indefinite mode, we don't currently support this
-      PN532DEBUGPRINT.println(F("Indefinite length for BER encoded file not supported"));
-      return false;
-  }
-  else if ((buffer[lengthOctectsOffset] & 0x80) == 0x80)
-  {
-      //Definite, long
-      byte lengthOctets = buffer[lengthOctectsOffset] & (byte) 0x7F;
-      word length = 0;
-      for (byte i = 1; i <= lengthOctets; i++)
-      {
-          length += buffer[lengthOctectsOffset + i] << ((lengthOctets - i) * 8);
-      }
-      length += lengthOctectsOffset + lengthOctets + 1;
-      *contentLength = length;
-  } else  {
-      //Definite, short
-      word length = buffer[lengthOctectsOffset];
-      length += lengthOctectsOffset + 1;
-      *contentLength = length;
-  }
-  return true;
-}
-
-
-/**************************************************************************/
-/*!
-  @brief  Detects the length of the EF.ATR Elementary File
-
-  @param filePath a structure indicating the parent Dedicated File (either ROOT_MF or CIE_DF), the selection mode (either SELECT_BY_EFID or SELECT_BY_SFI) and the file identifier (either a sfi or an efid)
-  @param contentLength The pointer to the length value
-
-  @returns  A value indicating whether the operation succeeded or not
-*/
-/**************************************************************************/
-bool cie_PN532::autodetectAtrLength(const EFPath filePath, word* contentLength) {
-  //TODO: unit test this
-  //The EF.ATR record has a minimum of 33 bytes
-  //Please refer to EF.ATR content here http://www.unsads.com/specs/IASECC/IAS_ECC_v1.0.1_UK.pdf#page=19
-  const byte chunkSize = 4;
-  byte endingSequence[chunkSize] = { 0x82, 0x02, 0x90, 0x00 };
-  byte buffer[chunkSize];
-  word offset = 0x21;
-  while (true) {
-
-    if (!readBinaryContent(filePath, buffer, offset, chunkSize)) {
-      *contentLength = 0;
-      return false;
-    }
-    byte matchingOctets = 0;
-    for (byte i = 0; i < chunkSize; i++) {
-      if (buffer[i] == endingSequence[matchingOctets]) {
-        matchingOctets++;
-      } else {
-        matchingOctets = 0;
-      }
-    }
-    if (matchingOctets == chunkSize) {
-       //Match found for all octects in the sequence! We're at the end of the file.
-       *contentLength = offset + chunkSize;
-       return true;
-    } else {
-      //let's position ourself in a place where we can read all of the matching octects
-      offset += chunkSize - matchingOctets;
-    }
-  }
 }
 
 
@@ -491,7 +388,7 @@ bool cie_PN532::autodetectAtrLength(const EFPath filePath, word* contentLength) 
   @returns  A value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
-bool cie_PN532::readBinaryContent(const EFPath filePath, byte* contentBuffer, word startingOffset, const word contentLength) {
+bool cie_PN532::readBinaryContent(const cie_EFPath filePath, byte* contentBuffer, word startingOffset, const word contentLength) {
   byte fileId;
   switch (filePath.selectionMode) {
     case SELECT_BY_EFID:

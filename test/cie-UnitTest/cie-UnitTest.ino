@@ -15,18 +15,20 @@ Check out the links above for our tutorials and wiring diagrams
 /**************************************************************************/
 #include <Wire.h>
 #include <SPI.h>
-#include <cie_PN532.h>
 #include <ArduinoUnit.h>
+#include <cie_PN532.h>
 #include "Fake_PN532.h"
 
 Fake_PN532 fake;
 cie_PN532 cie(fake);
+//bar myBar = new bar(&baz);
 
 test(ok) 
 {
-  int x=3;
-  int y=3;
-  assertEqual(x,y);
+
+  //Serial.println("cuia");
+  //int x=myBaz.calc();
+  //assertEqual(x,6);
 }
 
 test(bad)

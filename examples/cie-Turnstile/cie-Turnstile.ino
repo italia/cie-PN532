@@ -21,9 +21,9 @@ Check out the links above for our tutorials and wiring diagrams
 /**************************************************************************/
 #include <Wire.h>
 #include <SPI.h>
-#include <cie_PN532.h>
 #include <Adafruit_LEDBackpack.h>
 #include <Servo.h>
+#include <cie_PN532.h>
 
 // SPI communication is the only supported one at the moment
 #define PN532_SCK  (2)
@@ -62,8 +62,6 @@ void setup(void) {
   digitalWrite(GREEN_LED, LOW);
 
   servo.attach(SERVO); 
-
-  Serial.println(F("PN532 initialized, waiting for a CIE card..."));
 }
 
 
