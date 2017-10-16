@@ -24,34 +24,39 @@
 
 //Can we chain constructors in this version of C++ to avoid repetitions?
 //SomeType() : SomeType(42) {}
-cie_PN532::cie_PN532 (byte clk, byte miso, byte mosi, byte ss) :
-_nfc(clk, miso, mosi, ss),
-_currentDedicatedFile(NULL_DF),
-_currentElementaryFile(NULL_EF)
+cie_PN532::cie_PN532 (byte clk, byte miso, byte mosi, byte ss)
 {
+  _nfc = new Adafruit_PN532(clk, miso, mosi, ss);
+  initFields();
+}
+
+cie_PN532::cie_PN532 (Adafruit_PN532* nfc)
+{
+  _nfc = nfc;
+  initFields();
+}
+
+/**************************************************************************/
+/*!
+  @brief Set default values to some private fields
+*/
+/**************************************************************************/
+void cie_PN532::initFields() {
+  _currentDedicatedFile = NULL_DF;
+  _currentElementaryFile = NULL_EF;
   _berReader = new cie_BerReader(this);
   _atrReader = new cie_AtrReader(this);
 }
-
-cie_PN532::cie_PN532 (Adafruit_PN532 nfc) :
-_nfc(nfc),
-_currentDedicatedFile(NULL_DF),
-_currentElementaryFile(NULL_EF)
-{
-  _berReader = new cie_BerReader(this);
-  _atrReader = new cie_AtrReader(this);
-}
-
 
 
 /**************************************************************************/
 /*!
-  @brief  The SDK for the CIE (Italian Electronic ID Card)
+  @brief Initialize the PN532 board
 */
 /**************************************************************************/
 void cie_PN532::begin() {
-  _nfc.begin();
-  uint32_t versiondata = _nfc.getFirmwareVersion();
+  _nfc->begin();
+  uint32_t versiondata = _nfc->getFirmwareVersion();
   if (! versiondata) {
     PN532DEBUGPRINT.print(F("Didn't find PN53x board"));
     while (1); // halt
@@ -60,7 +65,7 @@ void cie_PN532::begin() {
   PN532DEBUGPRINT.print(F("Found chip PN5")); PN532DEBUGPRINT.println((versiondata>>24) & 0xFF, HEX); 
   PN532DEBUGPRINT.print(F("Firmware ver. ")); PN532DEBUGPRINT.print((versiondata>>16) & 0xFF, DEC); 
   PN532DEBUGPRINT.print('.'); PN532DEBUGPRINT.println((versiondata>>8) & 0xFF, DEC);
-  _nfc.SAMConfig();
+  _nfc->SAMConfig();
 
   PN532DEBUGPRINT.println(F("PN53x initialized, waiting for a CIE card..."));
 }
@@ -72,7 +77,7 @@ void cie_PN532::begin() {
 */
 /**************************************************************************/
 bool cie_PN532::detectCard() {
-  bool success = _nfc.inListPassiveTarget();
+  bool success = _nfc->inListPassiveTarget();
   if (success) {
     _currentDedicatedFile = NULL_DF;
     _currentDedicatedFile = NULL_EF;
@@ -87,7 +92,7 @@ bool cie_PN532::detectCard() {
 */
 /**************************************************************************/
 void cie_PN532::printHex(byte* buffer, word length) {
-  _nfc.PrintHex(buffer, length);
+  _nfc->PrintHex(buffer, length);
 }
 
 /**************************************************************************/
@@ -211,7 +216,7 @@ bool cie_PN532::print_EF_SOD(word* contentLength) {
     byte* pageBuffer = new byte[contentPageLength];
     bool success = readBinaryContent(filePath, pageBuffer, offset, contentPageLength);
     if (success) {
-      _nfc.PrintHex(pageBuffer, contentPageLength);
+      _nfc->PrintHex(pageBuffer, contentPageLength);
     }
     delete [] pageBuffer;
 
@@ -283,12 +288,12 @@ bool cie_PN532::ensureElementaryFileIsSelected(cie_EFPath filePath) {
   };
   byte selectResponseLength = 2;
   byte* selectResponseBuffer = new byte[selectResponseLength];
-  bool success = _nfc.inDataExchange(selectCommand, sizeof(selectCommand), selectResponseBuffer, &selectResponseLength);
+  bool success = _nfc->inDataExchange(selectCommand, sizeof(selectCommand), selectResponseBuffer, &selectResponseLength);
   success = success && hasSuccessStatusWord(selectResponseBuffer, selectResponseLength);
   delete [] selectResponseBuffer;
   if (!success) {
     PN532DEBUGPRINT.print(F("Couldn't select the EF by its EFID "));
-    _nfc.PrintHex(efid, 2);
+    _nfc->PrintHex(efid, 2);
     return false;
   }
   _currentElementaryFile = filePath.id;
@@ -427,7 +432,7 @@ bool cie_PN532::readBinaryContent(const cie_EFPath filePath, byte* contentBuffer
     };
     byte responseLength = ((byte) contentPageLength) + preambleOctects + statusWordOctects;
     byte* responseBuffer = new byte[responseLength];  
-    success = _nfc.inDataExchange(readCommand, 10, responseBuffer, &responseLength);
+    success = _nfc->inDataExchange(readCommand, 10, responseBuffer, &responseLength);
     success = success && hasSuccessStatusWord(responseBuffer, responseLength);
     //Copy data over to the buffer
     if (success) {
@@ -464,7 +469,7 @@ bool cie_PN532::selectRootMasterFile(void) {
   };
   byte responseLength = 2;
   byte* responseBuffer = new byte[responseLength];
-  bool success = _nfc.inDataExchange(command, sizeof(command), responseBuffer, &responseLength);
+  bool success = _nfc->inDataExchange(command, sizeof(command), responseBuffer, &responseLength);
   success = success && hasSuccessStatusWord(responseBuffer, responseLength);
   delete [] responseBuffer;
   if (!success) {
@@ -492,7 +497,7 @@ bool cie_PN532::selectIasApplication(void) {
   };
   byte responseLength = 2;
   byte* responseBuffer = new byte[responseLength];
-  bool success = _nfc.inDataExchange(command, sizeof(command), responseBuffer, &responseLength);
+  bool success = _nfc->inDataExchange(command, sizeof(command), responseBuffer, &responseLength);
   success = success && hasSuccessStatusWord(responseBuffer, responseLength);
   delete [] responseBuffer;
   if (!success) {
@@ -520,7 +525,7 @@ bool cie_PN532::selectCieDedicatedFile(void) {
   };
   byte responseLength = 2;
   byte* responseBuffer = new byte[responseLength];
-  bool success = _nfc.inDataExchange(command, sizeof(command), responseBuffer, &responseLength);
+  bool success = _nfc->inDataExchange(command, sizeof(command), responseBuffer, &responseLength);
   success = success && hasSuccessStatusWord(responseBuffer, responseLength);
   delete [] responseBuffer;
   if (!success) {
@@ -564,7 +569,7 @@ bool cie_PN532::hasSuccessStatusWord(byte* response, const word responseLength) 
   }
   PN532DEBUGPRINT.print(F(" "));
   byte statusWord[2] = { msByte, lsByte };
-  _nfc.PrintHex(statusWord, 2);
+  _nfc->PrintHex(statusWord, 2);
   
   return false;
 }
@@ -587,4 +592,16 @@ word cie_PN532::clamp(const word value, const byte maxValue) {
   } else {
     return value;
   }
+}
+
+/**************************************************************************/
+/*!
+    @brief Frees resources
+*/
+/**************************************************************************/
+cie_PN532::~cie_PN532()
+{
+    delete _atrReader;
+    delete _berReader;
+    delete _nfc;
 }

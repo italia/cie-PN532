@@ -148,8 +148,20 @@ void printCount() {
 }
 
 void printId(byte* buffer) {
-  for (int i = 0; i < (EF_ID_SERVIZI_LENGTH*2)+5; i++) {
+  for (int i = 0; i < EF_ID_SERVIZI_LENGTH; i+=2) {
+    word actualWord = 0x00;
+    actualWord = actualWord | (buffer[i] << 8);
+    actualWord = actualWord | buffer[i+1];
+    matrix.print(actualWord,HEX);
+    matrix.writeDisplay();
+    delay(500);
+    clearMatrix();
+    delay(50);
+  }
+}
 
+/*void printId(byte* buffer) {
+  for (int i = 0; i < (EF_ID_SERVIZI_LENGTH*2)+5; i++) {
     word actualWord = 0x00;
     for (int j = 0; j < EF_ID_SERVIZI_LENGTH; j++) {
       int position = (j*2)-i;
@@ -201,7 +213,7 @@ void printId(byte* buffer) {
    delay(100);
  }
  delay(100);
-}
+}*/
 
 void blinkRedLed() {
   digitalWrite(RED_LED, HIGH);

@@ -77,7 +77,8 @@ class cie_PN532
 {
  public:
   cie_PN532(byte clk, byte miso, byte mosi, byte ss);
-  cie_PN532(Adafruit_PN532 nfc);
+  cie_PN532(Adafruit_PN532* nfc);
+  ~cie_PN532();
   void begin(void);
   bool detectCard();
   
@@ -98,11 +99,15 @@ class cie_PN532
   bool     print_EF_SOD(word* contentLength);
 
  private:
-  Adafruit_PN532 _nfc;
+  //fields
+  Adafruit_PN532* _nfc;
   cie_BerReader* _berReader;
   cie_AtrReader* _atrReader;
-  byte     _currentDedicatedFile;
-  word     _currentElementaryFile;
+  byte _currentDedicatedFile;
+  word _currentElementaryFile;
+
+  //methods
+  void     initFields();
   bool     ensureSelected(const cie_EFPath filePath);
   bool     ensureDedicatedFileIsSelected(const byte df);
   bool     ensureElementaryFileIsSelected(const cie_EFPath filePath);
