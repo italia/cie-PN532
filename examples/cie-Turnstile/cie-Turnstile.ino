@@ -39,7 +39,6 @@ Check out the links above for our tutorials and wiring diagrams
 //#define PN532_IRQ   (2)
 //#define PN532_RESET (3)  // Not connected by default on the NFC Shield
 
-
 cie_PN532 cie(PN532_SCK, PN532_MISO, PN532_MOSI, PN532_SS);
 Adafruit_7segment matrix = Adafruit_7segment();
 Servo servo;

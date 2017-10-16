@@ -22,14 +22,30 @@
 
 #define PN532DEBUGPRINT Serial
 
-//Can we chain constructors in this version of C++ to avoid repetitions?
-//SomeType() : SomeType(42) {}
+/**************************************************************************/
+/*!
+  @brief Create with the typical breakout wiring, as described by Adafruit: https://learn.adafruit.com/adafruit-pn532-rfid-nfc/breakout-wiring
+*/
+/**************************************************************************/
+cie_PN532::cie_PN532 () : cie_PN532(2, 5, 3, 4) { 
+}
+
+/**************************************************************************/
+/*!
+  @brief Create with a customized wiring
+*/
+/**************************************************************************/
 cie_PN532::cie_PN532 (byte clk, byte miso, byte mosi, byte ss)
 {
   _nfc = new Adafruit_PN532(clk, miso, mosi, ss);
   initFields();
 }
 
+/**************************************************************************/
+/*!
+  @brief Create with a custom instance of the Adafruit_PN532 class
+*/
+/**************************************************************************/
 cie_PN532::cie_PN532 (Adafruit_PN532* nfc)
 {
   _nfc = nfc;

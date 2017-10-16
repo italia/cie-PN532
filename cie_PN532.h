@@ -76,6 +76,7 @@ class cie_BerReader;
 class cie_PN532
 {
  public:
+  cie_PN532();
   cie_PN532(byte clk, byte miso, byte mosi, byte ss);
   cie_PN532(Adafruit_PN532* nfc);
   ~cie_PN532();

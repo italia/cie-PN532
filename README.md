@@ -21,7 +21,55 @@ This wiring is also described in detail on this page at the Adafruit website.
 
 https://learn.adafruit.com/adafruit-pn532-rfid-nfc/breakout-wiring
 
-## Examples
+## Getting started
+Create a new arduino project and set it up like this:
+```C++
+//Include some libraries
+#include <Wire.h>
+#include <SPI.h>
+#include <cie_PN532.h>
+
+//Use the cie_PN532 with the typical wiring, as pointed out above
+cie_PN532 cie();
+
+void setup(void) {
+  #ifndef ESP8266
+    while (!Serial); // for Leonardo/Micro/Zero
+  #endif
+  Serial.begin(115200);
+  //Initialize the PN532 breakout board
+  cie.begin();
+}
+```
+Then, in your loop, wait for a card then read its ID_Servizi (a low-security unique identifier)
+
+```C++
+void loop(void) {
+  //Let's see if a card is present
+  bool cardDetected = cie.detectCard();
+  if (!cardDetected) {
+    //No card present, we wait for one
+    delay(100);
+    return;
+  }
+
+  //Good! A card is present, let's read the ID!
+  word bufferLength = EF_ID_SERVIZI_LENGTH;
+  byte buffer[EF_ID_SERVIZI_LENGTH];
+
+  if (!cie.read_EF_ID_Servizi(buffer, &bufferLength)) {
+    Serial.print(F("Error reading EF.ID_SERVIZI"));
+    delay(1000);
+    return;
+  }
+
+  //We were able to read the ID_Servizi, print it out!
+  Serial.print(F("EF.ID_Servizi: "));
+  cie.printHex(buffer, bufferLength);
+}
+```
+
+## More examples
 This library comes with an _examples_ directory. You can load and run examples from the Arduino IDE by clicking the File menu -> Examples -> cie 532.
 
 
