@@ -26,8 +26,8 @@ class cie_PN532;
 class cie_AtrReader
 {
   public:
-    cie_AtrReader(cie_PN532* cie);
-	  bool detectLength(const cie_EFPath filePath, word* contentLength);
+	cie_AtrReader(cie_PN532* cie);
+	bool detectLength(const cie_EFPath filePath, word* contentLength);
 
   private:
 	  cie_PN532* _cie;

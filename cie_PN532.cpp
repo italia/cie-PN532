@@ -78,9 +78,9 @@ void cie_PN532::begin() {
     while (1); // halt
   }
   // Got ok data, print it out!
-  PN532DEBUGPRINT.print(F("Found chip PN5")); PN532DEBUGPRINT.println((versiondata>>24) & 0xFF, HEX); 
-  PN532DEBUGPRINT.print(F("Firmware ver. ")); PN532DEBUGPRINT.print((versiondata>>16) & 0xFF, DEC); 
-  PN532DEBUGPRINT.print('.'); PN532DEBUGPRINT.println((versiondata>>8) & 0xFF, DEC);
+  PN532DEBUGPRINT.print(F("Found chip PN5")); PN532DEBUGPRINT.println((versiondata>>24) & 0b11111111, HEX); 
+  PN532DEBUGPRINT.print(F("Firmware ver. ")); PN532DEBUGPRINT.print((versiondata>>16) & 0b11111111, DEC); 
+  PN532DEBUGPRINT.print('.'); PN532DEBUGPRINT.println((versiondata>>8) & 0b11111111, DEC);
   _nfc->SAMConfig();
 
   PN532DEBUGPRINT.println(F("PN53x initialized, waiting for a CIE card..."));
@@ -293,7 +293,7 @@ bool cie_PN532::ensureElementaryFileIsSelected(cie_EFPath filePath) {
     return true;
   }
 
-  byte efid[2] = { (byte) (filePath.id >> 8), (byte) (filePath.id & 0xFF) };
+  byte efid[2] = { (byte) (filePath.id >> 8), (byte) (filePath.id & 0b11111111) };
   byte selectCommand[] = {
     0x00, //CLA
     0xA4, //INS: SELECT FILE
@@ -379,9 +379,10 @@ bool cie_PN532::determineLength(const cie_EFPath filePath, word* contentLength, 
     break;
 
     case AUTODETECT_BER_LENGTH:
-    if (!_berReader->detectLength(filePath, contentLength)) {
-      return false;
-    }
+      cie_BerTriple triple;
+      if (!_berReader->readTriples(filePath, &triple, contentLength, 1)) {
+        return false;
+      }
     break;
 
     case AUTODETECT_ATR_LENGTH:
@@ -423,7 +424,7 @@ bool cie_PN532::readBinaryContent(const cie_EFPath filePath, byte* contentBuffer
       if (!ensureDedicatedFileIsSelected(filePath.df)) {
         return false;
       }
-      fileId = (byte) (filePath.id & 0x1F);
+      fileId = (byte) (filePath.id & 0b11111);
     break;
 
     default:
@@ -432,8 +433,8 @@ bool cie_PN532::readBinaryContent(const cie_EFPath filePath, byte* contentBuffer
   }
   bool success = false;
   word offset = startingOffset;
-  byte preambleOctects = 2;
-  byte statusWordOctects = 2;
+  byte preambleOctets = 2;
+  byte statusWordOctets = 2;
   do {
     word contentPageLength = clamp(contentLength+startingOffset-offset, PAGE_LENGTH);
     byte readCommand[] = {
@@ -443,18 +444,18 @@ bool cie_PN532::readBinaryContent(const cie_EFPath filePath, byte* contentBuffer
       fileId, //P2: sfi to select or zeroes (i.e. keep current selected file)
       0x04, //Lc: data field is made of 4 bytes
       0x54, 0x02, //Data field: here comes an offset of 2 bytes
-      (byte) (offset >> 8), (byte) (offset & 0xFF), //the offset
-      (byte) (contentPageLength + preambleOctects) //Le: bytes to be returned in the response
+      (byte) (offset >> 8), (byte) (offset & 0b11111111), //the offset
+      (byte) (contentPageLength + preambleOctets) //Le: bytes to be returned in the response
     };
-    byte responseLength = ((byte) contentPageLength) + preambleOctects + statusWordOctects;
+    byte responseLength = ((byte) contentPageLength) + preambleOctets + statusWordOctets;
     byte* responseBuffer = new byte[responseLength];  
     success = _nfc->inDataExchange(readCommand, 10, responseBuffer, &responseLength);
     success = success && hasSuccessStatusWord(responseBuffer, responseLength);
     //Copy data over to the buffer
     if (success) {
       //The read binary command with ODD INS incapsulated the response with two preamble octets. Don't include them, they're not part of the content.
-      for (word i = preambleOctects; i < contentPageLength + preambleOctects; i++) {
-        contentBuffer[offset - startingOffset + i - preambleOctects] = responseBuffer[i];
+      for (word i = preambleOctets; i < contentPageLength + preambleOctets; i++) {
+        contentBuffer[offset - startingOffset + i - preambleOctets] = responseBuffer[i];
       }
     }
     delete [] responseBuffer;  

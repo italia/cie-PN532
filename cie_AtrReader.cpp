@@ -56,11 +56,11 @@ bool cie_AtrReader::detectLength(const cie_EFPath filePath, word* contentLength)
       }
     }
     if (matchingOctets == chunkSize) {
-       //Match found for all octects in the sequence! We're at the end of the file.
+       //Match found for all octets in the sequence! We're at the end of the file.
        *contentLength = offset + chunkSize;
        return true;
     } else {
-      //let's position ourself in a place where we can read all of the matching octects
+      //let's position ourself in a place where we can read all of the matching octets
       offset += chunkSize - matchingOctets;
     }
   } 
