@@ -42,11 +42,74 @@ _currentOffset(0)
 /**************************************************************************/
 bool cie_BerReader::readTriples(const cie_EFPath filePath, cie_BerTriple* rootTriple, word* length, const byte maxDepth) {
   resetCursor();
-  word tripleLength;
-  if (!readTriple(filePath, rootTriple, &tripleLength)) {
-    return false;
+  if (maxDepth < 1) {
+    rootTriple = nullptr;
+    PN532DEBUGPRINT.println(F("Warning: you choose a maxDepth of 0 which won't read any triple"));
+    return true;
   }
-  *length = tripleLength;
+
+  byte currentDepth = 1;
+  cie_BerTriple** tripleStack = new cie_BerTriple*[maxDepth];
+  do {
+    word tripleLength;
+    if (!readTriple(filePath, tripleStack[currentDepth-1], &tripleLength)) {
+      return false;
+    }
+
+    Serial.print("DEPTH ");
+    Serial.println(currentDepth);
+    /*Serial.print("CLC ");
+    Serial.println(ciccio->classification);
+    Serial.print("ENC ");
+    Serial.println(ciccio->encoding);
+    Serial.print("TYPEC ");
+    Serial.println(ciccio->type);*/
+
+    word contentLength = tripleStack[currentDepth-1]->contentLength;
+    if (currentDepth == 1) {
+      *length = tripleLength;
+      rootTriple = tripleStack[0];
+    }
+
+    //check if we've finished reading a parent (or granparent) triple and go up levels accordingly
+    if (currentDepth > 1) {
+      //add this to its parent
+      byte childrenCount = tripleStack[currentDepth-2]->childrenCount + 1;
+      tripleStack[currentDepth-2]->childrenCount = childrenCount;
+      cie_BerTriple** children = new cie_BerTriple*[childrenCount];
+      for (byte i = 0; i < childrenCount-1; i++) {
+        children[i] = tripleStack[currentDepth-2]->children[i];
+      }
+      children[childrenCount-1] = tripleStack[currentDepth-1];
+      delete [] tripleStack[currentDepth-2]->children;
+      tripleStack[currentDepth-2]->children = children;
+
+      //we can go up only if we're not at the root level
+      for (byte i = currentDepth-2; i>=0; i--) {
+        if (_currentOffset + contentLength >= tripleStack[i]->contentOffset + tripleStack[i]->contentLength) {
+          currentDepth-=1;
+        }
+      }
+    }
+
+    //Let's see if we should go down one level
+    bool isConstructed = tripleStack[currentDepth-1]->classification == 0x01;
+    bool isAtBeginning = tripleStack[currentDepth-1]->contentOffset == _currentOffset;
+    bool hasNonZeroLength = contentLength > 0;
+    bool canGoDeepDown = currentDepth + 1 <= maxDepth;
+    if (isConstructed && isAtBeginning && hasNonZeroLength && canGoDeepDown) {
+      currentDepth += 1;
+    } else {
+      Serial.print("AVANTI ");
+      Serial.println(contentLength);
+      _currentOffset += contentLength;
+    }
+
+    Serial.print("OFFSET ");
+    Serial.println(_currentOffset);
+    Serial.println(*length);
+
+  } while(_currentOffset < *length);
   return true;
 }
 
@@ -67,13 +130,16 @@ bool cie_BerReader::readTriple(const cie_EFPath filePath, cie_BerTriple* triple,
   byte tagOctets, lengthOctets;
   triple = new cie_BerTriple();
   if (!detectTag(filePath, &triple->classification, &triple->encoding, &triple->type, &tagOctets) ||
-      !detectLength(filePath, &triple->length, &lengthOctets)) {
+      !detectLength(filePath, &triple->contentOffset, &triple->contentLength, &lengthOctets)) {
         return false;
   }
   triple->childrenCount = 0;
-  triple->children = nullptr;
+  triple->children = new cie_BerTriple*[0];
 
-  *length = tagOctets + lengthOctets + triple->length;
+  Serial.print("ZZZZZ ");
+  Serial.println(triple->type);
+
+  *length = tagOctets + lengthOctets + triple->contentLength;
   return true;
 }
 
@@ -106,7 +172,7 @@ bool cie_BerReader::readTripleValue(const cie_BerTriple triple, byte* buffer) {
   @returns  A value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
-bool cie_BerReader::detectLength(const cie_EFPath filePath, word* contentLength, byte* lengthOctets) {  
+bool cie_BerReader::detectLength(const cie_EFPath filePath, word* contentOffset, word* contentLength, byte* lengthOctets) {  
   if (!readOctet(filePath, lengthOctets)) {
     PN532DEBUGPRINT.println(F("Couldn't detect length of a BER encoded file"));
     return false;
@@ -143,6 +209,7 @@ bool cie_BerReader::detectLength(const cie_EFPath filePath, word* contentLength,
       *contentLength = *lengthOctets;
       *lengthOctets = 1;
   }
+  *contentOffset = _currentOffset;
   return true;
 }
 
@@ -163,7 +230,7 @@ bool cie_BerReader::detectTag (const cie_EFPath filePath, byte* classification, 
 
   byte tag;
   if (!readOctet(filePath, &tag)) {
-    PN532DEBUGPRINT.println("Couldn't detect a tag in the BER content");
+    PN532DEBUGPRINT.println(F("Couldn't detect a tag in the BER content"));
     return false;
   }
 
@@ -186,7 +253,7 @@ bool cie_BerReader::detectTag (const cie_EFPath filePath, byte* classification, 
       {
         *tagOctets += 1;
         if (!readOctet(filePath, &tag)) {
-          PN532DEBUGPRINT.println("Couldn't detect a tag in the BER content");
+          PN532DEBUGPRINT.println(F("Couldn't detect a tag in the BER content"));
           return false;
         }
         //bits 1–7 encode the tag number. The tag number bits combined, big-endian, encode the tag number

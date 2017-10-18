@@ -66,7 +66,7 @@ enum BerType {
 	GeneralString = 0x1B,
 	UniversalString = 0x1C,
 	CharacterString = 0x1D,
-	BMPString = 0x1E 
+	BMPString = 0x1E
 };
 
 struct cie_BerTriple {
@@ -74,7 +74,9 @@ struct cie_BerTriple {
 	byte encoding;
 	unsigned int type;
 
-	word length;
+	word contentOffset;
+	word contentLength;
+
 	cie_EFPath filePath;
 	byte childrenCount;
 	cie_BerTriple* children;
