@@ -254,10 +254,10 @@ bool cie_PN532::print_EF_SOD(word* contentLength) {
   @returns  A boolean value indicating whether the operation suceeded or not
 */
 /**************************************************************************/
-bool cie_PN532::parse_EF_SOD(cie_BerTriple* rootTriple) {
+bool cie_PN532::parse_EF_SOD(cie_BerTriple*& rootTriple) {
   word payloadLength;
   cie_EFPath filePath = { CIE_DF, SELECT_BY_SFI, 0x06 }; //efid 0x1006
-  return _berReader->readTriples(filePath, rootTriple, &payloadLength, 1);
+  return _berReader->readTriples(filePath, rootTriple, &payloadLength, 30);
 }
 
 
@@ -396,8 +396,8 @@ bool cie_PN532::determineLength(const cie_EFPath filePath, word* contentLength, 
     break;
 
     case AUTODETECT_BER_LENGTH:
-      cie_BerTriple triple;
-      if (!_berReader->readTriples(filePath, &triple, contentLength, 1)) {
+      cie_BerTriple* triple;
+      if (!_berReader->readTriples(filePath, triple, contentLength, 1)) {
         return false;
       }
     break;

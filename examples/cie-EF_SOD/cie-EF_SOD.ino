@@ -36,8 +36,7 @@ void setup(void) {
     while (!Serial); // for Leonardo/Micro/Zero
   #endif
   Serial.begin(115200);
-  cie.begin();  
-  Serial.println(F("PN532 initialized, waiting for a CIE card..."));
+  cie.begin();
 }
 
 
@@ -50,26 +49,51 @@ void loop(void) {
     return;
   }
 
-  //Good! A card is present, let's read the ID!
+  //Good! A card is present, let's read the structure of the EF.SOD file!
+  //It's the largest Elementary File in the CIE card
   cie_BerTriple* rootTriple;
-  cie.parse_EF_SOD(rootTriple);
 
-  Serial.print("LENGTH: ");
-  Serial.println(rootTriple->contentLength);
+  //Take the time
+  unsigned long startedAt = millis();
+  if (cie.parse_EF_SOD(rootTriple)) {
+    printTriple(*rootTriple, 0);
 
-  Serial.print("TYPE: ");
-  Serial.println(rootTriple->type);
 
-  Serial.print("CLASS: ");
-  Serial.println(rootTriple->classification);
-
-  Serial.print("P/C: ");
-  Serial.println(rootTriple->encoding);
-
-  Serial.print("Children: ");
-  Serial.println(rootTriple->childrenCount);
+  } else {
+    Serial.print(F("Error reading triples"));
+  }
+  Serial.print("It took ");
+  Serial.print(millis()-startedAt);
+  Serial.println(" ms");
 
   Serial.println();
   Serial.println(F("Read complete, you can remove the card now"));
   delay(1000);
+}
+
+void printTriple(const cie_BerTriple triple, byte depth) {
+  if (depth > 0) {
+    for (byte i = 0; i < depth; i++) {
+      Serial.print("  ");
+    }
+  }
+
+  Serial.print(triple.type);
+  Serial.print(" ");
+  Serial.print(triple.encoding);
+  Serial.print(" (offset: ");
+  Serial.print(triple.contentOffset);
+  Serial.print(", length: ");
+  Serial.print(triple.contentLength);
+  if (triple.encoding == 0x01) {
+    Serial.print(", children: ");
+    Serial.print(triple.childrenCount);
+  }
+  Serial.println(")");
+
+  for (byte i = 0; i < triple.childrenCount; i++) {
+    cie_BerTriple* child = triple.children[i];
+    printTriple(*child, depth+1);
+  }
+
 }

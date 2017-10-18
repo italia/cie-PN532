@@ -98,7 +98,7 @@ class cie_PN532
   // Utility
   void     printHex(byte* buffer, word length);
   bool     print_EF_SOD(word* contentLength);
-  bool     parse_EF_SOD(cie_BerTriple* rootTriple);
+  bool     parse_EF_SOD(cie_BerTriple*& rootTriple);
 
  private:
   //fields

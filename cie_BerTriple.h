@@ -15,16 +15,9 @@
 #ifndef CIE_BER_TRIPLE
 #define CIE_BER_TRIPLE
 
-#define BER_PRIMITIVE               (0x01)
-#define BER_CONSTRUCTED             (0x02)
-
-#define BER_CLASS_UNIVERSAL         (0x00)
-#define BER_CLASS_APPLICATION       (0x01)
-#define BER_CLASS_CONTEXT_SPECIFIC  (0x02)
-#define BER_CLASS_PRIVATE           (0x03)
-
 #include <Arduino.h>
 
+//TODO: use these
 enum BerClass { 
 	Universal = 0x00, 
 	Application = 0x01, 
@@ -69,7 +62,8 @@ enum BerType {
 	BMPString = 0x1E
 };
 
-struct cie_BerTriple {
+class cie_BerTriple {
+  public:
 	byte classification;
 	byte encoding;
 	unsigned int type;
@@ -79,7 +73,7 @@ struct cie_BerTriple {
 
 	cie_EFPath filePath;
 	byte childrenCount;
-	cie_BerTriple* children;
+	cie_BerTriple** children;
 };
 
 

@@ -19,8 +19,6 @@
 
 //Please refer to https://en.wikipedia.org/wiki/X.690#Identifier_octets
 
-//Can we chain constructors in this version of C++ to avoid repetitions?
-//SomeType() : SomeType(42) {}
 cie_BerReader::cie_BerReader (cie_PN532* cie) :
 _cie(cie),
 _currentOffset(0)
@@ -40,7 +38,7 @@ _currentOffset(0)
   @returns  A value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
-bool cie_BerReader::readTriples(const cie_EFPath filePath, cie_BerTriple* rootTriple, word* length, const byte maxDepth) {
+bool cie_BerReader::readTriples(const cie_EFPath filePath, cie_BerTriple*& rootTriple, word* length, const byte maxDepth) {
   resetCursor();
   if (maxDepth < 1) {
     rootTriple = nullptr;
@@ -51,19 +49,23 @@ bool cie_BerReader::readTriples(const cie_EFPath filePath, cie_BerTriple* rootTr
   byte currentDepth = 1;
   cie_BerTriple** tripleStack = new cie_BerTriple*[maxDepth];
   do {
+
     word tripleLength;
     if (!readTriple(filePath, tripleStack[currentDepth-1], &tripleLength)) {
       return false;
     }
 
-    Serial.print("DEPTH ");
-    Serial.println(currentDepth);
-    /*Serial.print("CLC ");
-    Serial.println(ciccio->classification);
-    Serial.print("ENC ");
-    Serial.println(ciccio->encoding);
-    Serial.print("TYPEC ");
-    Serial.println(ciccio->type);*/
+    if (tripleStack[currentDepth-1]->contentLength > BER_READER_MAX_LENGTH) {
+      PN532DEBUGPRINT.print(F("Sorry, we don't support content lengths greater than "));
+      PN532DEBUGPRINT.println(BER_READER_MAX_LENGTH);
+      return false;
+    }
+
+    if (tripleStack[currentDepth-1]->contentOffset > BER_READER_MAX_OFFSET) {
+      PN532DEBUGPRINT.print(F("Sorry, we don't support content offsets greater than "));
+      PN532DEBUGPRINT.println(BER_READER_MAX_OFFSET);
+      return false;
+    }
 
     word contentLength = tripleStack[currentDepth-1]->contentLength;
     if (currentDepth == 1) {
@@ -85,29 +87,35 @@ bool cie_BerReader::readTriples(const cie_EFPath filePath, cie_BerTriple* rootTr
       tripleStack[currentDepth-2]->children = children;
 
       //we can go up only if we're not at the root level
-      for (byte i = currentDepth-2; i>=0; i--) {
-        if (_currentOffset + contentLength >= tripleStack[i]->contentOffset + tripleStack[i]->contentLength) {
-          currentDepth-=1;
+      for (byte i = currentDepth-1; i>0; i--) {
+
+        bool isConstructed = tripleStack[i-1]->encoding == 0x01;
+        bool isLastInParent = _currentOffset + contentLength >= tripleStack[i-1]->contentOffset + tripleStack[i-1]->contentLength;
+        bool canGoDown = currentDepth + 1 <= maxDepth;
+        bool stillToRead = _currentOffset < tripleStack[i-1]->contentOffset + tripleStack[i-1]->contentLength;
+
+        if (isLastInParent && !(isConstructed && canGoDown && stillToRead)) {
+          currentDepth-=1;        
+        } else {
+          break;
         }
       }
+
+      
     }
+
+    
 
     //Let's see if we should go down one level
-    bool isConstructed = tripleStack[currentDepth-1]->classification == 0x01;
-    bool isAtBeginning = tripleStack[currentDepth-1]->contentOffset == _currentOffset;
-    bool hasNonZeroLength = contentLength > 0;
-    bool canGoDeepDown = currentDepth + 1 <= maxDepth;
-    if (isConstructed && isAtBeginning && hasNonZeroLength && canGoDeepDown) {
+    bool isConstructed = tripleStack[currentDepth-1]->encoding == 0x01;
+    bool isAtBeginning = _currentOffset == tripleStack[currentDepth-1]->contentOffset;
+    bool hasNonZeroLength = tripleStack[currentDepth-1]->contentLength > 0;
+    bool canGoDown = currentDepth + 1 <= maxDepth;
+    if (isConstructed && isAtBeginning && hasNonZeroLength && canGoDown) {
       currentDepth += 1;
     } else {
-      Serial.print("AVANTI ");
-      Serial.println(contentLength);
       _currentOffset += contentLength;
     }
-
-    Serial.print("OFFSET ");
-    Serial.println(_currentOffset);
-    Serial.println(*length);
 
   } while(_currentOffset < *length);
   return true;
@@ -125,7 +133,7 @@ bool cie_BerReader::readTriples(const cie_EFPath filePath, cie_BerTriple* rootTr
   @returns  A value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
-bool cie_BerReader::readTriple(const cie_EFPath filePath, cie_BerTriple* triple, word* length) {
+bool cie_BerReader::readTriple(const cie_EFPath filePath, cie_BerTriple*& triple, word* length) {
   
   byte tagOctets, lengthOctets;
   triple = new cie_BerTriple();
@@ -135,11 +143,8 @@ bool cie_BerReader::readTriple(const cie_EFPath filePath, cie_BerTriple* triple,
   }
   triple->childrenCount = 0;
   triple->children = new cie_BerTriple*[0];
-
-  Serial.print("ZZZZZ ");
-  Serial.println(triple->type);
-
   *length = tagOctets + lengthOctets + triple->contentLength;
+
   return true;
 }
 
