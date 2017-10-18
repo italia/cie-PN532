@@ -17,51 +17,6 @@
 
 #include <Arduino.h>
 
-//TODO: use these
-enum BerClass { 
-	Universal = 0x00, 
-	Application = 0x01, 
-	ContextSpecific = 0x02, 
-	Private = 0x03 
-};
-
-enum BerEncoding { 
-	Primitive = 0x00, 
-	Constructed = 0x01 
-}; 
-
-enum BerType { 
-	EndOfContent = 0x00,
-	Boolean = 0x01,
-	Integer = 0x02,
-	BitString = 0x03,
-	OctetString = 0x04,
-	Null = 0x05,
-	ObjectIdentifier = 0x06,
-	ObjectDescriptor = 0x07,
-	External = 0x08,
-	Real = 0x09,
-	Enumerated = 0x0A,
-	EmbeddedPDV = 0x0B,
-	UTF8String = 0x0C,
-	RelativeOID = 0x0D,
-	Sequence = 0X11,
-	Set = 0x11,
-	NumericString = 0x12,
-	PrintableString = 0x13,
-	T61String = 0x14,
-	VideotexString = 0x15,
-	IA5String = 0x16,
-	UTCTime = 0x17,
-	GeneralizedTime = 0x18,
-	GraphicString = 0x19,
-	VisibleString = 0x1A,
-	GeneralString = 0x1B,
-	UniversalString = 0x1C,
-	CharacterString = 0x1D,
-	BMPString = 0x1E
-};
-
 class cie_BerTriple {
   public:
 	byte classification;

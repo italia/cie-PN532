@@ -78,9 +78,7 @@ void printTriple(const cie_BerTriple triple, byte depth) {
     }
   }
 
-  Serial.print(triple.type);
-  Serial.print(" ");
-  Serial.print(triple.encoding);
+  Serial.print(getStringForType(triple.classification, triple.type));
   Serial.print(" (offset: ");
   Serial.print(triple.contentOffset);
   Serial.print(", length: ");
@@ -96,4 +94,82 @@ void printTriple(const cie_BerTriple triple, byte depth) {
     printTriple(*child, depth+1);
   }
 
+}
+
+__FlashStringHelper* getStringForType(const byte classification, const byte type) {
+
+  if (classification > 0 ) {
+    switch (classification) {
+      case 1:
+        return F("APPLICATION");
+      case 2: 
+        //TODO: return the actual offset
+        return F("[0]");
+      case 3:
+        return F("PRIVATE");
+    }
+  }
+
+  switch(type) {
+    case 0x00:
+      return F("END OF CONTENT");
+    case 0x01:
+      return F("BOOLEAN");
+    case 0x02:
+      return F("INTEGER");
+    case 0x03:
+      return F("BIT STRING");
+    case 0x04:
+      return F("OCTET STRING");
+    case 0x05:
+      return F("NULL");
+    case 0x06:
+      return F("OBJECT IDENTIFIER");
+    case 0x07:
+      return F("OBJECT DESCRIPTOR");
+    case 0x08:
+      return F("EXTERNAL");
+    case 0x09:
+      return F("REAL");
+    case 0x0A:
+      return F("ENUMERATED");
+    case 0x0B:
+      return F("EMBEDDED PDV");
+    case 0x0C:
+      return F("UTF8 STRING");
+    case 0x0D:
+      return F("RELATIVE OID");
+    case 0x10:
+      return F("SEQUENCE");
+    case 0x11:
+      return F("SET");
+    case 0x12:
+      return F("NUMERIC STRING");
+    case 0x13:
+      return F("PRINTABLE STRING");
+    case 0x14:
+      return F("T61 STRING");
+    case 0x15:
+      return F("VIDEOTEX STRING");
+    case 0x16:
+      return F("IA5 STRING");
+    case 0x17:
+      return F("UTC TIME");
+    case 0x18:
+      return F("GENERALIZED TIME");
+    case 0x19:
+      return F("GRAPHIC STRING");
+    case 0x1A:
+      return F("VISIBLE STRING");
+    case 0x1B:
+      return F("GENERAL STRING");
+    case 0x1C:
+      return F("UNIVERSAL STRING");
+    case 0x1D:
+      return F("CHARACTER STRING");
+    case 0x1E:
+      return F("BMP STRING");
+    default:
+      return F("UNKNOWN");
+  }
 }
