@@ -16,20 +16,15 @@
 #define CIE_BER_TRIPLE
 
 #include <Arduino.h>
-
 class cie_BerTriple {
   public:
 	byte classification;
 	byte encoding;
 	unsigned int type;
-
+	word offset;
 	word contentOffset;
 	word contentLength;
-
-	cie_EFPath filePath;
-	byte childrenCount;
-	cie_BerTriple** children;
+	byte depth;
 };
-
-
+typedef bool (*cieBerTripleCallbackFunc)(cie_BerTriple*);
 #endif

@@ -24,19 +24,22 @@
 class cie_PN532;
 #endif
 
-#define BER_READER_MAX_OFFSET   (0x1000)
-#define BER_READER_MAX_LENGTH   (0x800)
+#define BER_READER_MAX_OFFSET   (2048)
+#define BER_READER_MAX_LENGTH   (2048)
+#define BER_READER_MAX_COUNT    (200)
+
 
 class cie_BerReader
 {
   public:
     cie_BerReader(cie_PN532* cie);
-    bool readTriples(const cie_EFPath filePath, cie_BerTriple*& rootTriple, word* length, const byte maxDepth);
-
+    bool readTriples(const cie_EFPath filePath, cieBerTripleCallbackFunc callback, word* length, const byte maxDepth);
+    
   private:
     cie_PN532* _cie;
     word _currentOffset;
     void resetCursor();
+    bool areEqual(byte* buffer1, byte length1, byte* buffer2, byte length2);
     void readBinaryContent(const cie_EFPath filePath, const word offset, const word length);
 
     bool readTriple(const cie_EFPath filePath, cie_BerTriple*& triple, word* length);
@@ -46,7 +49,6 @@ class cie_BerReader
     bool readOctets(const cie_EFPath filePath, byte* buffer, const word offset, const word length);
     bool readOctets(const cie_EFPath filePath, byte* buffer, const word length);
     bool readOctet(const cie_EFPath filePath, byte* octet);
-
     
 };
 

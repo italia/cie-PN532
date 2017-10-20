@@ -22,8 +22,11 @@
 #ifndef CIE_PN532
 #define CIE_PN532
 
-class cie_AtrReader;
+
+class cie_BerTriple;
 class cie_BerReader;
+class cie_AtrReader;
+
 
 #include <Adafruit_PN532.h>
 #include "cie_EFPath.h"
@@ -73,6 +76,7 @@ class cie_BerReader;
 #define ROOT_MF                               (0x01)
 #define CIE_DF                                (0x02)
 
+
 class cie_PN532
 {
  public:
@@ -98,7 +102,7 @@ class cie_PN532
   // Utility
   void     printHex(byte* buffer, word length);
   bool     print_EF_SOD(word* contentLength);
-  bool     parse_EF_SOD(cie_BerTriple*& rootTriple);
+  bool     parse_EF_SOD(cieBerTripleCallbackFunc callback);
 
  private:
   //fields

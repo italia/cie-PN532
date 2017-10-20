@@ -13,8 +13,6 @@
 */
 /**************************************************************************/
 #include "cie_BerReader.h"
-
-
 #define PN532DEBUGPRINT Serial
 
 //Please refer to https://en.wikipedia.org/wiki/X.690#Identifier_octets
@@ -38,22 +36,42 @@ _currentOffset(0)
   @returns  A value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
-bool cie_BerReader::readTriples(const cie_EFPath filePath, cie_BerTriple*& rootTriple, word* length, const byte maxDepth) {
+bool cie_BerReader::readTriples(const cie_EFPath filePath, cieBerTripleCallbackFunc callback, word* length, const byte maxDepth) {
   resetCursor();
   if (maxDepth < 1) {
-    rootTriple = nullptr;
     PN532DEBUGPRINT.println(F("Warning: you choose a maxDepth of 0 which won't read any triple"));
     return true;
   }
 
   byte currentDepth = 1;
-  cie_BerTriple** tripleStack = new cie_BerTriple*[maxDepth];
+  byte triplesCount = 0;
+  cie_BerTriple* tripleStack[maxDepth];
+  bool willEncapsulate = false;
+
+  byte oid_subjectKeyIdentifier[] = {0x67, 0x81, 0x08, 0x01, 0x01, 0x01}; //2.5.29.14 
+  byte oid_keyUsage[] = {0x55, 0x1D, 0x0F}; //2.5.29.15
+  byte oid_authorityKeyIdentifier[] = {0x55, 0x1D, 0x23}; //2.5.29.35
+  byte oid_rsaEncryption[] = {0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x01}; //1.2.840.113549.1.1.1
+  byte oid_mRTDSignatureData[] = {0x67, 0x81, 0x08, 0x01, 0x01, 0x01}; //2.23.136.1.1.1
+
+
   do {
 
+    cie_BerTriple currentTriple;
+    tripleStack[currentDepth-1] = &currentTriple;
     word tripleLength;
     if (!readTriple(filePath, tripleStack[currentDepth-1], &tripleLength)) {
       return false;
     }
+
+    tripleStack[currentDepth-1]->depth = currentDepth;
+    if (*callback != NULL) {
+      if (!(*callback)(tripleStack[currentDepth-1])) {
+        //Navigation interrupted by callback, we stop here.
+        return true;
+      }
+    }
+    triplesCount += 1;
 
     if (tripleStack[currentDepth-1]->contentLength > BER_READER_MAX_LENGTH) {
       PN532DEBUGPRINT.print(F("Sorry, we don't support content lengths greater than "));
@@ -67,32 +85,50 @@ bool cie_BerReader::readTriples(const cie_EFPath filePath, cie_BerTriple*& rootT
       return false;
     }
 
+    if (triplesCount > BER_READER_MAX_COUNT) {
+      PN532DEBUGPRINT.print(F("Sorry, we don't support as many triples as "));
+      PN532DEBUGPRINT.println(BER_READER_MAX_COUNT);
+      return false;
+    }
+
+
     word contentLength = tripleStack[currentDepth-1]->contentLength;
     if (currentDepth == 1) {
       *length = tripleLength;
-      rootTriple = tripleStack[0];
     }
 
     //check if we've finished reading a parent (or granparent) triple and go up levels accordingly
     if (currentDepth > 1) {
-      //add this to its parent
-      byte childrenCount = tripleStack[currentDepth-2]->childrenCount + 1;
-      tripleStack[currentDepth-2]->childrenCount = childrenCount;
-      cie_BerTriple** children = new cie_BerTriple*[childrenCount];
-      for (byte i = 0; i < childrenCount-1; i++) {
-        children[i] = tripleStack[currentDepth-2]->children[i];
-      }
-      children[childrenCount-1] = tripleStack[currentDepth-1];
-      delete [] tripleStack[currentDepth-2]->children;
-      tripleStack[currentDepth-2]->children = children;
 
       //we can go up only if we're not at the root level
       for (byte i = currentDepth-1; i>0; i--) {
 
+        byte isBinaryString = tripleStack[i-1]->type == 0x03 || tripleStack[i-1]->type == 0x04;
+        bool isObjectIdentifier = tripleStack[i-1]->type == 0x06;
         bool isConstructed = tripleStack[i-1]->encoding == 0x01;
-        bool isLastInParent = _currentOffset + contentLength >= tripleStack[i-1]->contentOffset + tripleStack[i-1]->contentLength;
+        bool isLastInParent = _currentOffset + contentLength >= tripleStack[i-2]->contentOffset + tripleStack[i-2]->contentLength;
         bool canGoDown = currentDepth + 1 <= maxDepth;
         bool stillToRead = _currentOffset < tripleStack[i-1]->contentOffset + tripleStack[i-1]->contentLength;
+        
+
+        //Some OCTET STRINGS and BIT STRING might be encapsulating other ASN.1 triples
+        //Find them by their preceding Object Identifier
+        if (isObjectIdentifier)
+        {
+          byte oid[tripleStack[i-1]->contentLength]; 
+          _cie->readBinaryContent(filePath, oid, tripleStack[i-1]->contentOffset, tripleStack[i-1]->contentLength);
+
+          if (areEqual(oid, tripleStack[i-1]->contentLength, oid_subjectKeyIdentifier, sizeof(oid_subjectKeyIdentifier)) ||
+              areEqual(oid, tripleStack[i-1]->contentLength, oid_keyUsage, sizeof(oid_keyUsage)) || 
+              areEqual(oid, tripleStack[i-1]->contentLength, oid_authorityKeyIdentifier, sizeof(oid_authorityKeyIdentifier)) || 
+              areEqual(oid, tripleStack[i-1]->contentLength, oid_rsaEncryption, sizeof(oid_rsaEncryption)) || 
+              (areEqual(oid, tripleStack[i-1]->contentLength, oid_mRTDSignatureData, sizeof(oid_mRTDSignatureData)) && (currentDepth+1<=maxDepth))) {
+            willEncapsulate = true;
+          }
+        } else if (isBinaryString && willEncapsulate) {
+          isConstructed = true;
+          willEncapsulate = false;
+        }
 
         if (isLastInParent && !(isConstructed && canGoDown && stillToRead)) {
           currentDepth-=1;        
@@ -136,13 +172,11 @@ bool cie_BerReader::readTriples(const cie_EFPath filePath, cie_BerTriple*& rootT
 bool cie_BerReader::readTriple(const cie_EFPath filePath, cie_BerTriple*& triple, word* length) {
   
   byte tagOctets, lengthOctets;
-  triple = new cie_BerTriple();
   if (!detectTag(filePath, &triple->classification, &triple->encoding, &triple->type, &tagOctets) ||
       !detectLength(filePath, &triple->contentOffset, &triple->contentLength, &lengthOctets)) {
         return false;
   }
-  triple->childrenCount = 0;
-  triple->children = new cie_BerTriple*[0];
+  triple->offset = triple->contentOffset - tagOctets - lengthOctets;
   *length = tagOctets + lengthOctets + triple->contentLength;
 
   return true;
@@ -324,6 +358,19 @@ bool cie_BerReader::readOctets(const cie_EFPath filePath, byte* buffer, const wo
 /**************************************************************************/
 bool cie_BerReader::readOctet(const cie_EFPath filePath, byte* octet) {
   return readOctets(filePath, octet, _currentOffset, 1);
+}
+
+
+bool cie_BerReader::areEqual(byte* buffer1, byte length1, byte* buffer2, byte length2) {
+   if (length1 != length2) {
+     return false;
+   }
+   for (byte i = 0; i < length1; i++) {
+     if (buffer1[i] != buffer2[i]) {
+       return false;
+     }
+   }
+   return true;
 }
 
 

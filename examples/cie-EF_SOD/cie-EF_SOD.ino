@@ -28,7 +28,7 @@ Check out the links above for our tutorials and wiring diagrams
 //#define PN532_IRQ   (2)
 //#define PN532_RESET (3)  // Not connected by default on the NFC Shield
 
-
+byte triplesCount;
 cie_PN532 cie(PN532_SCK, PN532_MISO, PN532_MOSI, PN532_SS);
 
 void setup(void) {
@@ -51,125 +51,169 @@ void loop(void) {
 
   //Good! A card is present, let's read the structure of the EF.SOD file!
   //It's the largest Elementary File in the CIE card
-  cie_BerTriple* rootTriple;
+  triplesCount = 0;
 
   //Take the time
   unsigned long startedAt = millis();
-  if (cie.parse_EF_SOD(rootTriple)) {
-    printTriple(*rootTriple, 0);
-
-
-  } else {
+  if (!cie.parse_EF_SOD(printTriple)) {
     Serial.print(F("Error reading triples"));
   }
   Serial.print("It took ");
   Serial.print(millis()-startedAt);
-  Serial.println(" ms");
+  Serial.print(" ms, ");
+  Serial.print(triplesCount);
+  Serial.print(" triples found, we have ");
+  Serial.print(freeRam());
+  Serial.print(" bytes of free memory.");
+
+  
 
   Serial.println();
   Serial.println(F("Read complete, you can remove the card now"));
   delay(1000);
 }
 
-void printTriple(const cie_BerTriple triple, byte depth) {
-  if (depth > 0) {
-    for (byte i = 0; i < depth; i++) {
+bool printTriple(cie_BerTriple* triple) {
+  triplesCount+=1;
+  if (triple->depth > 0) {
+    for (byte i = 0; i < triple->depth; i++) {
       Serial.print("  ");
     }
   }
 
-  Serial.print(getStringForType(triple.classification, triple.type));
+  printNameForType(triple->classification, triple->type);
   Serial.print(" (offset: ");
-  Serial.print(triple.contentOffset);
+  Serial.print(triple->offset);
   Serial.print(", length: ");
-  Serial.print(triple.contentLength);
-  if (triple.encoding == 0x01) {
-    Serial.print(", children: ");
-    Serial.print(triple.childrenCount);
+  Serial.print(triple->contentOffset - triple->offset);
+  Serial.print("+");
+  Serial.print(triple->contentLength);
+  if (triple->encoding == 0x01) {
+    Serial.println(", constructed)");
+  } else {
+    Serial.println(", primitive)");
   }
-  Serial.println(")");
 
-  for (byte i = 0; i < triple.childrenCount; i++) {
-    cie_BerTriple* child = triple.children[i];
-    printTriple(*child, depth+1);
-  }
+  return true;
 
 }
 
-__FlashStringHelper* getStringForType(const byte classification, const byte type) {
+void printNameForType(const byte classification, const byte type) {
 
   if (classification > 0 ) {
     switch (classification) {
       case 1:
-        return F("APPLICATION");
+        Serial.print(F("APPLICATION"));
+        return;
       case 2: 
         //TODO: return the actual offset
-        return F("[0]");
+        Serial.print(F("["));
+        Serial.print(type);
+        Serial.print(F("]"));
+        return;
       case 3:
-        return F("PRIVATE");
+      Serial.print(F("PRIVATE"));
+      return;
     }
   }
 
   switch(type) {
     case 0x00:
-      return F("END OF CONTENT");
+      Serial.print(F("END OF CONTENT"));
+      break;
     case 0x01:
-      return F("BOOLEAN");
+      Serial.print(F("BOOLEAN"));
+      break;
     case 0x02:
-      return F("INTEGER");
+      Serial.print(F("INTEGER"));
+      break;
     case 0x03:
-      return F("BIT STRING");
+      Serial.print(F("BIT STRING"));
+      break;
     case 0x04:
-      return F("OCTET STRING");
+      Serial.print(F("OCTET STRING"));
+      break;
     case 0x05:
-      return F("NULL");
+      Serial.print(F("NULL"));
+      break;
     case 0x06:
-      return F("OBJECT IDENTIFIER");
+      Serial.print(F("OBJECT IDENTIFIER"));
+      break;
     case 0x07:
-      return F("OBJECT DESCRIPTOR");
+      Serial.print(F("OBJECT DESCRIPTOR"));
+      break;
     case 0x08:
-      return F("EXTERNAL");
+      Serial.print(F("EXTERNAL"));
+      break;
     case 0x09:
-      return F("REAL");
+      Serial.print(F("REAL"));
+      break;
     case 0x0A:
-      return F("ENUMERATED");
+      Serial.print(F("ENUMERATED"));
+      break;
     case 0x0B:
-      return F("EMBEDDED PDV");
+      Serial.print(F("EMBEDDED PDV"));
+      break;
     case 0x0C:
-      return F("UTF8 STRING");
+      Serial.print(F("UTF8 STRING"));
+      break;
     case 0x0D:
-      return F("RELATIVE OID");
+      Serial.print(F("RELATIVE OID"));
+      break;
     case 0x10:
-      return F("SEQUENCE");
+      Serial.print(F("SEQUENCE"));
+      break;
     case 0x11:
-      return F("SET");
+      Serial.print(F("SET"));
+      break;
     case 0x12:
-      return F("NUMERIC STRING");
+      Serial.print(F("NUMERIC STRING"));
+      break;
     case 0x13:
-      return F("PRINTABLE STRING");
+      Serial.print(F("PRINTABLE STRING"));
+      break;
     case 0x14:
-      return F("T61 STRING");
+      Serial.print(F("T61 STRING"));
+      break;
     case 0x15:
-      return F("VIDEOTEX STRING");
+      Serial.print(F("VIDEOTEX STRING"));
+      break;
     case 0x16:
-      return F("IA5 STRING");
+      Serial.print(F("IA5 STRING"));
+      break;
     case 0x17:
-      return F("UTC TIME");
+      Serial.print(F("UTC TIME"));
+      break;
     case 0x18:
-      return F("GENERALIZED TIME");
+      Serial.print(F("GENERALIZED TIME"));
+      break;
     case 0x19:
-      return F("GRAPHIC STRING");
+      Serial.print(F("GRAPHIC STRING"));
+      break;
     case 0x1A:
-      return F("VISIBLE STRING");
+      Serial.print(F("VISIBLE STRING"));
+      break;
     case 0x1B:
-      return F("GENERAL STRING");
+      Serial.print(F("GENERAL STRING"));
+      break;
     case 0x1C:
-      return F("UNIVERSAL STRING");
+      Serial.print(F("UNIVERSAL STRING"));
+      break;
     case 0x1D:
-      return F("CHARACTER STRING");
+      Serial.print(F("CHARACTER STRING"));
+      break;
     case 0x1E:
-      return F("BMP STRING");
+      Serial.print(F("BMP STRING"));
+      break;
     default:
-      return F("UNKNOWN");
+      Serial.print(F("UNKNOWN"));
+      break;
   }
+}
+
+int freeRam ()
+{
+  extern int __heap_start, *__brkval; 
+  int v; 
+  return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
 }
