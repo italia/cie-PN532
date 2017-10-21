@@ -31,6 +31,10 @@ Check out the links above for our tutorials and wiring diagrams
 #define PN532_SS   (4)
 #define PN532_MISO (5)
 
+#define SERVO      (9)
+#define GREEN_LED  (10)
+#define RED_LED    (11)
+
 // I2C is not supported in this release
 //#define PN532_IRQ   (2)
 //#define PN532_RESET (3)  // Not connected by default on the NFC Shield
