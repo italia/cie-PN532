@@ -3,14 +3,15 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to cie-PN532's documentation!
+Benvenuto nella documentazione ufficiale per la CIE!
 =====================================
 
-Contents:
+Contenuti:
 
 .. toctree::
    :maxdepth: 2
 
+   overview
 
 
 Indices and tables
