@@ -118,7 +118,7 @@ void cie_PN532::printHex(byte* buffer, word length) {
   @param  contentBuffer The pointer to data containing the contents of the file
   @param  contentLength The lenght of the file
 	
-  @returns  A boolean value indicating whether the operation suceeded or not
+  @returns  A boolean value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
 bool cie_PN532::read_EF_DH(byte* contentBuffer, word* contentLength) {
@@ -135,7 +135,7 @@ bool cie_PN532::read_EF_DH(byte* contentBuffer, word* contentLength) {
   @param  contentBuffer The pointer to data containing the contents of the file
   @param  contentLength The lenght of the file
 
-  @returns  A boolean value indicating whether the operation suceeded or not
+  @returns  A boolean value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
 bool cie_PN532::read_EF_ATR(byte* contentBuffer, word* contentLength) {
@@ -151,7 +151,7 @@ bool cie_PN532::read_EF_ATR(byte* contentBuffer, word* contentLength) {
   @param  contentBuffer The pointer to data containing the contents of the file
   @param  contentLength The lenght of the file
 
-  @returns  A boolean value indicating whether the operation suceeded or not
+  @returns  A boolean value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
 bool cie_PN532::read_EF_SN_ICC(byte* contentBuffer, word* contentLength) {
@@ -168,7 +168,7 @@ bool cie_PN532::read_EF_SN_ICC(byte* contentBuffer, word* contentLength) {
   @param  contentBuffer The pointer to data containing the contents of the file
   @param  contentLength The lenght of the file
 
-  @returns  A boolean value indicating whether the operation suceeded or not
+  @returns  A boolean value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
 bool cie_PN532::read_EF_ID_Servizi(byte* contentBuffer, word* contentLength) {
@@ -180,12 +180,25 @@ bool cie_PN532::read_EF_ID_Servizi(byte* contentBuffer, word* contentLength) {
 
 /**************************************************************************/
 /*!
+  @brief  Selects the SDO.Servizi_Int.Kpriv private key for internal authentication
+  
+  @returns  A boolean value indicating whether the operation succeeded or not
+*/
+/**************************************************************************/
+bool cie_PN532::select_SDO_Servizi_Int_Kpriv() {
+  cie_EFPath filePath = { CIE_DF, SELECT_BY_SDO, 0x03 };
+  return ensureSdoIsSelected(filePath));
+}
+
+
+/**************************************************************************/
+/*!
   @brief  Reads the binary content of the EF_Int_Kpub elementary file
 
   @param  contentBuffer The pointer to data containing the contents of the file
   @param  contentLength The lenght of the file
 
-  @returns  A boolean value indicating whether the operation suceeded or not
+  @returns  A boolean value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
 bool cie_PN532::read_EF_Int_Kpub(byte* contentBuffer, word* contentLength) {
@@ -201,7 +214,7 @@ bool cie_PN532::read_EF_Int_Kpub(byte* contentBuffer, word* contentLength) {
   @param  contentBuffer The pointer to data containing the contents of the file
   @param  contentLength The lenght of the file
 
-  @returns  A boolean value indicating whether the operation suceeded or not
+  @returns  A boolean value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
 bool cie_PN532::read_EF_Servizi_Int_Kpub(byte* contentBuffer, word* contentLength) {
@@ -217,7 +230,7 @@ bool cie_PN532::read_EF_Servizi_Int_Kpub(byte* contentBuffer, word* contentLengt
   @param  contentBuffer The pointer to data containing the contents of the file
   @param  contentLength The lenght of the file
 	
-  @returns  A boolean value indicating whether the operation suceeded or not
+  @returns  A boolean value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
 bool cie_PN532::print_EF_SOD(word* contentLength) {
@@ -251,7 +264,7 @@ bool cie_PN532::print_EF_SOD(word* contentLength) {
 
   @param  callback A function which will be invoked when a new triple has been read
 	
-  @returns  A boolean value indicating whether the operation suceeded or not
+  @returns  A boolean value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
 bool cie_PN532::parse_EF_SOD(cieBerTripleCallbackFunc callback) {
@@ -271,7 +284,7 @@ bool cie_PN532::parse_EF_SOD(cieBerTripleCallbackFunc callback) {
   @param response The maximum desired length of the response
   @param lengthStrategy How to determine the length of the file (either FIXED_LENGTH or AUTODETECT_BER_LENGTH or AUTODETECT_ATR_LENGTH)
 	
-  @returns  A boolean value indicating whether the operation suceeded or not
+  @returns  A boolean value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
 bool cie_PN532::readElementaryFile(cie_EFPath filePath, byte* contentBuffer, word* contentLength, const byte lengthStrategy) {
@@ -291,7 +304,7 @@ bool cie_PN532::readElementaryFile(cie_EFPath filePath, byte* contentBuffer, wor
   @param df The containing Dedicated File (either ROOT_MF or CIE_DF)
   @param efid The efid of the Elementary File (must be two bytes)
   
-  @returns  A boolean value indicating whether the operation suceeded or not
+  @returns  A boolean value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
 bool cie_PN532::ensureElementaryFileIsSelected(cie_EFPath filePath) {
@@ -336,11 +349,59 @@ bool cie_PN532::ensureElementaryFileIsSelected(cie_EFPath filePath) {
 
 /**************************************************************************/
 /*!
+  @brief  Ensures an elementary file is selected by its SDO ID, that is by sending an MSE mode SET (with AT template) command
+	
+  @param filePath a structure indicating the parent Dedicated File (either ROOT_MF or CIE_DF), the selection mode (either SELECT_BY_EFID or SELECT_BY_SFI) and the file identifier (either a sfi or an efid)
+  
+  @returns  A boolean value indicating whether the operation succeeded or not
+*/
+/**************************************************************************/
+bool cie_PN532::ensureSdoIsSelected(cie_EFPath filePath) {
+  if (filePath.selectionMode != SELECT_BY_SDO) {
+    PN532DEBUGPRINT.println(F("This method should be called just for SOD selection"));
+    return false;
+  }
+
+  if (!ensureDedicatedFileIsSelected(filePath.df)) {
+    return false;
+  }
+
+  //If it's already selected, no need to select it again 
+  if (_currentElementaryFile == filePath.id) {
+    return true;
+  }
+  byte efid[3] = { (byte) (filePath.id >> 16), (byte) ((filePath.id >> 8) & 0b11111111), (byte) (filePath.id & 0b11111111) };
+  byte selectCommand[] = {
+    0x00, //CLA
+    0x22, //INS: MSE mode SET
+    0x41, //P1: Template AT
+    0xA4, //P2
+    0x05, //Lc: Length of the following tag
+    0x84, 0x03, 0xBF, 0x90, 0x02 //0xBF9002 è il SDO ID di 
+  };
+  Serial.println("COMANDO MSE SET");
+  _nfc->PrintHex(selectCommand, sizeof(selectCommand));
+  byte selectResponseLength = 2;
+  byte* selectResponseBuffer = new byte[selectResponseLength];
+  bool success = _nfc->inDataExchange(selectCommand, sizeof(selectCommand), selectResponseBuffer, &selectResponseLength);
+  success = success && hasSuccessStatusWord(selectResponseBuffer, selectResponseLength);
+  delete [] selectResponseBuffer;
+  if (!success) {
+    PN532DEBUGPRINT.print(F("Couldn't select the EF by its SDO "));
+    return false;
+  }
+  _currentElementaryFile = filePath.id;
+  return true;
+}
+
+
+/**************************************************************************/
+/*!
   @brief  Selects a dedicated file in the IAS application
   
   @param df The Dedicated File (either ROOT_MF or CIE_DF)
   
-  @returns  A boolean value indicating whether the operation suceeded or not
+  @returns  A boolean value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
 bool cie_PN532::ensureDedicatedFileIsSelected (const byte df) {
@@ -386,7 +447,7 @@ bool cie_PN532::ensureDedicatedFileIsSelected (const byte df) {
   @param contentLength The pointer to the length value
   @param lengthStrategy The chosen strategy by user (either AUTODETECT_BER_LENGTH or FIXED_LENGTH)
 
-  @returns  A boolean value indicating whether the operation suceeded or not
+  @returns  A boolean value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
 bool cie_PN532::determineLength(const cie_EFPath filePath, word* contentLength, const byte lengthStrategy) {
@@ -424,7 +485,7 @@ bool cie_PN532::determineLength(const cie_EFPath filePath, word* contentLength, 
   @param contentBuffer The pointer to the data buffer
   @param contentLength The number of bytes to read
 
-  @returns  A boolean value indicating whether the operation suceeded or not
+  @returns  A boolean value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
 bool cie_PN532::readBinaryContent(const cie_EFPath filePath, byte* contentBuffer, word startingOffset, const word contentLength) {
@@ -489,7 +550,7 @@ bool cie_PN532::readBinaryContent(const cie_EFPath filePath, byte* contentBuffer
 /*!
   @brief  Selects the ROOT Master File
 	
-  @returns  A boolean value indicating whether the operation suceeded or not
+  @returns  A boolean value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
 bool cie_PN532::selectRootMasterFile(void) {
@@ -598,6 +659,8 @@ bool cie_PN532::hasSuccessStatusWord(byte* response, const word responseLength) 
     PN532DEBUGPRINT.print(F("Incorrect parameters P1-P2"));
   } else if (msByte == 0x6A && lsByte == 0x87) {
     PN532DEBUGPRINT.print(F("Nc inconsistent with parameters P1-P2"));
+  } else if (msByte == 0x67 && lsByte ==	0x00) {
+    PN532DEBUGPRINT.print(F("Wrong length"));
   } else {
     PN532DEBUGPRINT.print(F("Unknow error"));
   }

@@ -69,6 +69,7 @@ class cie_AtrReader;
 //Selection modes
 #define SELECT_BY_EFID                        (0x01)
 #define SELECT_BY_SFI                         (0x02)
+#define SELECT_BY_SDO                         (0x03)
 
 //Paths
 #define NULL_DF                               (0x00)
@@ -94,6 +95,7 @@ class cie_PN532
   bool     read_EF_ID_Servizi(byte* contentBuffer, word* contentLength);
   bool     read_EF_Int_Kpub(byte* contentBuffer, word* contentLength);
   bool     read_EF_Servizi_Int_Kpub(byte* contentBuffer, word* contentLength);
+  bool     select_SDO_Servizi_Int_Kpriv();
 
   // File access
   bool     readElementaryFile(const cie_EFPath filePath, byte* contentBuffer, word* contentLength, const byte lengthStrategy);
@@ -110,13 +112,14 @@ class cie_PN532
   cie_BerReader* _berReader;
   cie_AtrReader* _atrReader;
   byte _currentDedicatedFile;
-  word _currentElementaryFile;
+  unsigned long _currentElementaryFile;
 
   //methods
   void     initFields();
   bool     ensureSelected(const cie_EFPath filePath);
   bool     ensureDedicatedFileIsSelected(const byte df);
   bool     ensureElementaryFileIsSelected(const cie_EFPath filePath);
+  bool     ensureSdoIsSelected(const cie_EFPath filePath);
   bool     selectIasApplication(void);
   bool     selectRootMasterFile(void);
   bool     selectCieDedicatedFile(void);
