@@ -10,7 +10,7 @@ Questa libreria dipende dalla più complessa e articolata libreria Adafruit_PN53
 
     https://github.com/adafruit/Adafruit-PN532
 
-E' fondamentale installare entrambe le libreire Adafruit_PN532 e cie_PN532 nella directory ``/libraries`` di Arduino. Puoi seguire le istruzioni anche sulla guida ufficiale messa a diposizione da Arduino.
+È fondamentale installare entrambe le libreire Adafruit_PN532 e cie_PN532 nella directory ``/libraries`` di Arduino. Puoi seguire le istruzioni anche sulla guida ufficiale messa a diposizione da Arduino.
 
     https://www.arduino.cc/en/Guide/Libraries
 
