@@ -1,0 +1,1299 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js" lang="en">
+<!--<![endif]-->
+
+<head>
+    <meta charset="utf-8"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <title>CIE-PN532 API per Arduino &mdash; cie-PN532 1.0 documentazione</title>
+               
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="_static/css/custom.css" type="text/css" />   
+    <link rel="index" title="Indice" href="genindex.html" />
+    <link rel="search" title="Cerca" href="search.html" />
+    <link rel="top" title="cie-PN532 1.0 documentazione" href="index.html" />
+    <link rel="next" title="Documentazione" href="step_by_step.html" />
+    <link rel="prev" title="Introduzione" href="overview.html" />  
+    <script src="_static/js/modernizr.min.js"></script>
+    <link href="https://fonts.googleapis.com/css?family=Titillium+Web:200,300,400,600,700,900" rel="stylesheet">
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+<div id="slimheader">
+    <!-- Pushy Menu -->
+<nav class="pushy pushy-left">
+    <div class="pushy-content">
+        <div class="pushy-close-button">
+        <a class="pushy-link" href="#">
+        <img src="data:image/png;base64,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">
+        </a>
+        </div><!--/pushy-close-button-->
+        <ul>
+            <li class="pushy-link ">
+                <span class="pushy_subtitle">IL PROGRAMMA</span>
+                <a href="https://pianotriennale-ict.italia.it">Piano Triennale</a>
+            </li>
+            <li class="pushy-link delimiter">
+                <span class="pushy_subtitle">LE COMMUNITY</span>
+                <a href="https://developers.italia.it/">Developers</a>
+            </li>
+            <li class="pushy-link delimiter">
+                <a href="https://designers.italia.it/">Designers</a>
+            </li>
+            </li>
+            <li class="pushy-link delimiter">
+                <span class="pushy_subtitle">GLI STRUMENTI</span>
+                <a href="https://forum.italia.it/">Forum</a>
+            </li>
+            <li class="pushy-link delimiter current">
+                <a href="https://docs.developers.italia.it/">Docs</a>
+            </li>
+            <li class="pushy-link delimiter">
+                <a href="https://github.com/italia/">Github</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+<!-- Site Overlay -->
+<div class="site-overlay"></div>
+
+<!-- Your Content -->
+<div id="container">
+    <!-- Menu Button -->
+
+</div>
+    <div class="sh__wrapper">
+    <div class="sh__institutional">
+        <a class="pushy-menu-btn menu-btn" href="#"><img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyB3aWR0aD0iMTkuMnB4IiBoZWlnaHQ9IjE2cHgiIHZpZXdCb3g9IjAgMCAxMiAxMCIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIj4KICAgIDxkZWZzPjwvZGVmcz4KICAgIDxnIGlkPSIxMDI0dXAiIHN0cm9rZT0ibm9uZSIgc3Ryb2tlLXdpZHRoPSIxIiBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPgogICAgICAgIDxnIGlkPSItLWhvbWUtLS1wYXJhbGxheC0tLW1vYmlsZSIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoLTI0LjAwMDAwMCwgLTIwLjAwMDAwMCkiIGZpbGw9IiNGRkZGRkYiPgogICAgICAgICAgICA8ZyBpZD0iLW5ldHdvcmstc2xpbS1oZWFkZXIiPgogICAgICAgICAgICAgICAgPHBhdGggZD0iTTI0LDI0IEwzNiwyNCBMMzYsMjYgTDI0LDI2IEwyNCwyNCBaIE0yNCwyMCBMMzIsMjAgTDMyLDIyIEwyNCwyMiBMMjQsMjAgWiBNMjQsMjggTDMyLDI4IEwzMiwzMCBMMjQsMzAgTDI0LDI4IFoiIGlkPSJpY29uLXNtYWxsLWJ1cmdlciI+PC9wYXRoPgogICAgICAgICAgICA8L2c+CiAgICAgICAgPC9nPgogICAgPC9nPgo8L3N2Zz4="></a>
+
+        <a href="http://www.agid.gov.it/" title="Agid">AgID</a>
+        <span class="sh__plus">&nbsp;+&nbsp;</span>
+        <a href="https://teamdigitale.governo.it/" title="Team Digitale">Team Digitale</a>
+    </div><!--/sh__institutional-->
+    <div class="sh__tabs">
+    <ul class="sh__tabsul">
+      <li class="delimiter"><a  href="https://pianotriennale-ict.italia.it">Piano Triennale</a></li>
+      <li class=""><a href="https://developers.italia.it/">Developers</a></li>
+      <li class="delimiter"><a  href="https://designers.italia.it">Designers</a></li>
+      <li class=""><a href="https://forum.italia.it/">Forum</a></li>
+      <li class="current"><a href="https://docs.developers.italia.it/">Docs</a></li>
+      <li class=""><a href="https://github.com/italia/">Github</a></li>
+    </ul>
+    </div><!--/.sh__tabs-->
+		<div class="burger" data-toggle="wy-nav-top">
+		  <img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4NCjxzdmcgdmVyc2lvbj0iMS4xIiBpZD0iTGF5ZXJfMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayIgeD0iMHB4IiB5PSIwcHgiDQoJIHZpZXdCb3g9IjAgMCAzMiAzMiIgc3R5bGU9ImVuYWJsZS1iYWNrZ3JvdW5kOm5ldyAwIDAgMzIgMzI7IiB4bWw6c3BhY2U9InByZXNlcnZlIj4NCjxzdHlsZSB0eXBlPSJ0ZXh0L2NzcyI+DQoJLnN0MHtmaWxsOiNGRkZGRkY7fQ0KPC9zdHlsZT4NCjxwYXRoIGNsYXNzPSJzdDAiIGQ9Ik02LjEsOC45bDE3LDE3YzAuOCwwLjgsMi4xLDAuOCwyLjgsMGMwLjgtMC44LDAuOC0yLjEsMC0yLjhsLTE3LTE3Yy0wLjgtMC44LTIuMS0wLjgtMi44LDBTNS4zLDguMiw2LjEsOC45eiINCgkvPg0KPHBhdGggY2xhc3M9InN0MCIgZD0iTTIzLjEsNi4xbC0xNywxN2MtMC44LDAuOC0wLjgsMi4xLDAsMi44YzAuOCwwLjgsMi4xLDAuOCwyLjgsMGwxNy0xN2MwLjgtMC44LDAuOC0yLjEsMC0yLjgNCglDMjUuMSw1LjMsMjMuOCw1LjMsMjMuMSw2LjF6Ii8+DQo8L3N2Zz4=">
+		</div>
+    </div><!--/.wrapper-->
+</div><!--/#slimheader-->
+
+
+     
+    <div class="wy-grid-for-nav">
+
+        
+        <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+            <div class="wy-side-scroll">
+                <div class="wy-side-nav-search">
+                    
+
+                    <div class="branding clearfix">
+                        <div class="branding--logo">
+                            <a href="https://docs.developers.italia.it">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160">
+                              <g fill="none" fill-rule="evenodd">
+                                <path d="M0 0h160v160H0z"/>
+                                <path fill="#fff" d="M58.28 131.956V49.918h21.5v82.184h-21.5v-.146zm84.435-63.353h-19.65v33.72c0 3.358.143 5.547.285 7.007.143 1.314.712 2.482 1.71 3.504.996 1.02 2.562 1.46 4.698 1.46l12.245-.293.997 17.52c-7.12 1.606-12.673 2.48-16.375 2.48-9.682 0-16.232-2.19-19.65-6.713-3.56-4.38-5.267-12.554-5.267-24.524V27h21.5v22.772h19.65v18.83h-.143zM25.957 74.88c-3.702 0-6.834-1.314-9.255-3.94C14.282 68.31 13 65.1 13 61.303c0-3.795 1.28-7.007 3.56-9.634 2.42-2.63 5.553-3.798 9.255-3.798 3.702 0 6.835 1.314 9.255 3.942 2.42 2.627 3.56 5.84 3.56 9.78 0 3.942-1.14 7.007-3.56 9.635-2.278 2.335-5.268 3.65-9.113 3.65z"/>
+                              </g>
+                            </svg>
+                          </a>
+                        </div>
+                        <div class="branding--content">
+                            <h2 class="branding--title">
+                                <span class="branding--title--branch">/ <a href="https://docs.developers.italia.it">docs</a></span>
+                            </h2>
+                        </div>
+                    </div>
+
+                    
+                    
+                    <h1 class="project-title"><a href="index.html" > cie-PN532 </a>
+                       
+                      
+                      <br/><small>versione: </small><span class="version">1.0</span>
+                    </h1>
+                       
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Cerca nel documento" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div> 
+                </div>
+
+                <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+                     
+                    
+                      
+                    
+                    
+                      <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Introduzione</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">CIE-PN532 API per Arduino</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#utilizzo-di-sphnix-e-doxygen">Utilizzo di Sphnix e Doxygen</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#application-programming-interface">Application Programming Interface</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="step_by_step.html">Documentazione</a></li>
+</ul>
+
+                    
+                    
+                </div>
+            </div>
+        </nav>
+
+        <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+            
+            <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+				    
+                <div class="logo">
+                  <a href="https://docs.developers.italia.it">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 160 160">
+                    <g fill="none" fill-rule="evenodd">
+                      <path d="M0 0h160v160H0z"/>
+                      <path fill="#fff" d="M58.28 131.956V49.918h21.5v82.184h-21.5v-.146zm84.435-63.353h-19.65v33.72c0 3.358.143 5.547.285 7.007.143 1.314.712 2.482 1.71 3.504.996 1.02 2.562 1.46 4.698 1.46l12.245-.293.997 17.52c-7.12 1.606-12.673 2.48-16.375 2.48-9.682 0-16.232-2.19-19.65-6.713-3.56-4.38-5.267-12.554-5.267-24.524V27h21.5v22.772h19.65v18.83h-.143zM25.957 74.88c-3.702 0-6.834-1.314-9.255-3.94C14.282 68.31 13 65.1 13 61.303c0-3.795 1.28-7.007 3.56-9.634 2.42-2.63 5.553-3.798 9.255-3.798 3.702 0 6.835 1.314 9.255 3.942 2.42 2.627 3.56 5.84 3.56 9.78 0 3.942-1.14 7.007-3.56 9.635-2.278 2.335-5.268 3.65-9.113 3.65z"/>
+                    </g>
+                  </svg>
+                  </a>
+                </div>
+                <div class="title">
+                  <a href="index.html">cie-PN532</a>
+                </div>
+                <div class="burger" data-toggle="wy-nav-top">
+                  <img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4NCjxzdmcgdmVyc2lvbj0iMS4xIiBpZD0iTGF5ZXJfMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayIgeD0iMHB4IiB5PSIwcHgiDQoJIHZpZXdCb3g9IjAgMCAzMiAzMiIgc3R5bGU9ImVuYWJsZS1iYWNrZ3JvdW5kOm5ldyAwIDAgMzIgMzI7IiB4bWw6c3BhY2U9InByZXNlcnZlIj4NCjxzdHlsZSB0eXBlPSJ0ZXh0L2NzcyI+DQoJLnN0MHtmaWxsOiNGRkZGRkY7fQ0KPC9zdHlsZT4NCjxwYXRoIGNsYXNzPSJzdDAiIGQ9Ik00LDhoMjRjMS4xLDAsMi0wLjksMi0ycy0wLjktMi0yLTJINEMyLjksNCwyLDQuOSwyLDZTMi45LDgsNCw4eiIvPg0KPHBhdGggY2xhc3M9InN0MCIgZD0iTTI4LDE0SDRjLTEuMSwwLTIsMC45LTIsMnMwLjksMiwyLDJoMjRjMS4xLDAsMi0wLjksMi0yUzI5LjEsMTQsMjgsMTR6Ii8+DQo8cGF0aCBjbGFzcz0ic3QwIiBkPSJNMjgsMjRINGMtMS4xLDAtMiwwLjktMiwyczAuOSwyLDIsMmgyNGMxLjEsMCwyLTAuOSwyLTJTMjkuMSwyNCwyOCwyNHoiLz4NCjwvc3ZnPg==">
+                </div>
+            
+            </nav>
+            <div class="nav-overlay" data-toggle="wy-nav-top"></div>
+
+
+            
+            <div class="wy-nav-content">
+                <div class="rst-content">
+                    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Indice</a> &raquo;</li>
+        
+      <li>CIE-PN532 API per Arduino</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/autogenerated_doc.rst.txt" rel="nofollow"> Vedi sorgente pagina</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+                    <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+                        <div itemprop="articleBody">
+                            
+  <div class="section" id="cie-pn532-api-per-arduino">
+<h1>CIE-PN532 API per Arduino<a class="headerlink" href="#cie-pn532-api-per-arduino" title="Link a questa intestazione">¶</a></h1>
+<div class="section" id="utilizzo-di-sphnix-e-doxygen">
+<h2>Utilizzo di Sphnix e Doxygen<a class="headerlink" href="#utilizzo-di-sphnix-e-doxygen" title="Link a questa intestazione">¶</a></h2>
+<p>Di seguito è possibile trovare tutte le <strong>API</strong> presenti nel codice.
+Il risultato visualizzato è frutto dell’integrazione tra Doxygen e Sphinx.</p>
+</div>
+<div class="section" id="application-programming-interface">
+<h2>Application Programming Interface<a class="headerlink" href="#application-programming-interface" title="Link a questa intestazione">¶</a></h2>
+<dl class="class">
+<dt id="_CPPv213cie_AtrReader">
+<span id="cie_AtrReader"></span><span class="target" id="classcie__AtrReader"></span><em class="property">class </em><code class="descname">cie_AtrReader</code><a class="headerlink" href="#_CPPv213cie_AtrReader" title="Link a questa definizione">¶</a><br /></dt>
+<dd><div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Functions</p>
+<dl class="function">
+<dt id="_CPPv2N13cie_AtrReader13cie_AtrReaderEP9cie_PN532">
+<span id="cie_AtrReader::cie_AtrReader__cie_PN532P"></span><span class="target" id="classcie__AtrReader_1a0f98dc44f533e5b72a2111e7f1443114"></span><code class="descname">cie_AtrReader</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv29cie_PN532" title="cie_PN532">cie_PN532</a> *<em>cie</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N13cie_AtrReader13cie_AtrReaderEP9cie_PN532" title="Link a questa definizione">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N13cie_AtrReader12detectLengthEK10cie_EFPathP4word">
+<span id="cie_AtrReader::detectLength__cie_EFPathC.wordP"></span><span class="target" id="classcie__AtrReader_1a17a40b339347d156e5974bf71ce23b62"></span>bool <code class="descname">detectLength</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv210cie_EFPath" title="cie_EFPath">cie_EFPath</a> <em>filePath</em>, word *<em>contentLength</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N13cie_AtrReader12detectLengthEK10cie_EFPathP4word" title="Link a questa definizione">¶</a><br /></dt>
+<dd><p>Detects the length of an Elementary File by reading its ATR encoded content. </p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>A value indicating whether the operation succeeded or not </dd>
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal"><span class="pre">filePath</span></code>: a structure indicating the parent Dedicated File (either ROOT_MF or CIE_DF), the selection mode (either SELECT_BY_EFID or SELECT_BY_SFI) and the file identifier (either a sfi or an efid) </li>
+<li><code class="docutils literal"><span class="pre">contentLength</span></code>: The pointer to the length value</li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Private Members</p>
+<dl class="member">
+<dt id="_CPPv2N13cie_AtrReader4_cieE">
+<span id="cie_AtrReader::_cie__cie_PN532P"></span><span class="target" id="classcie__AtrReader_1a193af10a26b5d603185ff8bca15ded55"></span><a class="reference internal" href="#_CPPv29cie_PN532" title="cie_PN532">cie_PN532</a> *<code class="descname">_cie</code><a class="headerlink" href="#_CPPv2N13cie_AtrReader4_cieE" title="Link a questa definizione">¶</a><br /></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt id="_CPPv213cie_BerReader">
+<span id="cie_BerReader"></span><span class="target" id="classcie__BerReader"></span><em class="property">class </em><code class="descname">cie_BerReader</code><a class="headerlink" href="#_CPPv213cie_BerReader" title="Link a questa definizione">¶</a><br /></dt>
+<dd><div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Functions</p>
+<dl class="function">
+<dt id="_CPPv2N13cie_BerReader13cie_BerReaderEP9cie_PN532">
+<span id="cie_BerReader::cie_BerReader__cie_PN532P"></span><span class="target" id="classcie__BerReader_1a40bf0e1fbe98ade2e6aa90e8ebac44ff"></span><code class="descname">cie_BerReader</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv29cie_PN532" title="cie_PN532">cie_PN532</a> *<em>cie</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N13cie_BerReader13cie_BerReaderEP9cie_PN532" title="Link a questa definizione">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N13cie_BerReader11readTriplesEK10cie_EFPath24cieBerTripleCallbackFuncP4wordK4byte">
+<span id="cie_BerReader::readTriples__cie_EFPathC.cieBerTripleCallbackFunc.wordP.byteC"></span><span class="target" id="classcie__BerReader_1a3c8abcfbee8fe9e5f51615102b2ebd1d"></span>bool <code class="descname">readTriples</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv210cie_EFPath" title="cie_EFPath">cie_EFPath</a> <em>filePath</em>, <a class="reference internal" href="#_CPPv224cieBerTripleCallbackFunc" title="cieBerTripleCallbackFunc">cieBerTripleCallbackFunc</a> <em>callback</em>, word *<em>length</em>, <em class="property">const</em> byte <em>maxDepth</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N13cie_BerReader11readTriplesEK10cie_EFPath24cieBerTripleCallbackFuncP4wordK4byte" title="Link a questa definizione">¶</a><br /></dt>
+<dd><p>Reads the triples hierarchy in the BER encoded file. </p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>A value indicating whether the operation succeeded or not </dd>
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal"><span class="pre">filePath</span></code>: a structure indicating the parent Dedicated File (either ROOT_MF or CIE_DF), the selection mode (either SELECT_BY_EFID or SELECT_BY_SFI) and the file identifier (either a sfi or an efid) </li>
+<li><code class="docutils literal"><span class="pre">rootTriple</span></code>: The pointer to the root triple which will contain all of the others as its children </li>
+<li><code class="docutils literal"><span class="pre">length</span></code>: The pointer to the outer length (tag octets + length octets + content length) </li>
+<li><code class="docutils literal"><span class="pre">maxDepth</span></code>: How deep down in the hierarchy we should look for triples</li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Private Functions</p>
+<dl class="function">
+<dt id="_CPPv2N13cie_BerReader11resetCursorEv">
+<span id="cie_BerReader::resetCursor"></span><span class="target" id="classcie__BerReader_1ad1ff54c9967b46538d8c784dfc45e0f0"></span>void <code class="descname">resetCursor</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N13cie_BerReader11resetCursorEv" title="Link a questa definizione">¶</a><br /></dt>
+<dd><p>Resets the cursor to the binary content. </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N13cie_BerReader8areEqualEP4byte4byteP4byte4byte">
+<span id="cie_BerReader::areEqual__byteP.byte.byteP.byte"></span><span class="target" id="classcie__BerReader_1a5bce3e2fed4d98ad4ebb52cb84eabb06"></span>bool <code class="descname">areEqual</code><span class="sig-paren">(</span>byte *<em>buffer1</em>, byte <em>length1</em>, byte *<em>buffer2</em>, byte <em>length2</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N13cie_BerReader8areEqualEP4byte4byteP4byte4byte" title="Link a questa definizione">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N13cie_BerReader17readBinaryContentEK10cie_EFPathK4wordK4word">
+<span id="cie_BerReader::readBinaryContent__cie_EFPathC.wordC.wordC"></span><span class="target" id="classcie__BerReader_1a5e82c788072506822114033c63219ddd"></span>void <code class="descname">readBinaryContent</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv210cie_EFPath" title="cie_EFPath">cie_EFPath</a> <em>filePath</em>, <em class="property">const</em> word <em>offset</em>, <em class="property">const</em> word <em>length</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N13cie_BerReader17readBinaryContentEK10cie_EFPathK4wordK4word" title="Link a questa definizione">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N13cie_BerReader10readTripleEK10cie_EFPathRP13cie_BerTripleP4word">
+<span id="cie_BerReader::readTriple__cie_EFPathC.cie_BerTriplePR.wordP"></span><span class="target" id="classcie__BerReader_1a195d876c24c8b2e64adbd13c81a62da5"></span>bool <code class="descname">readTriple</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv210cie_EFPath" title="cie_EFPath">cie_EFPath</a> <em>filePath</em>, <a class="reference internal" href="#_CPPv213cie_BerTriple" title="cie_BerTriple">cie_BerTriple</a> *&amp;<em>triple</em>, word *<em>length</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N13cie_BerReader10readTripleEK10cie_EFPathRP13cie_BerTripleP4word" title="Link a questa definizione">¶</a><br /></dt>
+<dd><p>Extracts informations from a single triple. </p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>A value indicating whether the operation succeeded or not </dd>
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal"><span class="pre">filePath</span></code>: a structure indicating the parent Dedicated File (either ROOT_MF or CIE_DF), the selection mode (either SELECT_BY_EFID or SELECT_BY_SFI) and the file identifier (either a sfi or an efid) </li>
+<li><code class="docutils literal"><span class="pre">triple</span></code>: The pointer to the triple object </li>
+<li><code class="docutils literal"><span class="pre">length</span></code>: The pointer to the outer length (tag octets + length octets + content length)</li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N13cie_BerReader15readTripleValueEK13cie_BerTripleP4byte">
+<span id="cie_BerReader::readTripleValue__cie_BerTripleC.byteP"></span><span class="target" id="classcie__BerReader_1ade75cc58849733066c1a36e6d7a2a055"></span>bool <code class="descname">readTripleValue</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv213cie_BerTriple" title="cie_BerTriple">cie_BerTriple</a> <em>triple</em>, byte *<em>buffer</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N13cie_BerReader15readTripleValueEK13cie_BerTripleP4byte" title="Link a questa definizione">¶</a><br /></dt>
+<dd><p>Reads the binary content of a triple into the buffer. </p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>A value indicating whether the operation succeeded or not </dd>
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal"><span class="pre">triple</span></code>: The triple to be read </li>
+<li><code class="docutils literal"><span class="pre">buffer</span></code>: The pointer to the buffer where the binary content will be written to</li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N13cie_BerReader12detectLengthEK10cie_EFPathP4wordP4wordP4byte">
+<span id="cie_BerReader::detectLength__cie_EFPathC.wordP.wordP.byteP"></span><span class="target" id="classcie__BerReader_1a2182a0f026274463c342b7a84809dd8c"></span>bool <code class="descname">detectLength</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv210cie_EFPath" title="cie_EFPath">cie_EFPath</a> <em>filePath</em>, word *<em>contentOffset</em>, word *<em>contentLength</em>, byte *<em>lengthOctets</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N13cie_BerReader12detectLengthEK10cie_EFPathP4wordP4wordP4byte" title="Link a questa definizione">¶</a><br /></dt>
+<dd><p>Detects the content length in a triple. </p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>A value indicating whether the operation succeeded or not </dd>
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal"><span class="pre">filePath</span></code>: a structure indicating the parent Dedicated File (either ROOT_MF or CIE_DF), the selection mode (either SELECT_BY_EFID or SELECT_BY_SFI) and the file identifier (either a sfi or an efid) </li>
+<li><code class="docutils literal"><span class="pre">contentLength</span></code>: The pointer to binary content length </li>
+<li><code class="docutils literal"><span class="pre">lengthOctets</span></code>: The pointer to the number of length octets found in this triple)</li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N13cie_BerReader9detectTagEK10cie_EFPathP4byteP4byteP4wordP4byte">
+<span id="cie_BerReader::detectTag__cie_EFPathC.byteP.byteP.wordP.byteP"></span><span class="target" id="classcie__BerReader_1a80de39ab5da1cdeab2c7494cd0bcabe5"></span>bool <code class="descname">detectTag</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv210cie_EFPath" title="cie_EFPath">cie_EFPath</a> <em>filePath</em>, byte *<em>classification</em>, byte *<em>encoding</em>, word *<em>type</em>, byte *<em>tagOctets</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N13cie_BerReader9detectTagEK10cie_EFPathP4byteP4byteP4wordP4byte" title="Link a questa definizione">¶</a><br /></dt>
+<dd><p>Detects the tag type, class and content encoding. </p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>A value indicating whether the operation succeeded or not </dd>
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal"><span class="pre">filePath</span></code>: a structure indicating the parent Dedicated File (either ROOT_MF or CIE_DF), the selection mode (either SELECT_BY_EFID or SELECT_BY_SFI) and the file identifier (either a sfi or an efid) </li>
+<li><code class="docutils literal"><span class="pre">classification</span></code>: The pointer to the detected class value </li>
+<li><code class="docutils literal"><span class="pre">encoding</span></code>: The pointer to the detected binary content encoding (either primitive or constructed) </li>
+<li><code class="docutils literal"><span class="pre">type</span></code>: The pointer to the detected type value </li>
+<li><code class="docutils literal"><span class="pre">tagOctets</span></code>: The pointer to the number of tag octets found in this triple </li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N13cie_BerReader10readOctetsEK10cie_EFPathP4byteK4wordK4word">
+<span id="cie_BerReader::readOctets__cie_EFPathC.byteP.wordC.wordC"></span><span class="target" id="classcie__BerReader_1a9cef2230ba5535b68a3bff5706f52386"></span>bool <code class="descname">readOctets</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv210cie_EFPath" title="cie_EFPath">cie_EFPath</a> <em>filePath</em>, byte *<em>buffer</em>, <em class="property">const</em> word <em>offset</em>, <em class="property">const</em> word <em>length</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N13cie_BerReader10readOctetsEK10cie_EFPathP4byteK4wordK4word" title="Link a questa definizione">¶</a><br /></dt>
+<dd><p>Reads bytes from the file. </p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>A value indicating whether the operation succeeded or not </dd>
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal"><span class="pre">filePath</span></code>: a structure indicating the parent Dedicated File (either ROOT_MF or CIE_DF), the selection mode (either SELECT_BY_EFID or SELECT_BY_SFI) and the file identifier (either a sfi or an efid) </li>
+<li><code class="docutils literal"><span class="pre">buffer</span></code>: The pointer to the buffer which will contain the octets </li>
+<li><code class="docutils literal"><span class="pre">offset</span></code>: The offset from which we should read </li>
+<li><code class="docutils literal"><span class="pre">length</span></code>: The number of bytes to read</li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N13cie_BerReader10readOctetsEK10cie_EFPathP4byteK4word">
+<span id="cie_BerReader::readOctets__cie_EFPathC.byteP.wordC"></span><span class="target" id="classcie__BerReader_1a6a7eb85d1bf274750fd6264231ab83f9"></span>bool <code class="descname">readOctets</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv210cie_EFPath" title="cie_EFPath">cie_EFPath</a> <em>filePath</em>, byte *<em>buffer</em>, <em class="property">const</em> word <em>length</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N13cie_BerReader10readOctetsEK10cie_EFPathP4byteK4word" title="Link a questa definizione">¶</a><br /></dt>
+<dd><p>Reads bytes from the file. </p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>A value indicating whether the operation succeeded or not </dd>
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal"><span class="pre">filePath</span></code>: a structure indicating the parent Dedicated File (either ROOT_MF or CIE_DF), the selection mode (either SELECT_BY_EFID or SELECT_BY_SFI) and the file identifier (either a sfi or an efid) </li>
+<li><code class="docutils literal"><span class="pre">buffer</span></code>: The pointer to the buffer which will contain the octets </li>
+<li><code class="docutils literal"><span class="pre">length</span></code>: The number of bytes to read</li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N13cie_BerReader9readOctetEK10cie_EFPathP4byte">
+<span id="cie_BerReader::readOctet__cie_EFPathC.byteP"></span><span class="target" id="classcie__BerReader_1afd894d4fd246e1b2352afbbc49e5dc2f"></span>bool <code class="descname">readOctet</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv210cie_EFPath" title="cie_EFPath">cie_EFPath</a> <em>filePath</em>, byte *<em>octet</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N13cie_BerReader9readOctetEK10cie_EFPathP4byte" title="Link a questa definizione">¶</a><br /></dt>
+<dd><p>Reads bytes from the file. </p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>A value indicating whether the operation succeeded or not </dd>
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal"><span class="pre">filePath</span></code>: a structure indicating the parent Dedicated File (either ROOT_MF or CIE_DF), the selection mode (either SELECT_BY_EFID or SELECT_BY_SFI) and the file identifier (either a sfi or an efid) </li>
+<li><code class="docutils literal"><span class="pre">octet</span></code>: The pointer to the byte read</li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Private Members</p>
+<dl class="member">
+<dt id="_CPPv2N13cie_BerReader4_cieE">
+<span id="cie_BerReader::_cie__cie_PN532P"></span><span class="target" id="classcie__BerReader_1a5cb7ad06eaf1f636077c9c0f40668f37"></span><a class="reference internal" href="#_CPPv29cie_PN532" title="cie_PN532">cie_PN532</a> *<code class="descname">_cie</code><a class="headerlink" href="#_CPPv2N13cie_BerReader4_cieE" title="Link a questa definizione">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv2N13cie_BerReader14_currentOffsetE">
+<span id="cie_BerReader::_currentOffset__word"></span><span class="target" id="classcie__BerReader_1aae93c20bb32d081fd2de06ac8cb68c6a"></span>word <code class="descname">_currentOffset</code><a class="headerlink" href="#_CPPv2N13cie_BerReader14_currentOffsetE" title="Link a questa definizione">¶</a><br /></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt id="_CPPv213cie_BerTriple">
+<span id="cie_BerTriple"></span><span class="target" id="classcie__BerTriple"></span><em class="property">class </em><code class="descname">cie_BerTriple</code><a class="headerlink" href="#_CPPv213cie_BerTriple" title="Link a questa definizione">¶</a><br /></dt>
+<dd><div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Members</p>
+<dl class="member">
+<dt id="_CPPv2N13cie_BerTriple14classificationE">
+<span id="cie_BerTriple::classification__byte"></span><span class="target" id="classcie__BerTriple_1a6d4456082efedc29211638355b686cce"></span>byte <code class="descname">classification</code><a class="headerlink" href="#_CPPv2N13cie_BerTriple14classificationE" title="Link a questa definizione">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv2N13cie_BerTriple8encodingE">
+<span id="cie_BerTriple::encoding__byte"></span><span class="target" id="classcie__BerTriple_1a067c989ceb2407a2fc0bab9c1b14f2c3"></span>byte <code class="descname">encoding</code><a class="headerlink" href="#_CPPv2N13cie_BerTriple8encodingE" title="Link a questa definizione">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv2N13cie_BerTriple4typeE">
+<span id="cie_BerTriple::type__unsigned-i"></span><span class="target" id="classcie__BerTriple_1a01b0ccac695aa38a70cbf3d8e745f7de"></span>unsigned int <code class="descname">type</code><a class="headerlink" href="#_CPPv2N13cie_BerTriple4typeE" title="Link a questa definizione">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv2N13cie_BerTriple6offsetE">
+<span id="cie_BerTriple::offset__word"></span><span class="target" id="classcie__BerTriple_1aa55a63c680ea48d63f9442fdaf0339c9"></span>word <code class="descname">offset</code><a class="headerlink" href="#_CPPv2N13cie_BerTriple6offsetE" title="Link a questa definizione">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv2N13cie_BerTriple13contentOffsetE">
+<span id="cie_BerTriple::contentOffset__word"></span><span class="target" id="classcie__BerTriple_1a3a509d27802b92d0b3a2a075f4f61f45"></span>word <code class="descname">contentOffset</code><a class="headerlink" href="#_CPPv2N13cie_BerTriple13contentOffsetE" title="Link a questa definizione">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv2N13cie_BerTriple13contentLengthE">
+<span id="cie_BerTriple::contentLength__word"></span><span class="target" id="classcie__BerTriple_1a17509c2d5c3c5cdf57c268c5c89f5650"></span>word <code class="descname">contentLength</code><a class="headerlink" href="#_CPPv2N13cie_BerTriple13contentLengthE" title="Link a questa definizione">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv2N13cie_BerTriple5depthE">
+<span id="cie_BerTriple::depth__byte"></span><span class="target" id="classcie__BerTriple_1a2d5a2e18f25c8c53232b186fae27ed58"></span>byte <code class="descname">depth</code><a class="headerlink" href="#_CPPv2N13cie_BerTriple5depthE" title="Link a questa definizione">¶</a><br /></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt id="_CPPv210cie_EFPath">
+<span id="cie_EFPath"></span><span class="target" id="structcie__EFPath"></span><em class="property">struct </em><code class="descname">cie_EFPath</code><a class="headerlink" href="#_CPPv210cie_EFPath" title="Link a questa definizione">¶</a><br /></dt>
+<dd><div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Members</p>
+<dl class="member">
+<dt id="_CPPv2N10cie_EFPath2dfE">
+<span id="cie_EFPath::df__byte"></span><span class="target" id="structcie__EFPath_1aac7d0e966e9914154715f527cd5553db"></span>byte <code class="descname">df</code><a class="headerlink" href="#_CPPv2N10cie_EFPath2dfE" title="Link a questa definizione">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv2N10cie_EFPath13selectionModeE">
+<span id="cie_EFPath::selectionMode__byte"></span><span class="target" id="structcie__EFPath_1afc743a4370310a082c0c3c2b56e58dc5"></span>byte <code class="descname">selectionMode</code><a class="headerlink" href="#_CPPv2N10cie_EFPath13selectionModeE" title="Link a questa definizione">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv2N10cie_EFPath2idE">
+<span id="cie_EFPath::id__word"></span><span class="target" id="structcie__EFPath_1a2ffe65e36ee05b04e461764e9271f876"></span>word <code class="descname">id</code><a class="headerlink" href="#_CPPv2N10cie_EFPath2idE" title="Link a questa definizione">¶</a><br /></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt id="_CPPv29cie_PN532">
+<span id="cie_PN532"></span><span class="target" id="classcie__PN532"></span><em class="property">class </em><code class="descname">cie_PN532</code><a class="headerlink" href="#_CPPv29cie_PN532" title="Link a questa definizione">¶</a><br /></dt>
+<dd><div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Functions</p>
+<dl class="function">
+<dt id="_CPPv2N9cie_PN5329cie_PN532Ev">
+<span id="cie_PN532::cie_PN532"></span><span class="target" id="classcie__PN532_1a598bf209af815df4546e340844a3c659"></span><code class="descname">cie_PN532</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N9cie_PN5329cie_PN532Ev" title="Link a questa definizione">¶</a><br /></dt>
+<dd><p>Create with the typical breakout wiring, as described by Adafruit: <a class="reference external" href="https://learn.adafruit.com/adafruit-pn532-rfid-nfc/breakout-wiring">https://learn.adafruit.com/adafruit-pn532-rfid-nfc/breakout-wiring</a>. </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N9cie_PN5329cie_PN532E4byte4byte4byte4byte">
+<span id="cie_PN532::cie_PN532__byte.byte.byte.byte"></span><span class="target" id="classcie__PN532_1a2b0f7beddebdbebd17d8d0bb39dd8f30"></span><code class="descname">cie_PN532</code><span class="sig-paren">(</span>byte <em>clk</em>, byte <em>miso</em>, byte <em>mosi</em>, byte <em>ss</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N9cie_PN5329cie_PN532E4byte4byte4byte4byte" title="Link a questa definizione">¶</a><br /></dt>
+<dd><p>Create with a customized wiring. </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N9cie_PN5329cie_PN532EP14Adafruit_PN532">
+<span id="cie_PN532::cie_PN532__Adafruit_PN532P"></span><span class="target" id="classcie__PN532_1ac4533e38683f295bdafdfa89f9bb666b"></span><code class="descname">cie_PN532</code><span class="sig-paren">(</span>Adafruit_PN532 *<em>nfc</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N9cie_PN5329cie_PN532EP14Adafruit_PN532" title="Link a questa definizione">¶</a><br /></dt>
+<dd><p>Create with a custom instance of the Adafruit_PN532 class. </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N9cie_PN532D0Ev">
+<span id="cie_PN532::~cie_PN532"></span><span class="target" id="classcie__PN532_1a77e9f1e799b717ca7cf9ae92dd908da5"></span><code class="descname">~cie_PN532</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N9cie_PN532D0Ev" title="Link a questa definizione">¶</a><br /></dt>
+<dd><p>Frees resources. </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N9cie_PN5325beginEv">
+<span id="cie_PN532::begin__void"></span><span class="target" id="classcie__PN532_1a62bdc53c85283fcc50db2b63971731d9"></span>void <code class="descname">begin</code><span class="sig-paren">(</span>void<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N9cie_PN5325beginEv" title="Link a questa definizione">¶</a><br /></dt>
+<dd><p>Initialize the PN532 board. </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N9cie_PN53210detectCardEv">
+<span id="cie_PN532::detectCard"></span><span class="target" id="classcie__PN532_1acfbecd5760d2c9d44f7fed6887c23ca5"></span>bool <code class="descname">detectCard</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N9cie_PN53210detectCardEv" title="Link a questa definizione">¶</a><br /></dt>
+<dd><p>Dumps all values present in the CIE. Call this in your loop. </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N9cie_PN53210read_EF_DHEP4byteP4word">
+<span id="cie_PN532::read_EF_DH__byteP.wordP"></span><span class="target" id="classcie__PN532_1a6d85fee99b47537e424bc3326bfa879f"></span>bool <code class="descname">read_EF_DH</code><span class="sig-paren">(</span>byte *<em>contentBuffer</em>, word *<em>contentLength</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N9cie_PN53210read_EF_DHEP4byteP4word" title="Link a questa definizione">¶</a><br /></dt>
+<dd><p>Reads the binary content the EF_DH elementary file. </p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>A boolean value indicating whether the operation suceeded or not </dd>
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal"><span class="pre">contentBuffer</span></code>: The pointer to data containing the contents of the file </li>
+<li><code class="docutils literal"><span class="pre">contentLength</span></code>: The lenght of the file</li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N9cie_PN53211read_EF_ATREP4byteP4word">
+<span id="cie_PN532::read_EF_ATR__byteP.wordP"></span><span class="target" id="classcie__PN532_1a8985cb0fb809be1cce9cf8fcfad09bb4"></span>bool <code class="descname">read_EF_ATR</code><span class="sig-paren">(</span>byte *<em>contentBuffer</em>, word *<em>contentLength</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N9cie_PN53211read_EF_ATREP4byteP4word" title="Link a questa definizione">¶</a><br /></dt>
+<dd><p>Reads the binary content of the EF_ATR elementary file. </p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>A boolean value indicating whether the operation suceeded or not </dd>
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal"><span class="pre">contentBuffer</span></code>: The pointer to data containing the contents of the file </li>
+<li><code class="docutils literal"><span class="pre">contentLength</span></code>: The lenght of the file</li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N9cie_PN53214read_EF_SN_ICCEP4byteP4word">
+<span id="cie_PN532::read_EF_SN_ICC__byteP.wordP"></span><span class="target" id="classcie__PN532_1ad4398cf9f09198ad20a734b405f35fb6"></span>bool <code class="descname">read_EF_SN_ICC</code><span class="sig-paren">(</span>byte *<em>contentBuffer</em>, word *<em>contentLength</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N9cie_PN53214read_EF_SN_ICCEP4byteP4word" title="Link a questa definizione">¶</a><br /></dt>
+<dd><p>Reads the binary content of the SN_ICC elementary file. </p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>A boolean value indicating whether the operation suceeded or not </dd>
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal"><span class="pre">contentBuffer</span></code>: The pointer to data containing the contents of the file </li>
+<li><code class="docutils literal"><span class="pre">contentLength</span></code>: The lenght of the file</li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N9cie_PN53218read_EF_ID_ServiziEP4byteP4word">
+<span id="cie_PN532::read_EF_ID_Servizi__byteP.wordP"></span><span class="target" id="classcie__PN532_1ab8aedeffa797c1b164299c3dd19056d1"></span>bool <code class="descname">read_EF_ID_Servizi</code><span class="sig-paren">(</span>byte *<em>contentBuffer</em>, word *<em>contentLength</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N9cie_PN53218read_EF_ID_ServiziEP4byteP4word" title="Link a questa definizione">¶</a><br /></dt>
+<dd><p>Reads the binary content of the EF_ID_Servizi elementary file. </p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>A boolean value indicating whether the operation suceeded or not </dd>
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal"><span class="pre">contentBuffer</span></code>: The pointer to data containing the contents of the file </li>
+<li><code class="docutils literal"><span class="pre">contentLength</span></code>: The lenght of the file</li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N9cie_PN53216read_EF_Int_KpubEP4byteP4word">
+<span id="cie_PN532::read_EF_Int_Kpub__byteP.wordP"></span><span class="target" id="classcie__PN532_1a8c60845484ddc5b9767762ab10187e9e"></span>bool <code class="descname">read_EF_Int_Kpub</code><span class="sig-paren">(</span>byte *<em>contentBuffer</em>, word *<em>contentLength</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N9cie_PN53216read_EF_Int_KpubEP4byteP4word" title="Link a questa definizione">¶</a><br /></dt>
+<dd><p>Reads the binary content of the EF_Int_Kpub elementary file. </p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>A boolean value indicating whether the operation suceeded or not </dd>
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal"><span class="pre">contentBuffer</span></code>: The pointer to data containing the contents of the file </li>
+<li><code class="docutils literal"><span class="pre">contentLength</span></code>: The lenght of the file</li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N9cie_PN53224read_EF_Servizi_Int_KpubEP4byteP4word">
+<span id="cie_PN532::read_EF_Servizi_Int_Kpub__byteP.wordP"></span><span class="target" id="classcie__PN532_1a364df50e3080017493eb2d0c3084068d"></span>bool <code class="descname">read_EF_Servizi_Int_Kpub</code><span class="sig-paren">(</span>byte *<em>contentBuffer</em>, word *<em>contentLength</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N9cie_PN53224read_EF_Servizi_Int_KpubEP4byteP4word" title="Link a questa definizione">¶</a><br /></dt>
+<dd><p>Reads the binary content of the EF_Servizi_Int_Kpub elementary file. </p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>A boolean value indicating whether the operation suceeded or not </dd>
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal"><span class="pre">contentBuffer</span></code>: The pointer to data containing the contents of the file </li>
+<li><code class="docutils literal"><span class="pre">contentLength</span></code>: The lenght of the file</li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N9cie_PN53218readElementaryFileEK10cie_EFPathP4byteP4wordK4byte">
+<span id="cie_PN532::readElementaryFile__cie_EFPathC.byteP.wordP.byteC"></span><span class="target" id="classcie__PN532_1a72bb7d350ca91c2db370d6385a7258ff"></span>bool <code class="descname">readElementaryFile</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv210cie_EFPath" title="cie_EFPath">cie_EFPath</a> <em>filePath</em>, byte *<em>contentBuffer</em>, word *<em>contentLength</em>, <em class="property">const</em> byte <em>lengthStrategy</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N9cie_PN53218readElementaryFileEK10cie_EFPathP4byteP4wordK4byte" title="Link a questa definizione">¶</a><br /></dt>
+<dd><p>Reads the binary content of an Elementary File given its Dedicated File and EFID or SFI identifier. </p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>A boolean value indicating whether the operation suceeded or not </dd>
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal"><span class="pre">df</span></code>: The containing Dedicated File (either ROOT_MF or CIE_DF) </li>
+<li><code class="docutils literal"><span class="pre">filePath</span></code>: a structure indicating the parent Dedicated File (either ROOT_MF or CIE_DF), the selection mode (either SELECT_BY_EFID or SELECT_BY_SFI) and the file identifier (either a sfi or an efid) </li>
+<li><code class="docutils literal"><span class="pre">contentBuffer</span></code>: Pointer to the response data </li>
+<li><code class="docutils literal"><span class="pre">response</span></code>: The maximum desired length of the response </li>
+<li><code class="docutils literal"><span class="pre">lengthStrategy</span></code>: How to determine the length of the file (either FIXED_LENGTH or AUTODETECT_BER_LENGTH or AUTODETECT_ATR_LENGTH)</li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N9cie_PN53217readBinaryContentEK10cie_EFPathP4byte4wordK4word">
+<span id="cie_PN532::readBinaryContent__cie_EFPathC.byteP.word.wordC"></span><span class="target" id="classcie__PN532_1ae5bf51526446549cbc4df8e64e9dbbe5"></span>bool <code class="descname">readBinaryContent</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv210cie_EFPath" title="cie_EFPath">cie_EFPath</a> <em>filePath</em>, byte *<em>contentBuffer</em>, word <em>offset</em>, <em class="property">const</em> word <em>contentLength</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N9cie_PN53217readBinaryContentEK10cie_EFPathP4byte4wordK4word" title="Link a questa definizione">¶</a><br /></dt>
+<dd><p>Reads the binary content of the currently selected Elementary File. </p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>A boolean value indicating whether the operation suceeded or not </dd>
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal"><span class="pre">filePath</span></code>: a structure indicating the parent Dedicated File (either ROOT_MF or CIE_DF), the selection mode (either SELECT_BY_EFID or SELECT_BY_SFI) and the file identifier (either a sfi or an efid) </li>
+<li><code class="docutils literal"><span class="pre">contentBuffer</span></code>: The pointer to the data buffer </li>
+<li><code class="docutils literal"><span class="pre">contentLength</span></code>: The number of bytes to read</li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N9cie_PN5328printHexEP4byte4word">
+<span id="cie_PN532::printHex__byteP.word"></span><span class="target" id="classcie__PN532_1a991c44c5f24dc9bf9c9a195010418f0d"></span>void <code class="descname">printHex</code><span class="sig-paren">(</span>byte *<em>buffer</em>, word <em>length</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N9cie_PN5328printHexEP4byte4word" title="Link a questa definizione">¶</a><br /></dt>
+<dd><p>Dumps all values present in the CIE. </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N9cie_PN53212print_EF_SODEP4word">
+<span id="cie_PN532::print_EF_SOD__wordP"></span><span class="target" id="classcie__PN532_1aebce9ebab902380347663ad720e6be9e"></span>bool <code class="descname">print_EF_SOD</code><span class="sig-paren">(</span>word *<em>contentLength</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N9cie_PN53212print_EF_SODEP4word" title="Link a questa definizione">¶</a><br /></dt>
+<dd><p>Print the binary content of the EF_SOD elementary file. </p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>A boolean value indicating whether the operation suceeded or not </dd>
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal"><span class="pre">contentBuffer</span></code>: The pointer to data containing the contents of the file </li>
+<li><code class="docutils literal"><span class="pre">contentLength</span></code>: The lenght of the file</li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N9cie_PN53212parse_EF_SODE24cieBerTripleCallbackFunc">
+<span id="cie_PN532::parse_EF_SOD__cieBerTripleCallbackFunc"></span><span class="target" id="classcie__PN532_1a7b3645222645c67b2af061e0a5e9b13a"></span>bool <code class="descname">parse_EF_SOD</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv224cieBerTripleCallbackFunc" title="cieBerTripleCallbackFunc">cieBerTripleCallbackFunc</a> <em>callback</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N9cie_PN53212parse_EF_SODE24cieBerTripleCallbackFunc" title="Link a questa definizione">¶</a><br /></dt>
+<dd><p>Parses the BER content of the EF_SOD file. </p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>A boolean value indicating whether the operation suceeded or not </dd>
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal"><span class="pre">callback</span></code>: A function which will be invoked when a new triple has been read</li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Private Functions</p>
+<dl class="function">
+<dt id="_CPPv2N9cie_PN53210initFieldsEv">
+<span id="cie_PN532::initFields"></span><span class="target" id="classcie__PN532_1a4721194e7e3515e145263fa0418e1c9d"></span>void <code class="descname">initFields</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N9cie_PN53210initFieldsEv" title="Link a questa definizione">¶</a><br /></dt>
+<dd><p>Set default values to some private fields. </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N9cie_PN53214ensureSelectedEK10cie_EFPath">
+<span id="cie_PN532::ensureSelected__cie_EFPathC"></span><span class="target" id="classcie__PN532_1a06d8fd1bc0a74dbeb25ad4f7cd082802"></span>bool <code class="descname">ensureSelected</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv210cie_EFPath" title="cie_EFPath">cie_EFPath</a> <em>filePath</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N9cie_PN53214ensureSelectedEK10cie_EFPath" title="Link a questa definizione">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N9cie_PN53229ensureDedicatedFileIsSelectedEK4byte">
+<span id="cie_PN532::ensureDedicatedFileIsSelected__byteC"></span><span class="target" id="classcie__PN532_1af83b755dcb61b0f4e9e3f76a9120bfee"></span>bool <code class="descname">ensureDedicatedFileIsSelected</code><span class="sig-paren">(</span><em class="property">const</em> byte <em>df</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N9cie_PN53229ensureDedicatedFileIsSelectedEK4byte" title="Link a questa definizione">¶</a><br /></dt>
+<dd><p>Selects a dedicated file in the IAS application. </p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>A boolean value indicating whether the operation suceeded or not </dd>
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal"><span class="pre">df</span></code>: The Dedicated File (either ROOT_MF or CIE_DF)</li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N9cie_PN53230ensureElementaryFileIsSelectedEK10cie_EFPath">
+<span id="cie_PN532::ensureElementaryFileIsSelected__cie_EFPathC"></span><span class="target" id="classcie__PN532_1a4563d228fddd9008e8c01119185cc7b7"></span>bool <code class="descname">ensureElementaryFileIsSelected</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv210cie_EFPath" title="cie_EFPath">cie_EFPath</a> <em>filePath</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N9cie_PN53230ensureElementaryFileIsSelectedEK10cie_EFPath" title="Link a questa definizione">¶</a><br /></dt>
+<dd><p>Selects an Elementary file. </p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>A boolean value indicating whether the operation suceeded or not </dd>
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal"><span class="pre">df</span></code>: The containing Dedicated File (either ROOT_MF or CIE_DF) </li>
+<li><code class="docutils literal"><span class="pre">efid</span></code>: The efid of the Elementary File (must be two bytes)</li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N9cie_PN53220selectIasApplicationEv">
+<span id="cie_PN532::selectIasApplication__void"></span><span class="target" id="classcie__PN532_1a53776c86a3631ed8dba712c75bfbdfc5"></span>bool <code class="descname">selectIasApplication</code><span class="sig-paren">(</span>void<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N9cie_PN53220selectIasApplicationEv" title="Link a questa definizione">¶</a><br /></dt>
+<dd><p>Selects the IAS Application. </p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>A value indicating whether the operation succeeded or not </dd>
+</dl>
+</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N9cie_PN53220selectRootMasterFileEv">
+<span id="cie_PN532::selectRootMasterFile__void"></span><span class="target" id="classcie__PN532_1afbf9c47150436402abe6cfd13dc0077e"></span>bool <code class="descname">selectRootMasterFile</code><span class="sig-paren">(</span>void<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N9cie_PN53220selectRootMasterFileEv" title="Link a questa definizione">¶</a><br /></dt>
+<dd><p>Selects the ROOT Master File. </p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>A boolean value indicating whether the operation suceeded or not </dd>
+</dl>
+</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N9cie_PN53222selectCieDedicatedFileEv">
+<span id="cie_PN532::selectCieDedicatedFile__void"></span><span class="target" id="classcie__PN532_1af88260ac00f97a50224173a4adcdde93"></span>bool <code class="descname">selectCieDedicatedFile</code><span class="sig-paren">(</span>void<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N9cie_PN53222selectCieDedicatedFileEv" title="Link a questa definizione">¶</a><br /></dt>
+<dd><p>Selects the CIE DF. </p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>A value indicating whether the operation succeeded or not </dd>
+</dl>
+</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N9cie_PN53215determineLengthEK10cie_EFPathP4wordK4byte">
+<span id="cie_PN532::determineLength__cie_EFPathC.wordP.byteC"></span><span class="target" id="classcie__PN532_1af3cf37c5153ad1ffcc1a53d5c5d76aad"></span>bool <code class="descname">determineLength</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv210cie_EFPath" title="cie_EFPath">cie_EFPath</a> <em>filePath</em>, word *<em>contentLength</em>, <em class="property">const</em> byte <em>lengthStrategy</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N9cie_PN53215determineLengthEK10cie_EFPathP4wordK4byte" title="Link a questa definizione">¶</a><br /></dt>
+<dd><p>Sets the length value of a currently selected Elementary File. </p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>A boolean value indicating whether the operation suceeded or not </dd>
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal"><span class="pre">filePath</span></code>: a structure indicating the parent Dedicated File (either ROOT_MF or CIE_DF), the selection mode (either SELECT_BY_EFID or SELECT_BY_SFI) and the file identifier (either a sfi or an efid) </li>
+<li><code class="docutils literal"><span class="pre">contentLength</span></code>: The pointer to the length value </li>
+<li><code class="docutils literal"><span class="pre">lengthStrategy</span></code>: The chosen strategy by user (either AUTODETECT_BER_LENGTH or FIXED_LENGTH)</li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N9cie_PN53220hasSuccessStatusWordEP4byteK4word">
+<span id="cie_PN532::hasSuccessStatusWord__byteP.wordC"></span><span class="target" id="classcie__PN532_1ac9d1a4ab48d9135deacd3308cd0806ef"></span>bool <code class="descname">hasSuccessStatusWord</code><span class="sig-paren">(</span>byte *<em>response</em>, <em class="property">const</em> word <em>responseLength</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N9cie_PN53220hasSuccessStatusWordEP4byteK4word" title="Link a questa definizione">¶</a><br /></dt>
+<dd><p>Reads the EF contents by its SFI under the current DF. </p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>A value indicating whether the operation succeeded or not </dd>
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal"><span class="pre">response</span></code>: Pointer to the response data</li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N9cie_PN5325clampEK4wordK4byte">
+<span id="cie_PN532::clamp__wordC.byteC"></span><span class="target" id="classcie__PN532_1ad60433f52fecaab60f09122b24c84c7f"></span>word <code class="descname">clamp</code><span class="sig-paren">(</span><em class="property">const</em> word <em>value</em>, <em class="property">const</em> byte <em>maxValue</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N9cie_PN5325clampEK4wordK4byte" title="Link a questa definizione">¶</a><br /></dt>
+<dd><p>Ensures a value is less or equal than a max value. </p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>The clamped value </dd>
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal"><span class="pre">value</span></code>: The value that should be checked </li>
+<li><code class="docutils literal"><span class="pre">maxValue</span></code>: The maximum value</li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Private Members</p>
+<dl class="member">
+<dt id="_CPPv2N9cie_PN5324_nfcE">
+<span id="cie_PN532::_nfc__Adafruit_PN532P"></span><span class="target" id="classcie__PN532_1a47be5283778f4bbeb4e5342ed76e6e10"></span>Adafruit_PN532 *<code class="descname">_nfc</code><a class="headerlink" href="#_CPPv2N9cie_PN5324_nfcE" title="Link a questa definizione">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv2N9cie_PN53210_berReaderE">
+<span id="cie_PN532::_berReader__cie_BerReaderP"></span><span class="target" id="classcie__PN532_1a109f542373adbb5b68ed1e1366f85b48"></span><a class="reference internal" href="#_CPPv213cie_BerReader" title="cie_BerReader">cie_BerReader</a> *<code class="descname">_berReader</code><a class="headerlink" href="#_CPPv2N9cie_PN53210_berReaderE" title="Link a questa definizione">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv2N9cie_PN53210_atrReaderE">
+<span id="cie_PN532::_atrReader__cie_AtrReaderP"></span><span class="target" id="classcie__PN532_1af1581e7816ff99ca7ce81d3c35d9da9e"></span><a class="reference internal" href="#_CPPv213cie_AtrReader" title="cie_AtrReader">cie_AtrReader</a> *<code class="descname">_atrReader</code><a class="headerlink" href="#_CPPv2N9cie_PN53210_atrReaderE" title="Link a questa definizione">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv2N9cie_PN53221_currentDedicatedFileE">
+<span id="cie_PN532::_currentDedicatedFile__byte"></span><span class="target" id="classcie__PN532_1a70b32fda210256bbfc76afc677cab7a8"></span>byte <code class="descname">_currentDedicatedFile</code><a class="headerlink" href="#_CPPv2N9cie_PN53221_currentDedicatedFileE" title="Link a questa definizione">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv2N9cie_PN53222_currentElementaryFileE">
+<span id="cie_PN532::_currentElementaryFile__word"></span><span class="target" id="classcie__PN532_1abf1f7b8f699509bd0d0ca484ae30697c"></span>word <code class="descname">_currentElementaryFile</code><a class="headerlink" href="#_CPPv2N9cie_PN53222_currentElementaryFileE" title="Link a questa definizione">¶</a><br /></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="file">
+<dt>
+<span class="target" id="cie__AtrReader_8cpp"></span><em>file</em> <code class="descname">cie_AtrReader.cpp</code></dt>
+<dd><em>#include «cie_AtrReader.h»</em><p>
+Reads and parses anAtr encoded binary content<dl class="docutils">
+<dt><strong>Author</strong></dt>
+<dd>Developers Italia  BSD (see License)</dd>
+</dl>
+</p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Defines</p>
+<dl class="macro">
+<dt id="c.PN532DEBUGPRINT">
+<span class="target" id="cie__AtrReader_8cpp_1af1c2e36c6022e42c193ec5110244f094"></span><code class="descname">PN532DEBUGPRINT</code><a class="headerlink" href="#c.PN532DEBUGPRINT" title="Link a questa definizione">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="file">
+<dt>
+<span class="target" id="cie__AtrReader_8h"></span><em>file</em> <code class="descname">cie_AtrReader.h</code></dt>
+<dd><em>#include «cie_PN532.h»</em><em>#include «cie_EFPath.h»</em><p>
+Reads and parses an ATR encoded binary content<dl class="docutils">
+<dt><strong>Author</strong></dt>
+<dd>Developers Italia  BSD (see License)</dd>
+</dl>
+</p>
+</dd></dl>
+
+<dl class="file">
+<dt>
+<span class="target" id="cie__BerReader_8cpp"></span><em>file</em> <code class="descname">cie_BerReader.cpp</code></dt>
+<dd><em>#include «cie_BerReader.h»</em><p>
+Reads and parses a BER encoded binary content<dl class="docutils">
+<dt><strong>Author</strong></dt>
+<dd>Developers Italia  BSD (see License)</dd>
+</dl>
+</p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Defines</p>
+<dl class="macro">
+<dt>
+<span class="target" id="cie__BerReader_8cpp_1af1c2e36c6022e42c193ec5110244f094"></span><code class="descname">PN532DEBUGPRINT</code></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="file">
+<dt>
+<span class="target" id="cie__BerReader_8h"></span><em>file</em> <code class="descname">cie_BerReader.h</code></dt>
+<dd><em>#include «cie_EFPath.h»</em><em>#include «cie_BerTriple.h»</em><em>#include «cie_PN532.h»</em><p>
+Reads and parses a BER encoded binary content<dl class="docutils">
+<dt><strong>Author</strong></dt>
+<dd>Developers Italia  BSD (see License)</dd>
+</dl>
+</p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Defines</p>
+<dl class="macro">
+<dt id="c.BER_READER_MAX_OFFSET">
+<span class="target" id="cie__BerReader_8h_1a970b7f703b28ed7878ba26b8086803a6"></span><code class="descname">BER_READER_MAX_OFFSET</code><a class="headerlink" href="#c.BER_READER_MAX_OFFSET" title="Link a questa definizione">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="macro">
+<dt id="c.BER_READER_MAX_LENGTH">
+<span class="target" id="cie__BerReader_8h_1a2aa3ef9a5aebd1de9872a3892aae08f5"></span><code class="descname">BER_READER_MAX_LENGTH</code><a class="headerlink" href="#c.BER_READER_MAX_LENGTH" title="Link a questa definizione">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="macro">
+<dt id="c.BER_READER_MAX_COUNT">
+<span class="target" id="cie__BerReader_8h_1a917b9eb067890b4a6361a9b5a3a6b538"></span><code class="descname">BER_READER_MAX_COUNT</code><a class="headerlink" href="#c.BER_READER_MAX_COUNT" title="Link a questa definizione">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="file">
+<dt>
+<span class="target" id="cie__BerTriple_8h"></span><em>file</em> <code class="descname">cie_BerTriple.h</code></dt>
+<dd><em>#include &lt;Arduino.h&gt;</em><p>
+Definition of the <a class="reference internal" href="#classcie__BerTriple"><span class="std std-ref">cie_BerTriple</span></a> structure used to describe an individual piece of information in BER encoded binary content<dl class="docutils">
+<dt><strong>Author</strong></dt>
+<dd>Developers Italia  BSD (see License)</dd>
+</dl>
+</p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Typedefs</p>
+<dl class="type">
+<dt id="_CPPv224cieBerTripleCallbackFunc">
+<span id="cieBerTripleCallbackFunc"></span><span class="target" id="cie__BerTriple_8h_1ab44964e6f6d27f199af4f04e4130712f"></span><em class="property">typedef </em>bool (*<code class="descname">cieBerTripleCallbackFunc</code>)<span class="sig-paren">(</span><a class="reference internal" href="#_CPPv213cie_BerTriple" title="cie_BerTriple">cie_BerTriple</a> *<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv224cieBerTripleCallbackFunc" title="Link a questa definizione">¶</a><br /></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="file">
+<dt>
+<span class="target" id="cie__EFPath_8h"></span><em>file</em> <code class="descname">cie_EFPath.h</code></dt>
+<dd><em>#include &lt;Arduino.h&gt;</em><p>
+Definition of the <a class="reference internal" href="#structcie__EFPath"><span class="std std-ref">cie_EFPath</span></a> structure used to describe paths in the CIE filesystem<dl class="docutils">
+<dt><strong>Author</strong></dt>
+<dd>Developers Italia  BSD (see License)</dd>
+</dl>
+</p>
+</dd></dl>
+
+<dl class="file">
+<dt>
+<span class="target" id="cie__PN532_8cpp"></span><em>file</em> <code class="descname">cie_PN532.cpp</code></dt>
+<dd><em>#include «cie_PN532.h»</em><p>
+This is a library for the PN532 NFC/RFID breakout boards This library works with the Adafruit NFC breakout -&gt; <a class="reference external" href="https://www.adafruit.com/products/364">https://www.adafruit.com/products/364</a><dl class="docutils">
+<dt><strong>Author</strong></dt>
+<dd>Developers Italia  BSD (see License)</dd>
+</dl>
+</p>
+<p>Check out the links above for our tutorials and wiring diagrams These chips use SPI or I2C to communicate. This library uses SPI to communicate.</p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Defines</p>
+<dl class="macro">
+<dt>
+<span class="target" id="cie__PN532_8cpp_1af1c2e36c6022e42c193ec5110244f094"></span><code class="descname">PN532DEBUGPRINT</code></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="file">
+<dt>
+<span class="target" id="cie__PN532_8h"></span><em>file</em> <code class="descname">cie_PN532.h</code></dt>
+<dd><em>#include &lt;Adafruit_PN532.h&gt;</em><em>#include «cie_EFPath.h»</em><em>#include «cie_AtrReader.h»</em><em>#include «cie_BerReader.h»</em><p>
+This is a library for the PN532 NFC/RFID breakout boards This library works with the Adafruit NFC breakout -&gt; <a class="reference external" href="https://www.adafruit.com/products/364">https://www.adafruit.com/products/364</a><dl class="docutils">
+<dt><strong>Author</strong></dt>
+<dd>Developers Italia  BSD (see License)</dd>
+</dl>
+</p>
+<p>Check out the links above for our tutorials and wiring diagrams These chips use SPI or I2C to communicate. This library uses SPI to communicate.</p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Defines</p>
+<dl class="macro">
+<dt id="c.PN532_SCK">
+<span class="target" id="cie__PN532_8h_1a19c0d6db90035329695896e259b0da38"></span><code class="descname">PN532_SCK</code><a class="headerlink" href="#c.PN532_SCK" title="Link a questa definizione">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="macro">
+<dt id="c.PN532_MOSI">
+<span class="target" id="cie__PN532_8h_1acaae8222f874e7ae5c75325213ccb54a"></span><code class="descname">PN532_MOSI</code><a class="headerlink" href="#c.PN532_MOSI" title="Link a questa definizione">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="macro">
+<dt id="c.PN532_SS">
+<span class="target" id="cie__PN532_8h_1a5fe7fdc589cffb666bd7ebf2a963ea63"></span><code class="descname">PN532_SS</code><a class="headerlink" href="#c.PN532_SS" title="Link a questa definizione">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="macro">
+<dt id="c.PN532_MISO">
+<span class="target" id="cie__PN532_8h_1a7cc71e42d70cfd7298b007770c37ec60"></span><code class="descname">PN532_MISO</code><a class="headerlink" href="#c.PN532_MISO" title="Link a questa definizione">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="macro">
+<dt id="c.PN532_IRQ">
+<span class="target" id="cie__PN532_8h_1a04eeb1db4f8381537f1075bb5abd4b36"></span><code class="descname">PN532_IRQ</code><a class="headerlink" href="#c.PN532_IRQ" title="Link a questa definizione">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="macro">
+<dt id="c.PN532_RESET">
+<span class="target" id="cie__PN532_8h_1a3f932648db5f69fee59502642fb26147"></span><code class="descname">PN532_RESET</code><a class="headerlink" href="#c.PN532_RESET" title="Link a questa definizione">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="macro">
+<dt id="c.EF_ID_SERVIZI_LENGTH">
+<span class="target" id="cie__PN532_8h_1ac906fdf8cf3b31901c411533c97695d8"></span><code class="descname">EF_ID_SERVIZI_LENGTH</code><a class="headerlink" href="#c.EF_ID_SERVIZI_LENGTH" title="Link a questa definizione">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="macro">
+<dt id="c.EF_SN_ICC_LENGTH">
+<span class="target" id="cie__PN532_8h_1a8a08fb68672ea8f106a372ad33101be0"></span><code class="descname">EF_SN_ICC_LENGTH</code><a class="headerlink" href="#c.EF_SN_ICC_LENGTH" title="Link a questa definizione">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="macro">
+<dt id="c.PAGE_LENGTH">
+<span class="target" id="cie__PN532_8h_1aa583f25d8bd438def94d50dff97b468d"></span><code class="descname">PAGE_LENGTH</code><a class="headerlink" href="#c.PAGE_LENGTH" title="Link a questa definizione">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="macro">
+<dt id="c.READ_FROM_START">
+<span class="target" id="cie__PN532_8h_1adc60ab7841cad710ba168c3f72560adb"></span><code class="descname">READ_FROM_START</code><a class="headerlink" href="#c.READ_FROM_START" title="Link a questa definizione">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="macro">
+<dt id="c.FIXED_LENGTH">
+<span class="target" id="cie__PN532_8h_1ac26468a604fc992cddea01a640714811"></span><code class="descname">FIXED_LENGTH</code><a class="headerlink" href="#c.FIXED_LENGTH" title="Link a questa definizione">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="macro">
+<dt id="c.AUTODETECT_BER_LENGTH">
+<span class="target" id="cie__PN532_8h_1aca016b6cfb37c1b471f07cf5a7fd86fb"></span><code class="descname">AUTODETECT_BER_LENGTH</code><a class="headerlink" href="#c.AUTODETECT_BER_LENGTH" title="Link a questa definizione">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="macro">
+<dt id="c.AUTODETECT_ATR_LENGTH">
+<span class="target" id="cie__PN532_8h_1a20e311621decda3f3c13c7fe60fb81d8"></span><code class="descname">AUTODETECT_ATR_LENGTH</code><a class="headerlink" href="#c.AUTODETECT_ATR_LENGTH" title="Link a questa definizione">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="macro">
+<dt id="c.SELECT_BY_EFID">
+<span class="target" id="cie__PN532_8h_1af7bace45f70a73af5a4d14b866a6c155"></span><code class="descname">SELECT_BY_EFID</code><a class="headerlink" href="#c.SELECT_BY_EFID" title="Link a questa definizione">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="macro">
+<dt id="c.SELECT_BY_SFI">
+<span class="target" id="cie__PN532_8h_1ac608bf4f037b04029d15353f9c68aee3"></span><code class="descname">SELECT_BY_SFI</code><a class="headerlink" href="#c.SELECT_BY_SFI" title="Link a questa definizione">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="macro">
+<dt id="c.NULL_DF">
+<span class="target" id="cie__PN532_8h_1aadefafd9c84e741cae8a2b18406bcad6"></span><code class="descname">NULL_DF</code><a class="headerlink" href="#c.NULL_DF" title="Link a questa definizione">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="macro">
+<dt id="c.NULL_EF">
+<span class="target" id="cie__PN532_8h_1a291aaf728c055409209dfc79d4c47e7d"></span><code class="descname">NULL_EF</code><a class="headerlink" href="#c.NULL_EF" title="Link a questa definizione">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="macro">
+<dt id="c.ROOT_MF">
+<span class="target" id="cie__PN532_8h_1ac064fe7a5e7a607ef600b0c063be68a5"></span><code class="descname">ROOT_MF</code><a class="headerlink" href="#c.ROOT_MF" title="Link a questa definizione">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="macro">
+<dt id="c.CIE_DF">
+<span class="target" id="cie__PN532_8h_1a5583b85a8b9d05fc1196f13787578b6c"></span><code class="descname">CIE_DF</code><a class="headerlink" href="#c.CIE_DF" title="Link a questa definizione">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="file">
+<dt>
+<span class="target" id="README_8md"></span><em>file</em> <code class="descname">README.md</code></dt>
+<dd></dd></dl>
+
+<dl class="page">
+<dt>
+<span class="target" id="md_README"></span><em>page</em> <code class="descname">md_README</code></dt>
+<dd><p>Arduino library for SPI access to the PN532 NFC chip in the Italian Electronic Identity Card (CIE).</p>
+<p><em>Prerequisites</em></p>
+<p>This library depends upon the <strong>Adafruit_PN532</strong> library which you can obtain from its GitHub Repository.</p>
+<p><a class="reference external" href="https://github.com/adafruit/Adafruit-PN532">https://github.com/adafruit/Adafruit-PN532</a></p>
+<p>You must install both the Adafruit_PN532 and <a class="reference internal" href="#classcie__PN532"><span class="std std-ref">cie_PN532</span></a> in your Arduino <em>libraries</em> directory. Plese follow the instructions from the Arduino guide.</p>
+<p><a class="reference external" href="https://www.arduino.cc/en/Guide/Libraries">https://www.arduino.cc/en/Guide/Libraries</a></p>
+<p><em>Wiring PN532 breakout to the Arduino Uno for SPI communication</em></p>
+<p>At present, just the SPI connection is supported. The examples provided will work with this wiring.</p>
+<p><img alt="_images/pn532-wiring-spi.png" src="_images/pn532-wiring-spi.png" /></p>
+<p>This wiring is also described in detail on this page at the Adafruit website.</p>
+<p><a class="reference external" href="https://learn.adafruit.com/adafruit-pn532-rfid-nfc/breakout-wiring">https://learn.adafruit.com/adafruit-pn532-rfid-nfc/breakout-wiring</a></p>
+<p><em>Getting started</em></p>
+<p>Create a new arduino project and set it up like this: <div class="highlight-default"><div class="highlight"><pre><span></span>{C++}
+//Include some libraries
+#include &lt;Wire.h&gt;
+#include &lt;SPI.h&gt;
+#include &lt;cie_PN532.h&gt;
+
+//Use the cie_PN532 with the typical wiring, as pointed out above
+cie_PN532 cie();
+
+void setup(void) {
+  #ifndef ESP8266
+    while (!Serial); // for Leonardo/Micro/Zero
+  #endif
+  Serial.begin(115200);
+  //Initialize the PN532 breakout board
+  cie.begin();
+}
+</pre></div>
+</div>
+ Then, in your loop, wait for a card then read its ID_Servizi (a low-security unique identifier)</p>
+<p><div class="highlight-default"><div class="highlight"><pre><span></span>{C++}
+void loop(void) {
+  //Let&#39;s see if a card is present
+  bool cardDetected = cie.detectCard();
+  if (!cardDetected) {
+    //No card present, we wait for one
+    delay(100);
+    return;
+  }
+
+  //Good! A card is present, let&#39;s read the ID!
+  word bufferLength = EF_ID_SERVIZI_LENGTH;
+  byte buffer[EF_ID_SERVIZI_LENGTH];
+
+  if (!cie.read_EF_ID_Servizi(buffer, &amp;bufferLength)) {
+    Serial.print(F(&quot;Error reading EF.ID_SERVIZI&quot;));
+    delay(1000);
+    return;
+  }
+
+  //We were able to read the ID_Servizi, print it out!
+  Serial.print(F(&quot;EF.ID_Servizi: &quot;));
+  cie.printHex(buffer, bufferLength);
+}
+</pre></div>
+</div>
+</p>
+<p><em>More examples</em></p>
+<p>This library comes with an <em>examples</em> directory. You can load and run examples from the Arduino IDE by clicking the File menu -&gt; Examples -&gt; cie 532.</p>
+<p><em>Useful links</em></p>
+<p><ul class="simple">
+<li>The CIE 3.0 chip specification (italian) <a class="reference external" href="http://www.agid.gov.it/sites/default/files/documentazione/cie_3.0_-_specifiche_chip.pdf">http://www.agid.gov.it/sites/default/files/documentazione/cie_3.0_-_specifiche_chip.pdf</a></li>
+<li>Technical specification for the European Card for e-Services and National e-ID Applications <a class="reference external" href="http://www.unsads.com/specs/IASECC/IAS_ECC_v1.0.1_UK.pdf">http://www.unsads.com/specs/IASECC/IAS_ECC_v1.0.1_UK.pdf</a></li>
+<li>Specifiche tecniche del documento digitale unificato (italian) <a class="reference external" href="http://www.agid.gov.it/sites/default/files/leggi_decreti_direttive/specifiche_tecniche_del_documento_digitale_unificato_v.1.0.0.pdf">http://www.agid.gov.it/sites/default/files/leggi_decreti_direttive/specifiche_tecniche_del_documento_digitale_unificato_v.1.0.0.pdf</a> </li>
+</ul>
+</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+                        </div>
+                        <div class="articleComments">
+                            
+                        </div>
+                    </div>
+                    <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="step_by_step.html" class="btn float-right" title="Documentazione" accesskey="n" rel="next">Successivo <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="overview.html" class="btn" title="Introduzione" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Precedente</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        2017, HAL9000.
+
+    </p>
+  </div>
+  Generato con <a href="http://sphinx-doc.org/">Sphinx</a> usando il tema ufficiale <a href="https://github.com/italia/sphinx_italia_theme">Italia</a> basato sul <a href="https://github.com/snide/sphinx_rtd_theme">tema</a> fornito da <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+                </div>
+            </div>
+
+        </section>
+
+    </div>
+    
+     
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT: './',
+            VERSION: '1.0',
+            COLLAPSE_INDEX: true,
+            FILE_SUFFIX: '.html',
+            HAS_SOURCE: true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/translations.js"></script>   
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+      
+    <script type="text/javascript">
+        jQuery(function() {
+            SphinxRtdTheme.StickyNav.enable();
+        });
+    </script>
+     
+
+</body>
+
+</html>
