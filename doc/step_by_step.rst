@@ -4,23 +4,20 @@ Documentazione
     *«Una documentazione per domarli, una documentazione per trovarli,
     una documentazione per ghermirli e nell'oscurità incatenarli»*
 
-La documentazione è stata creata, principalmente, mediante l'ausilio di un software chiamato Sphinx.
-Quest'ultimo riesce a costrurire una vera e propria pagina ``html`` che è possibile visualizzare in un qualsisi
-browser.
-Il principale vantaggio è quella di ottenere una documentazione esteticamente gradevole, grazie a una vasta
-scelta di temi disponibili e, sopratutto, chiara da comprendere.
+Questa documentazione è stata generata mediante l’ausilio del software Sphinx, capace di generare pagine ``HTML``
+responsive e con numerose possibilità di personalizzazione compatibili con qualsiasi browser. 
+Di fatti si dimostra estremamente considerevole se si ha l'obbiettivo di ottenere una documentazione esteticamente 
+gradevole, con numerosi temi già pronti per essere usati, e perfettamente leggibile.
 
 Simbiosi con Breathe
 ---------------------------
 
-Lo scopo finale di una documentazione è quello di comprendere in maniera approfondita quello che si sta per
-andare a fare. Sphinx ci permette solamente di creare del puro e semplice testo, che spieghi quelli che sono 
-i procedimenti da seguire per simulare, ed eseguire, il progetto.
-La soluzione che abbiamo adotatto per implementare anche i commenti del nostro codice nella documentazione, e quindi 
-fornire una documentazione ulteriormente efficace, è stata quella di implementare Breathe. Quest'ultima è una libreria 
-che permette di creare un *bridge* tra Sphinx stesso e la formattazione dei commenti in Doxygen. In questo modo la documentazione
-sarà strettamente correlata al codice, in quanto ad ogni nuovo update del codice la documentazione verrà aggiornata in maniera totalmente autonoma
-e quindi permettere allo sviluppatore un vantaggio non indifferente.
+Obbiettivo primario di una buona documentazione è raccogliere e catalogare tutte le informazioni relative 
+all'argomento trattato. Presa questa definizione, la soluzione che abbiamo adottato per poter includere 
+nella documentazione anche i commenti del nostro codice è stata quella di adoperare Breathe. 
+Breathe è una libreria che permette di creare un *bridge* tra Sphinx e la formattazione dei commenti in Doxygen. 
+In questo modo la documentazione sarà strettamente correlata al codice e ad ogni nuovo update del codice, 
+la documentazione verrà aggiornata in maniera totalmente autonoma.
 
 Creazione della Documentazione
 -------------------------------
