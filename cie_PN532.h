@@ -69,7 +69,7 @@ class cie_AtrReader;
 //Selection modes
 #define SELECT_BY_EFID                        (0x01)
 #define SELECT_BY_SFI                         (0x02)
-#define SELECT_BY_SDO                         (0x03)
+#define SELECT_BY_SDOID                       (0x03)
 
 //Paths
 #define NULL_DF                               (0x00)

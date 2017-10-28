@@ -186,8 +186,8 @@ bool cie_PN532::read_EF_ID_Servizi(byte* contentBuffer, word* contentLength) {
 */
 /**************************************************************************/
 bool cie_PN532::select_SDO_Servizi_Int_Kpriv() {
-  cie_EFPath filePath = { CIE_DF, SELECT_BY_SDO, 0x03 };
-  return ensureSdoIsSelected(filePath));
+  cie_EFPath filePath = { CIE_DF, SELECT_BY_SDOID, 0x03 };
+  return ensureSdoIsSelected(filePath);
 }
 
 
@@ -357,8 +357,8 @@ bool cie_PN532::ensureElementaryFileIsSelected(cie_EFPath filePath) {
 */
 /**************************************************************************/
 bool cie_PN532::ensureSdoIsSelected(cie_EFPath filePath) {
-  if (filePath.selectionMode != SELECT_BY_SDO) {
-    PN532DEBUGPRINT.println(F("This method should be called just for SOD selection"));
+  if (filePath.selectionMode != SELECT_BY_SDOID) {
+    PN532DEBUGPRINT.println(F("This method should be called just for SDO selection"));
     return false;
   }
 
@@ -370,24 +370,22 @@ bool cie_PN532::ensureSdoIsSelected(cie_EFPath filePath) {
   if (_currentElementaryFile == filePath.id) {
     return true;
   }
-  byte efid[3] = { (byte) (filePath.id >> 16), (byte) ((filePath.id >> 8) & 0b11111111), (byte) (filePath.id & 0b11111111) };
   byte selectCommand[] = {
     0x00, //CLA
     0x22, //INS: MSE mode SET
     0x41, //P1: Template AT
     0xA4, //P2
-    0x05, //Lc: Length of the following tag
-    0x84, 0x03, 0xBF, 0x90, 0x02 //0xBF9002 è il SDO ID di 
+    0x06, //Lc: Length of the data (composed of two TLV triples)
+    0x80, 0x01, 0x02, //First TLV triple: Selection of the RSA PKCS#1 - SHA1 with not data formatting
+    0x84, 0x01, 0b10000000 | filePath.id //Second TLV triple: SDO ID OR'ed with 0b10000000 to indicate it's in the currently selected DF
   };
-  Serial.println("COMANDO MSE SET");
-  _nfc->PrintHex(selectCommand, sizeof(selectCommand));
   byte selectResponseLength = 2;
   byte* selectResponseBuffer = new byte[selectResponseLength];
   bool success = _nfc->inDataExchange(selectCommand, sizeof(selectCommand), selectResponseBuffer, &selectResponseLength);
   success = success && hasSuccessStatusWord(selectResponseBuffer, selectResponseLength);
   delete [] selectResponseBuffer;
   if (!success) {
-    PN532DEBUGPRINT.print(F("Couldn't select the EF by its SDO "));
+    PN532DEBUGPRINT.print(F("Couldn't select the EF by its SDO ID "));
     return false;
   }
   _currentElementaryFile = filePath.id;

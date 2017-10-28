@@ -62,6 +62,10 @@ void loop(void) {
   Serial.print(F("EF.ID_Servizi: "));
   cie.printHex(buffer, bufferLength);
 
+  bool result = cie.select_SDO_Servizi_Int_Kpriv();
+  Serial.print(F("PRIV SELEZIONATA "));
+  Serial.println(result);
+
   Serial.println();
   Serial.println(F("Read complete, you can remove the card now"));
   delay(1000);
