@@ -307,6 +307,25 @@ bool cie_PN532::select_SDO_Servizi_Int_Kpriv() {
 
 /**************************************************************************/
 /*!
+  @brief  Sends an APDU command which is not returning any data to the CIE via the PN532 terminal and checks whether the response has a valid status word
+  
+  @param  command A pointer to the APDU command bytes
+  @param  commandLength Length of the command
+
+  @returns  A boolean value indicating whether the operation succeeded or not
+*/
+/**************************************************************************/
+bool cie_PN532::sendCommand(byte* command, const byte commandLength) {
+  byte responseLength = STATUS_WORD_LENGTH;
+  byte* responseBuffer = new byte[responseLength];
+  bool success = sendCommand(command, commandLength, responseBuffer, &responseLength);
+  delete [] responseBuffer;
+  return success;
+}
+
+
+/**************************************************************************/
+/*!
   @brief  Sends an APDU command to the CIE via the PN532 terminal and checks whether the response has a valid status word
   
   @param  command A pointer to the APDU command bytes
@@ -416,7 +435,6 @@ bool cie_PN532::getChallenge(byte* contentBuffer, byte* contentLength) {
     PN532DEBUGPRINT.println(F("Couldn't get challenge"));
   }
   *contentLength = RND_LENGTH;
-  _nfc->PrintHex(contentBuffer, *contentLength);
   return success;
 }
 
@@ -479,11 +497,7 @@ bool cie_PN532::ensureElementaryFileIsSelected(cie_EFPath filePath) {
     0x02, //Lc: Length of EFID
     efid[0], efid[1] //EFID
   };
-  byte selectResponseLength = STATUS_WORD_LENGTH;
-  byte* selectResponseBuffer = new byte[selectResponseLength];
-  bool success = _nfc->inDataExchange(selectCommand, sizeof(selectCommand), selectResponseBuffer, &selectResponseLength);
-  success = success && hasSuccessStatusWord(selectResponseBuffer, selectResponseLength);
-  delete [] selectResponseBuffer;
+  bool success = sendCommand(selectCommand, sizeof(selectCommand));
   if (!success) {
     PN532DEBUGPRINT.print(F("Couldn't select the EF by its EFID "));
     _nfc->PrintHex(efid, 2);
@@ -526,11 +540,7 @@ bool cie_PN532::ensureSdoIsSelected(cie_EFPath filePath) {
     0x80, 0x01, 0x02, //First TLV triple: Selection of the RSA PKCS#1 - SHA1 with not data formatting
     0x84, 0x01, (byte)(0b10000000 | filePath.id) //Second TLV triple: SDO ID OR'ed with 0b10000000 to indicate it's in the currently selected DF
   };
-  byte selectResponseLength = STATUS_WORD_LENGTH;
-  byte* selectResponseBuffer = new byte[selectResponseLength];
-  bool success = _nfc->inDataExchange(selectCommand, sizeof(selectCommand), selectResponseBuffer, &selectResponseLength);
-  success = success && hasSuccessStatusWord(selectResponseBuffer, selectResponseLength);
-  delete [] selectResponseBuffer;
+  bool success = sendCommand(selectCommand, sizeof(selectCommand));
   if (!success) {
     PN532DEBUGPRINT.println(F("Couldn't select the EF by its SDO ID "));
     return false;
@@ -671,8 +681,7 @@ bool cie_PN532::readBinaryContent(const cie_EFPath filePath, byte* contentBuffer
     };
     byte responseLength = ((byte) contentPageLength) + preambleOctets + STATUS_WORD_LENGTH;
     byte* responseBuffer = new byte[responseLength];  
-    success = _nfc->inDataExchange(readCommand, 10, responseBuffer, &responseLength);
-    success = success && hasSuccessStatusWord(responseBuffer, responseLength);
+    success = sendCommand(readCommand, 10, responseBuffer, &responseLength);
     //Copy data over to the buffer
     if (success) {
       //The read binary command with ODD INS incapsulated the response with two preamble octets. Don't include them, they're not part of the content.
@@ -731,11 +740,7 @@ bool cie_PN532::selectRootMasterFile(void) {
       0x02, //Lc: Length of root id
       0x3F, 0x00 //root id
   };
-  byte responseLength = STATUS_WORD_LENGTH;
-  byte* responseBuffer = new byte[responseLength];
-  bool success = _nfc->inDataExchange(command, sizeof(command), responseBuffer, &responseLength);
-  success = success && hasSuccessStatusWord(responseBuffer, responseLength);
-  delete [] responseBuffer;
+  bool success = sendCommand(command, sizeof(command));
   if (!success) {
     PN532DEBUGPRINT.println(F("Couldn't select root"));
   }
@@ -759,11 +764,7 @@ bool cie_PN532::selectIasApplication(void) {
       0x0D, //Lc: Length of AID
       0xA0, 0x00, 0x00, 0x00, 0x30, 0x80, 0x00, 0x00, 0x00, 0x09, 0x81, 0x60, 0x01 //AID
   };
-  byte responseLength = STATUS_WORD_LENGTH;
-  byte* responseBuffer = new byte[responseLength];
-  bool success = _nfc->inDataExchange(command, sizeof(command), responseBuffer, &responseLength);
-  success = success && hasSuccessStatusWord(responseBuffer, responseLength);
-  delete [] responseBuffer;
+  bool success = sendCommand(command, sizeof(command));
   if (!success) {
     PN532DEBUGPRINT.println(F("Couldn't select the IAS application"));
   }
@@ -787,11 +788,7 @@ bool cie_PN532::selectCieDedicatedFile(void) {
       0x06, //Lc: length of ID
       0xA0, 0x00, 0x00, 0x00, 0x00, 0x39 //ID
   };
-  byte responseLength = STATUS_WORD_LENGTH;
-  byte* responseBuffer = new byte[responseLength];
-  bool success = _nfc->inDataExchange(command, sizeof(command), responseBuffer, &responseLength);
-  success = success && hasSuccessStatusWord(responseBuffer, responseLength);
-  delete [] responseBuffer;
+  bool success = sendCommand(command, sizeof(command));
   if (!success) {
     PN532DEBUGPRINT.println(F("Couldn't select the CIE DF"));
   }

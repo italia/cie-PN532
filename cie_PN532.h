@@ -121,6 +121,7 @@ class cie_PN532
 
   //methods
   void     initFields();
+  bool     sendCommand(byte* command, const byte commandLength);
   bool     sendCommand(byte* command, const byte commandLength, byte* response, byte* responseLength);
   bool     select_SDO_Servizi_Int_Kpriv();
   bool     ensureSelected(const cie_EFPath filePath);

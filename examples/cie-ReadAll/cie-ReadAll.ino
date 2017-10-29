@@ -32,6 +32,7 @@ Check out the links above for our tutorials and wiring diagrams
 
 cie_PN532 cie(PN532_SCK, PN532_MISO, PN532_MOSI, PN532_SS);
 typedef bool (cie_PN532::*readValueFunc)(byte*, word*);
+typedef bool (cie_PN532::*readKeyFunc)(cie_Key*);
 
 
 void setup(void) {
@@ -57,10 +58,10 @@ void loop(void) {
   readValue(&cie_PN532::read_EF_SN_ICC, "EF_SN_ICC");
   readValue(&cie_PN532::read_EF_DH, "EF_DH");
   readValue(&cie_PN532::read_EF_ATR, "EF_ATR");
-
   readValue(&cie_PN532::read_EF_ID_Servizi, "EF_ID_Servizi");
-  readValue(&cie_PN532::read_EF_Int_Kpub, "EF_Int_Kpub");
-  readValue(&cie_PN532::read_EF_Servizi_Int_Kpub, "EF_Servizi_Int_Kpub");
+
+  readKey(&cie_PN532::read_EF_Int_Kpub, "EF_Int_Kpub");
+  readKey(&cie_PN532::read_EF_Servizi_Int_Kpub, "EF_Servizi_Int_Kpub");
 
   //SOD is pretty large (1972 bytes), so we'll just print its raw value
   Serial.println(F("EF_SOD"));
@@ -91,4 +92,30 @@ void readValue(readValueFunc func, const char* name) {
   Serial.print(F(" ms) "));
   cie.printHex(buffer, bufferLength);
   delete [] buffer; 
+}
+
+void readKey(readKeyFunc func, const char* name) {
+  word bufferLength = 600;
+  cie_Key* key = new cie_Key();
+  unsigned long startedAt = millis();
+  bool success = (cie.*func)(key);
+  if (!success) {
+    Serial.print(F("Error reading "));
+    Serial.println(name);
+    return;
+  }
+  Serial.print(name);
+  Serial.print(" (");
+  Serial.print(millis()-startedAt);
+  Serial.println(F(" ms)"));
+  Serial.print(F("  Modulo ("));
+  Serial.print(key->moduloLength*8);
+  Serial.print(F(" bits) "));
+  cie.printHex(key->modulo, key->moduloLength);
+  
+  Serial.print(F("  Exponent ("));
+  Serial.print(key->exponentLength*8);
+  Serial.print(F(" bits) "));
+  cie.printHex(key->exponent, key->exponentLength);
+  delete key;
 }
