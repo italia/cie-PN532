@@ -37,8 +37,7 @@ void setup(void) {
     while (!Serial); // for Leonardo/Micro/Zero
   #endif
   Serial.begin(115200);
-  cie.begin();  
-  Serial.println(F("PN532 initialized, waiting for a CIE card..."));
+  cie.begin();
 }
 
 
@@ -51,9 +50,10 @@ void loop(void) {
     return;
   }
 
-  //Good! A card is present, let's read the ID!
+  //Good! A card is present, let's read the NIS!
   word bufferLength = EF_ID_SERVIZI_LENGTH;
   byte buffer[EF_ID_SERVIZI_LENGTH];
+  unsigned long startTime = millis();
   if (!cie.read_EF_ID_Servizi(buffer, &bufferLength)) {
     Serial.print(F("Error reading EF.ID_SERVIZI"));
     delay(1000);
@@ -61,12 +61,30 @@ void loop(void) {
   }
   Serial.print(F("EF.ID_Servizi: "));
   cie.printHex(buffer, bufferLength);
+  Serial.print(F("Reading the ID_Servizi took "));
+  Serial.print(millis()-startTime);
+  Serial.println(F("ms"));
 
-  bool result = cie.select_SDO_Servizi_Int_Kpriv();
-  Serial.print(F("PRIV SELEZIONATA "));
-  Serial.println(result);
+  //Verify the card is valid
+  startTime = millis();
+  bool isValid = cie.isCardValid();
+  Serial.print(F("Card is "));
+  Serial.println(isValid ? F("valid") : F("NOT valid - it's probably a clone"));
+  Serial.print(F("Checking the card for validity took "));
+  Serial.print(millis()-startTime);
+  Serial.println(F("ms"));
+
 
   Serial.println();
+  Serial.print(F("Free memory left: "));
+  Serial.print(freeRam());
+  Serial.println(F(" bytes"));
   Serial.println(F("Read complete, you can remove the card now"));
   delay(1000);
+}
+
+int freeRam () {
+  extern int __heap_start, *__brkval; 
+  int v; 
+  return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
 }

@@ -180,46 +180,64 @@ bool cie_PN532::read_EF_ID_Servizi(byte* contentBuffer, word* contentLength) {
 
 /**************************************************************************/
 /*!
-  @brief  Selects the SDO.Servizi_Int.Kpriv private key for internal authentication
-  
-  @returns  A boolean value indicating whether the operation succeeded or not
-*/
-/**************************************************************************/
-bool cie_PN532::select_SDO_Servizi_Int_Kpriv() {
-  cie_EFPath filePath = { CIE_DF, SELECT_BY_SDOID, 0x03 };
-  return ensureSdoIsSelected(filePath);
-}
+  @brief  Reads the binary content of the EF.Int.Kpub elementary file
 
-
-/**************************************************************************/
-/*!
-  @brief  Reads the binary content of the EF_Int_Kpub elementary file
-
-  @param  contentBuffer The pointer to data containing the contents of the file
-  @param  contentLength The lenght of the file
+  @param  key The pointer to a cie_Key object which will be populated with the modulo and exponent values
 
   @returns  A boolean value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
-bool cie_PN532::read_EF_Int_Kpub(byte* contentBuffer, word* contentLength) {
+bool cie_PN532::read_EF_Int_Kpub(cie_Key* key) {
   cie_EFPath filePath = { CIE_DF, SELECT_BY_SFI, 0x04 }; //efid 0x1004
-  return readElementaryFile(filePath, contentBuffer, contentLength, AUTODETECT_BER_LENGTH);
+  return readKey(filePath, key);
 }
 
 
 /**************************************************************************/
 /*!
-  @brief  Reads the binary content of the EF_Servizi_Int_Kpub elementary file
+  @brief  Reads the binary content of the EF.Servizi_Int.Kpub elementary file
 
-  @param  contentBuffer The pointer to data containing the contents of the file
-  @param  contentLength The lenght of the file
+  @param  key The pointer to a cie_Key object which will be populated with the modulo and exponent values
 
   @returns  A boolean value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
-bool cie_PN532::read_EF_Servizi_Int_Kpub(byte* contentBuffer, word* contentLength) {
+bool cie_PN532::read_EF_Servizi_Int_Kpub(cie_Key* key) {
   cie_EFPath filePath = { CIE_DF, SELECT_BY_SFI, 0x05 }; //efid 0x1005
-  return readElementaryFile(filePath, contentBuffer, contentLength, AUTODETECT_BER_LENGTH);
+  return readKey(filePath, key);
+}
+
+/**************************************************************************/
+/*!
+  @brief  Performs the challenge/response algorithm with the SDO.Int_Servizi.Kpub to check where this is a valid or cloned card
+	
+  @returns  A boolean value indicating whether the card is valid or not
+*/
+/**************************************************************************/
+bool cie_PN532::isCardValid() {
+  cie_Key key;
+  byte responseLength = 20 + STATUS_WORD_LENGTH;
+  byte* response = new byte[responseLength];
+  bool success = true;
+  //Steps of the algorithm
+  //1. Read the Servizi_Int.Kpub public key
+  //2. Select the Int_Servizi.Kpriv private key
+  //3. Perform device authentication to establish a secure messaging context
+  //4. Send the Internal Authenticate APDU command with a RND.IFD of 8 bytes
+  //5. Verify the signature is correct
+  if (!read_EF_Servizi_Int_Kpub(&key)
+    || !select_SDO_Servizi_Int_Kpriv()
+    || !establishSecureMessaging()
+    || !internalAuthenticate_PkDhScheme(response, &responseLength)
+  ) {
+    success = false;
+  }
+  //TODO: free resources in a Dispose() method of the cie_Key class
+  delete [] key.modulo;
+  delete [] key.exponent;
+  delete [] response;
+
+  return success;
 }
 
 
@@ -271,6 +289,135 @@ bool cie_PN532::parse_EF_SOD(cieBerTripleCallbackFunc callback) {
   word payloadLength;
   cie_EFPath filePath = { CIE_DF, SELECT_BY_SFI, 0x06 }; //efid 0x1006
   return _berReader->readTriples(filePath, callback, &payloadLength, 30);
+}
+
+
+/**************************************************************************/
+/*!
+  @brief  Selects the SDO.Servizi_Int.Kpriv private key for internal authentication
+  
+  @returns  A boolean value indicating whether the operation succeeded or not
+*/
+/**************************************************************************/
+bool cie_PN532::select_SDO_Servizi_Int_Kpriv() {
+  cie_EFPath filePath = { CIE_DF, SELECT_BY_SDOID, 0x03 };
+  return ensureSdoIsSelected(filePath);
+}
+
+
+/**************************************************************************/
+/*!
+  @brief  Sends an APDU command to the CIE via the PN532 terminal and checks whether the response has a valid status word
+  
+  @param  command A pointer to the APDU command bytes
+  @param  commandLength Length of the command
+  @param  response A pointer to the buffer which will contain the response bytes
+  @param  responseLength The length of the desired response
+
+  @returns  A boolean value indicating whether the operation succeeded or not
+*/
+/**************************************************************************/
+bool cie_PN532::sendCommand(byte* command, const byte commandLength, byte* responseBuffer, byte* responseLength) {
+  if (!_nfc->inDataExchange(command, commandLength, responseBuffer, responseLength) 
+  || !hasSuccessStatusWord(responseBuffer, *responseLength)) {
+    Serial.println("ERRORR");
+    _nfc->PrintHex(responseBuffer, *responseLength);
+    return false;
+  }
+  return true;
+}
+
+
+/**************************************************************************/
+/*!
+  @brief  Performs internal authentication
+
+  @param  responseBuffer A pointer to the buffer which will contain the response for the internal authentication command
+  @param  responseLength The length of the response
+  
+  @returns  A boolean value indicating whether the operation succeeded or not
+*/
+/**************************************************************************/
+bool cie_PN532::internalAuthenticate_PkDhScheme(byte* responseBuffer, byte* responseLength) {
+  byte internalAuthenticateCommand[] = {
+    0x0C, //CLA
+    0x88, //INS: INTERNAL AUTHENTICATE PK-DH scheme
+    0x00, //P1: algorithm reference -> no further information (information available in the current SE)
+    0x00, //P2: secret reference -> no further information (information available in the current SE)
+    0x08, //Lc: Length of the rndIfd
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, //rndIfd
+    *responseLength //Number of bytes expected in the response
+  };
+  generateRandomBytes(internalAuthenticateCommand, 5, 8);
+  bool success = sendCommand(internalAuthenticateCommand, sizeof(internalAuthenticateCommand), responseBuffer, responseLength);
+  if (!success) {
+    PN532DEBUGPRINT.println(F("Couldn't perform internal authentication"));
+  }
+  return success;
+}
+
+
+/**************************************************************************/
+/*!
+  @brief  Establishes a secure messaging context by performing mutual authentication
+  
+  @returns  A boolean value indicating whether the operation succeeded or not
+*/
+/**************************************************************************/
+bool cie_PN532::establishSecureMessaging() {
+  word snIccLength = EF_SN_ICC_LENGTH;
+  byte* snIcc = new byte[snIccLength];
+
+  byte rndIccLength = RND_LENGTH + STATUS_WORD_LENGTH;
+  byte* rndIcc = new byte[rndIccLength];
+
+  //Steps
+  //1. Send a READ BINARY command for the SN.ICC Elementary File
+  //2. Retrieval of the card key set for device authentication
+  //3. Send a GET CHALLENGE command and retrieve the RND.ICC
+  //4. Send a MUTUAL AUTHENTICATE command
+  //5. Verify the MAC is correct
+  bool success = true;
+  if (!read_EF_SN_ICC(snIcc, &snIccLength)
+   || !getChallenge(rndIcc, &rndIccLength)) {
+    success = false;
+  }
+  if (!success) {
+    PN532DEBUGPRINT.println(F("Couldn't establish a secure messaging context"));
+  }
+
+  delete [] snIcc;
+  delete [] rndIcc;
+
+  return success;
+}
+
+
+/**************************************************************************/
+/*!
+  @brief  Reads the binary content of an Elementary File given its Dedicated File and EFID or SFI identifier
+	
+  @param contentBuffer Pointer to the response data
+  @param contentLength The length of the response
+	
+  @returns  A boolean value indicating whether the operation succeeded or not
+*/
+/**************************************************************************/
+bool cie_PN532::getChallenge(byte* contentBuffer, byte* contentLength) {
+  byte getChallengeCommand[] = {
+    0x00, //CLA
+    0x84, //INS: GET CHALLENGE
+    0x00, //P1: not used
+    0x00, //P2: not used
+    0x08 //Le: Length of the rndIcc
+  };
+  bool success = sendCommand(getChallengeCommand, sizeof(getChallengeCommand), contentBuffer, contentLength);
+  if (!success) {
+    PN532DEBUGPRINT.println(F("Couldn't get challenge"));
+  }
+  *contentLength = RND_LENGTH;
+  _nfc->PrintHex(contentBuffer, *contentLength);
+  return success;
 }
 
 
@@ -332,7 +479,7 @@ bool cie_PN532::ensureElementaryFileIsSelected(cie_EFPath filePath) {
     0x02, //Lc: Length of EFID
     efid[0], efid[1] //EFID
   };
-  byte selectResponseLength = 2;
+  byte selectResponseLength = STATUS_WORD_LENGTH;
   byte* selectResponseBuffer = new byte[selectResponseLength];
   bool success = _nfc->inDataExchange(selectCommand, sizeof(selectCommand), selectResponseBuffer, &selectResponseLength);
   success = success && hasSuccessStatusWord(selectResponseBuffer, selectResponseLength);
@@ -377,15 +524,15 @@ bool cie_PN532::ensureSdoIsSelected(cie_EFPath filePath) {
     0xA4, //P2
     0x06, //Lc: Length of the data (composed of two TLV triples)
     0x80, 0x01, 0x02, //First TLV triple: Selection of the RSA PKCS#1 - SHA1 with not data formatting
-    0x84, 0x01, 0b10000000 | filePath.id //Second TLV triple: SDO ID OR'ed with 0b10000000 to indicate it's in the currently selected DF
+    0x84, 0x01, (byte)(0b10000000 | filePath.id) //Second TLV triple: SDO ID OR'ed with 0b10000000 to indicate it's in the currently selected DF
   };
-  byte selectResponseLength = 2;
+  byte selectResponseLength = STATUS_WORD_LENGTH;
   byte* selectResponseBuffer = new byte[selectResponseLength];
   bool success = _nfc->inDataExchange(selectCommand, sizeof(selectCommand), selectResponseBuffer, &selectResponseLength);
   success = success && hasSuccessStatusWord(selectResponseBuffer, selectResponseLength);
   delete [] selectResponseBuffer;
   if (!success) {
-    PN532DEBUGPRINT.print(F("Couldn't select the EF by its SDO ID "));
+    PN532DEBUGPRINT.println(F("Couldn't select the EF by its SDO ID "));
     return false;
   }
   _currentElementaryFile = filePath.id;
@@ -510,7 +657,6 @@ bool cie_PN532::readBinaryContent(const cie_EFPath filePath, byte* contentBuffer
   bool success = false;
   word offset = startingOffset;
   byte preambleOctets = 2;
-  byte statusWordOctets = 2;
   do {
     word contentPageLength = clamp(contentLength+startingOffset-offset, PAGE_LENGTH);
     byte readCommand[] = {
@@ -523,7 +669,7 @@ bool cie_PN532::readBinaryContent(const cie_EFPath filePath, byte* contentBuffer
       (byte) (offset >> 8), (byte) (offset & 0b11111111), //the offset
       (byte) (contentPageLength + preambleOctets) //Le: bytes to be returned in the response
     };
-    byte responseLength = ((byte) contentPageLength) + preambleOctets + statusWordOctets;
+    byte responseLength = ((byte) contentPageLength) + preambleOctets + STATUS_WORD_LENGTH;
     byte* responseBuffer = new byte[responseLength];  
     success = _nfc->inDataExchange(readCommand, 10, responseBuffer, &responseLength);
     success = success && hasSuccessStatusWord(responseBuffer, responseLength);
@@ -544,6 +690,31 @@ bool cie_PN532::readBinaryContent(const cie_EFPath filePath, byte* contentBuffer
   return success;
 }
 
+
+/**************************************************************************/
+/*!
+  @brief Reads the key content (BER encoded modulo and exponent) from the indicated Elementary File
+
+  @param filePath a structure indicating the parent Dedicated File (either ROOT_MF or CIE_DF), the selection mode (either SELECT_BY_EFID or SELECT_BY_SFI) and the file identifier (either a sfi or an efid)  
+  @param key A pointer to a which object which will be populated with the modulo and exponent
+
+  @returns  A boolean value indicating whether the operation succeeded or not
+*/
+/**************************************************************************/
+bool cie_PN532::readKey(const cie_EFPath filePath, cie_Key* key) {
+  //This is the fasted way but assumes we'll find a 2048-bit key and a 24-bit exponent valued 0x010001
+  //TODO: use public methods of the cie_Key class to allocate memory for buffers
+  //And make exponent and modulo readonly by using getter and setter methods
+  key->exponentLength = 3;
+  key->exponent = new byte[key->exponentLength] { 0x01, 0x00, 0x01 };
+  key->moduloLength = 256;
+  key->modulo = new byte[key->moduloLength];
+  return readBinaryContent(filePath, key->modulo, 9, key->moduloLength);
+
+  //TODO: proper BER parsing by using the cie_BerReader class
+}
+
+
 /**************************************************************************/
 /*!
   @brief  Selects the ROOT Master File
@@ -560,7 +731,7 @@ bool cie_PN532::selectRootMasterFile(void) {
       0x02, //Lc: Length of root id
       0x3F, 0x00 //root id
   };
-  byte responseLength = 2;
+  byte responseLength = STATUS_WORD_LENGTH;
   byte* responseBuffer = new byte[responseLength];
   bool success = _nfc->inDataExchange(command, sizeof(command), responseBuffer, &responseLength);
   success = success && hasSuccessStatusWord(responseBuffer, responseLength);
@@ -588,7 +759,7 @@ bool cie_PN532::selectIasApplication(void) {
       0x0D, //Lc: Length of AID
       0xA0, 0x00, 0x00, 0x00, 0x30, 0x80, 0x00, 0x00, 0x00, 0x09, 0x81, 0x60, 0x01 //AID
   };
-  byte responseLength = 2;
+  byte responseLength = STATUS_WORD_LENGTH;
   byte* responseBuffer = new byte[responseLength];
   bool success = _nfc->inDataExchange(command, sizeof(command), responseBuffer, &responseLength);
   success = success && hasSuccessStatusWord(responseBuffer, responseLength);
@@ -616,7 +787,7 @@ bool cie_PN532::selectCieDedicatedFile(void) {
       0x06, //Lc: length of ID
       0xA0, 0x00, 0x00, 0x00, 0x00, 0x39 //ID
   };
-  byte responseLength = 2;
+  byte responseLength = STATUS_WORD_LENGTH;
   byte* responseBuffer = new byte[responseLength];
   bool success = _nfc->inDataExchange(command, sizeof(command), responseBuffer, &responseLength);
   success = success && hasSuccessStatusWord(responseBuffer, responseLength);
@@ -651,16 +822,20 @@ bool cie_PN532::hasSuccessStatusWord(byte* response, const word responseLength) 
     PN532DEBUGPRINT.print(F("The selected file is in terminate state"));
   } else if (msByte == 0x62 && lsByte == 0x82) {
     PN532DEBUGPRINT.print(F("End of file/record reached before reading Le bytes"));
+  } else if (msByte == 0x67 && lsByte == 0x00) {
+    PN532DEBUGPRINT.print(F("Wrong length"));
+  } else if (msByte == 0x69 && lsByte == 0x82) {
+    PN532DEBUGPRINT.print(F("Security condition not satisfied"));
   } else if (msByte == 0x6A && lsByte == 0x82) {
     PN532DEBUGPRINT.print(F("File or application not found"));
   } else if (msByte == 0x6A && lsByte == 0x86) {
     PN532DEBUGPRINT.print(F("Incorrect parameters P1-P2"));
   } else if (msByte == 0x6A && lsByte == 0x87) {
     PN532DEBUGPRINT.print(F("Nc inconsistent with parameters P1-P2"));
-  } else if (msByte == 0x67 && lsByte ==	0x00) {
-    PN532DEBUGPRINT.print(F("Wrong length"));
+  } else if (msByte == 0x6D && lsByte == 0x00) {
+    PN532DEBUGPRINT.print(F("Instruction code not supported or invalid"));
   } else {
-    PN532DEBUGPRINT.print(F("Unknow error"));
+    PN532DEBUGPRINT.print(F("Unknown error"));
   }
   PN532DEBUGPRINT.print(F(" "));
   byte statusWord[2] = { msByte, lsByte };
@@ -688,6 +863,25 @@ word cie_PN532::clamp(const word value, const byte maxValue) {
     return value;
   }
 }
+
+
+/**************************************************************************/
+/*!
+    @brief  Populates a buffer with random generated bytes
+	
+    @param  buffer The pointer to a byte array
+    @param  offset The starting offset in the buffer
+    @param  length The number of random bytes to generate
+
+*/
+/**************************************************************************/
+void cie_PN532::generateRandomBytes(byte* buffer, const word offset, const byte length) {
+  randomSeed(analogRead(0)); //Use an unconnected analog pin as the random seed
+  for (word i = offset; i<offset+length; i++) {
+    buffer[i] = (byte) random(256);
+  }
+}
+
 
 /**************************************************************************/
 /*!

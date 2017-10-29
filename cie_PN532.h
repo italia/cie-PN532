@@ -32,6 +32,7 @@ class cie_AtrReader;
 #include "cie_EFPath.h"
 #include "cie_AtrReader.h"
 #include "cie_BerReader.h"
+#include "cie_Key.h"
 
 // If using the breakout with SPI, define the pins for SPI communication.
 #define PN532_SCK  (2)
@@ -60,6 +61,8 @@ class cie_AtrReader;
 //Read lengths
 #define PAGE_LENGTH                           (0x34)
 #define READ_FROM_START                       (0x00)
+#define RND_LENGTH                            (0x08)
+#define STATUS_WORD_LENGTH                    (0x02)
 
 //Elementary File length detection modes
 #define FIXED_LENGTH                          (0x00)
@@ -93,18 +96,20 @@ class cie_PN532
   bool     read_EF_ATR(byte* contentBuffer, word* contentLength);
   bool     read_EF_SN_ICC(byte* contentBuffer, word* contentLength);
   bool     read_EF_ID_Servizi(byte* contentBuffer, word* contentLength);
-  bool     read_EF_Int_Kpub(byte* contentBuffer, word* contentLength);
-  bool     read_EF_Servizi_Int_Kpub(byte* contentBuffer, word* contentLength);
-  bool     select_SDO_Servizi_Int_Kpriv();
+  bool     read_EF_Int_Kpub(cie_Key* key);
+  bool     read_EF_Servizi_Int_Kpub(cie_Key* key);
+  bool     isCardValid(); //Call this to verify it's not a clone
 
   // File access
   bool     readElementaryFile(const cie_EFPath filePath, byte* contentBuffer, word* contentLength, const byte lengthStrategy);
   bool     readBinaryContent(const cie_EFPath filePath, byte* contentBuffer, word offset, const word contentLength);
+  bool     readKey(const cie_EFPath filePath, cie_Key* key);
 
   // Utility
   void     printHex(byte* buffer, word length);
   bool     print_EF_SOD(word* contentLength);
   bool     parse_EF_SOD(cieBerTripleCallbackFunc callback);
+  void     generateRandomBytes(byte* buffer, const word offset, const byte length);
 
  private:
   //fields
@@ -116,6 +121,8 @@ class cie_PN532
 
   //methods
   void     initFields();
+  bool     sendCommand(byte* command, const byte commandLength, byte* response, byte* responseLength);
+  bool     select_SDO_Servizi_Int_Kpriv();
   bool     ensureSelected(const cie_EFPath filePath);
   bool     ensureDedicatedFileIsSelected(const byte df);
   bool     ensureElementaryFileIsSelected(const cie_EFPath filePath);
@@ -126,6 +133,12 @@ class cie_PN532
   bool     determineLength(const cie_EFPath filePath, word* contentLength, const byte lengthStrategy);
   bool     hasSuccessStatusWord(byte* response, const word responseLength);
   word     clamp(const word value, const byte maxValue);
+  
+  //authentication related methods
+  bool     establishSecureMessaging();
+  bool     getChallenge(byte* contentBuffer, byte* contentLength);
+  bool     internalAuthenticate_PkDhScheme(byte* responseBuffer, byte* responseLength);
+
 };
 
 #endif
