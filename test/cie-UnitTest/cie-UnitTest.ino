@@ -20,22 +20,14 @@ Check out the links above for our tutorials and wiring diagrams
 #include "Fake_PN532.h"
 
 Fake_PN532 fake;
-cie_PN532 cie(fake);
-//bar myBar = new bar(&baz);
+cie_PN532 cie(&fake);
 
-test(ok) 
+//Crypto
+test(ok)
 {
 
-  //Serial.println("cuia");
-  //int x=myBaz.calc();
-  //assertEqual(x,6);
 }
 
-test(bad)
-{
-  bool result = cie.detectCard();
-  assertNotEqual(result,true);
-}
 
 void setup(void) {
   #ifndef ESP8266

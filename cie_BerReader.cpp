@@ -29,8 +29,7 @@ _currentOffset(0)
   @brief Reads the triples hierarchy in the BER encoded file
   
   @param filePath a structure indicating the parent Dedicated File (either ROOT_MF or CIE_DF), the selection mode (either SELECT_BY_EFID or SELECT_BY_SFI) and the file identifier (either a sfi or an efid)	
-  @param rootTriple The pointer to the root triple which will contain all of the others as its children
-  @param length The pointer to the outer length (tag octets + length octets + content length)
+  @param cieBerTripleCallbackFunc A callback function that will be invoked each time a triple has been found
   @param maxDepth How deep down in the hierarchy we should look for triples
 
   @returns  A value indicating whether the operation succeeded or not
@@ -45,54 +44,56 @@ bool cie_BerReader::readTriples(const cie_EFPath filePath, cieBerTripleCallbackF
 
   byte currentDepth = 1;
   byte triplesCount = 0;
-  cie_BerTriple* tripleStack[maxDepth];
+  cie_BerTriple* tripleStack = new cie_BerTriple[maxDepth];
   bool willEncapsulate = false;
+  bool isEncapsulating = false;
 
   byte oid_subjectKeyIdentifier[] = {0x67, 0x81, 0x08, 0x01, 0x01, 0x01}; //2.5.29.14 
   byte oid_keyUsage[] = {0x55, 0x1D, 0x0F}; //2.5.29.15
   byte oid_authorityKeyIdentifier[] = {0x55, 0x1D, 0x23}; //2.5.29.35
   byte oid_rsaEncryption[] = {0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x01}; //1.2.840.113549.1.1.1
   byte oid_mRTDSignatureData[] = {0x67, 0x81, 0x08, 0x01, 0x01, 0x01}; //2.23.136.1.1.1
-
-
+  bool result = true;
   do {
 
-    cie_BerTriple currentTriple;
-    tripleStack[currentDepth-1] = &currentTriple;
     word tripleLength;
-    if (!readTriple(filePath, tripleStack[currentDepth-1], &tripleLength)) {
-      return false;
+    if (!readTriple(filePath, &tripleStack[currentDepth-1], &tripleLength)) {
+      result = false;
+      break;
     }
-
-    tripleStack[currentDepth-1]->depth = currentDepth;
+    tripleStack[currentDepth-1].depth = currentDepth;
     if (*callback != NULL) {
-      if (!(*callback)(tripleStack[currentDepth-1])) {
+      if (!(*callback)(&tripleStack[currentDepth-1])) {
         //Navigation interrupted by callback, we stop here.
-        return true;
+        result = true;
+        break;
       }
     }
     triplesCount += 1;
 
-    if (tripleStack[currentDepth-1]->contentLength > BER_READER_MAX_LENGTH) {
+    if (tripleStack[currentDepth-1].contentLength > BER_READER_MAX_LENGTH) {
       PN532DEBUGPRINT.print(F("Sorry, we don't support content lengths greater than "));
       PN532DEBUGPRINT.println(BER_READER_MAX_LENGTH);
-      return false;
+      result = false;
+      break;
     }
 
-    if (tripleStack[currentDepth-1]->contentOffset > BER_READER_MAX_OFFSET) {
+    if (tripleStack[currentDepth-1].contentOffset > BER_READER_MAX_OFFSET) {
       PN532DEBUGPRINT.print(F("Sorry, we don't support content offsets greater than "));
       PN532DEBUGPRINT.println(BER_READER_MAX_OFFSET);
-      return false;
+      result = false;
+      break;
     }
 
     if (triplesCount > BER_READER_MAX_COUNT) {
       PN532DEBUGPRINT.print(F("Sorry, we don't support as many triples as "));
       PN532DEBUGPRINT.println(BER_READER_MAX_COUNT);
-      return false;
+      result = false;
+      break;
     }
 
 
-    word contentLength = tripleStack[currentDepth-1]->contentLength;
+    word contentLength = tripleStack[currentDepth-1].contentLength;
     if (currentDepth == 1) {
       *length = tripleLength;
     }
@@ -103,35 +104,37 @@ bool cie_BerReader::readTriples(const cie_EFPath filePath, cieBerTripleCallbackF
       //we can go up only if we're not at the root level
       for (byte i = currentDepth-1; i>0; i--) {
 
-        byte isBinaryString = tripleStack[i-1]->type == 0x03 || tripleStack[i-1]->type == 0x04;
-        bool isObjectIdentifier = tripleStack[i-1]->type == 0x06;
-        bool isConstructed = tripleStack[i-1]->encoding == 0x01;
-        bool isLastInParent = _currentOffset + contentLength >= tripleStack[i-2]->contentOffset + tripleStack[i-2]->contentLength;
+        byte isBinaryString = tripleStack[i].type == 0x03 || tripleStack[i].type == 0x04;
+        bool isObjectIdentifier = tripleStack[i].type == 0x06;
+        bool isConstructed = tripleStack[i].encoding == 0x01;
+        bool isLastInParent = _currentOffset + contentLength >= tripleStack[i-1].contentOffset + tripleStack[i-1].contentLength;
         bool canGoDown = currentDepth + 1 <= maxDepth;
-        bool stillToRead = _currentOffset < tripleStack[i-1]->contentOffset + tripleStack[i-1]->contentLength;
+        bool stillToRead = _currentOffset < (tripleStack[i].contentOffset + tripleStack[i].contentLength);
         
 
         //Some OCTET STRINGS and BIT STRING might be encapsulating other ASN.1 triples
         //Find them by their preceding Object Identifier
         if (isObjectIdentifier)
         {
-          byte oid[tripleStack[i-1]->contentLength]; 
-          _cie->readBinaryContent(filePath, oid, tripleStack[i-1]->contentOffset, tripleStack[i-1]->contentLength);
+          byte oid[tripleStack[i].contentLength]; 
+          _cie->readBinaryContent(filePath, oid, tripleStack[i].contentOffset, tripleStack[i].contentLength);
 
-          if (areEqual(oid, tripleStack[i-1]->contentLength, oid_subjectKeyIdentifier, sizeof(oid_subjectKeyIdentifier)) ||
-              areEqual(oid, tripleStack[i-1]->contentLength, oid_keyUsage, sizeof(oid_keyUsage)) || 
-              areEqual(oid, tripleStack[i-1]->contentLength, oid_authorityKeyIdentifier, sizeof(oid_authorityKeyIdentifier)) || 
-              areEqual(oid, tripleStack[i-1]->contentLength, oid_rsaEncryption, sizeof(oid_rsaEncryption)) || 
-              (areEqual(oid, tripleStack[i-1]->contentLength, oid_mRTDSignatureData, sizeof(oid_mRTDSignatureData)) && (currentDepth+1<=maxDepth))) {
+          if (areEqual(oid, tripleStack[i].contentLength, oid_subjectKeyIdentifier, sizeof(oid_subjectKeyIdentifier)) ||
+              areEqual(oid, tripleStack[i].contentLength, oid_keyUsage, sizeof(oid_keyUsage)) || 
+              areEqual(oid, tripleStack[i].contentLength, oid_authorityKeyIdentifier, sizeof(oid_authorityKeyIdentifier)) || 
+              areEqual(oid, tripleStack[i].contentLength, oid_rsaEncryption, sizeof(oid_rsaEncryption)) || 
+              (areEqual(oid, tripleStack[i].contentLength, oid_mRTDSignatureData, sizeof(oid_mRTDSignatureData)) && (currentDepth+1<=maxDepth))) {
             willEncapsulate = true;
           }
         } else if (isBinaryString && willEncapsulate) {
           isConstructed = true;
           willEncapsulate = false;
+          isEncapsulating = true;
         }
 
         if (isLastInParent && !(isConstructed && canGoDown && stillToRead)) {
-          currentDepth-=1;        
+          currentDepth-=1;
+          isEncapsulating = false;
         } else {
           break;
         }
@@ -140,13 +143,12 @@ bool cie_BerReader::readTriples(const cie_EFPath filePath, cieBerTripleCallbackF
       
     }
 
-    
-
     //Let's see if we should go down one level
-    bool isConstructed = tripleStack[currentDepth-1]->encoding == 0x01;
-    bool isAtBeginning = _currentOffset == tripleStack[currentDepth-1]->contentOffset;
-    bool hasNonZeroLength = tripleStack[currentDepth-1]->contentLength > 0;
+    bool isConstructed = isEncapsulating || (tripleStack[currentDepth-1].encoding == 0x01);
+    bool isAtBeginning = _currentOffset == tripleStack[currentDepth-1].contentOffset;
+    bool hasNonZeroLength = tripleStack[currentDepth-1].contentLength > 0;
     bool canGoDown = currentDepth + 1 <= maxDepth;
+    isEncapsulating = false;
     if (isConstructed && isAtBeginning && hasNonZeroLength && canGoDown) {
       currentDepth += 1;
     } else {
@@ -154,7 +156,9 @@ bool cie_BerReader::readTriples(const cie_EFPath filePath, cieBerTripleCallbackF
     }
 
   } while(_currentOffset < *length);
-  return true;
+
+  delete [] tripleStack;
+  return result;
 }
 
 
@@ -169,7 +173,7 @@ bool cie_BerReader::readTriples(const cie_EFPath filePath, cieBerTripleCallbackF
   @returns  A value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
-bool cie_BerReader::readTriple(const cie_EFPath filePath, cie_BerTriple*& triple, word* length) {
+bool cie_BerReader::readTriple(const cie_EFPath filePath, cie_BerTriple* triple, word* length) {
   
   byte tagOctets, lengthOctets;
   if (!detectTag(filePath, &triple->classification, &triple->encoding, &triple->type, &tagOctets) ||
@@ -205,6 +209,7 @@ bool cie_BerReader::readTripleValue(const cie_BerTriple triple, byte* buffer) {
   @brief Detects the content length in a triple
   
   @param filePath a structure indicating the parent Dedicated File (either ROOT_MF or CIE_DF), the selection mode (either SELECT_BY_EFID or SELECT_BY_SFI) and the file identifier (either a sfi or an efid)	
+  @param contentOffset The pointer to binary content offset
   @param contentLength The pointer to binary content length
   @param lengthOctets The pointer to the number of length octets found in this triple)
 
@@ -262,6 +267,7 @@ bool cie_BerReader::detectLength(const cie_EFPath filePath, word* contentOffset,
   @param encoding The pointer to the detected binary content encoding (either primitive or constructed)
   @param type The pointer to the detected type value
   @param tagOctets The pointer to the number of tag octets found in this triple
+  
   @returns  A value indicating whether the operation succeeded or not
 */
 /**************************************************************************/

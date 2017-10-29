@@ -61,8 +61,12 @@ class cie_AtrReader;
 //Read lengths
 #define PAGE_LENGTH                           (0x34)
 #define READ_FROM_START                       (0x00)
-#define RND_LENGTH                            (0x08)
 #define STATUS_WORD_LENGTH                    (0x02)
+
+//Random values lengths
+#define RND_LENGTH                            (0x08)
+#define K_LENGTH                              (0x20)
+#define SK_LENGTH                             (0x10)
 
 //Elementary File length detection modes
 #define FIXED_LENGTH                          (0x00)
@@ -80,6 +84,9 @@ class cie_AtrReader;
 #define ROOT_MF                               (0x01)
 #define CIE_DF                                (0x02)
 
+//Session keys
+#define SK_ENC                                (0x01)
+#define SK_MAC                                (0x02)
 
 class cie_PN532
 {
@@ -106,7 +113,7 @@ class cie_PN532
   bool     readKey(const cie_EFPath filePath, cie_Key* key);
 
   // Utility
-  void     printHex(byte* buffer, word length);
+  void     printHex(byte* buffer, const word length);
   bool     print_EF_SOD(word* contentLength);
   bool     parse_EF_SOD(cieBerTripleCallbackFunc callback);
   void     generateRandomBytes(byte* buffer, const word offset, const byte length);
@@ -120,25 +127,27 @@ class cie_PN532
   unsigned long _currentElementaryFile;
 
   //methods
-  void     initFields();
-  bool     sendCommand(byte* command, const byte commandLength);
-  bool     sendCommand(byte* command, const byte commandLength, byte* response, byte* responseLength);
-  bool     select_SDO_Servizi_Int_Kpriv();
-  bool     ensureSelected(const cie_EFPath filePath);
-  bool     ensureDedicatedFileIsSelected(const byte df);
-  bool     ensureElementaryFileIsSelected(const cie_EFPath filePath);
-  bool     ensureSdoIsSelected(const cie_EFPath filePath);
-  bool     selectIasApplication(void);
-  bool     selectRootMasterFile(void);
-  bool     selectCieDedicatedFile(void);
-  bool     determineLength(const cie_EFPath filePath, word* contentLength, const byte lengthStrategy);
-  bool     hasSuccessStatusWord(byte* response, const word responseLength);
-  word     clamp(const word value, const byte maxValue);
+  void initFields();
+  bool sendCommand(byte* command, const byte commandLength);
+  bool sendCommand(byte* command, const byte commandLength, byte* response, byte* responseLength);
+  bool select_SDO_Servizi_Int_Kpriv();
+  bool ensureSelected(const cie_EFPath filePath);
+  bool ensureDedicatedFileIsSelected(const byte df);
+  bool ensureElementaryFileIsSelected(const cie_EFPath filePath);
+  bool ensureSdoIsSelected(const cie_EFPath filePath);
+  bool selectIasApplication(void);
+  bool selectRootMasterFile(void);
+  bool selectCieDedicatedFile(void);
+  bool determineLength(const cie_EFPath filePath, word* contentLength, const byte lengthStrategy);
+  bool hasSuccessStatusWord(byte* response, const word responseLength);
+  word clamp(const word value, const byte maxValue);
   
   //authentication related methods
-  bool     establishSecureMessaging();
-  bool     getChallenge(byte* contentBuffer, byte* contentLength);
-  bool     internalAuthenticate_PkDhScheme(byte* responseBuffer, byte* responseLength);
+  bool establishSecureMessaging();
+  bool getChallenge(byte* contentBuffer, byte* contentLength);
+  bool mutualAuthenticate(byte* snIccBuffer, const byte snIccBufferLength, byte* rndIccBuffer, const byte rndIccBufferLength);
+  bool internalAuthenticate_PkDhScheme(byte* responseBuffer, byte* responseLength);
+  void calculateSk(const byte valueType, byte* kIfd, byte* kIcc, byte* sk, byte* skLength);
 
 };
 
