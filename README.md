@@ -1,6 +1,9 @@
 # cie-PN532
 Arduino library for SPI access to the PN532 NFC chip in the Italian Electronic Identity Card (CIE).
 
+___
+**WARNING: this library does not yet detect cloned cards.**
+___
 ## Prerequisites
 This library depends upon the **Adafruit_PN532** library which you can obtain from its GitHub Repository.
 
@@ -22,6 +25,7 @@ This wiring is also described in detail on this page at the Adafruit website.
 https://learn.adafruit.com/adafruit-pn532-rfid-nfc/breakout-wiring
 
 ## Getting started
+
 Create a new arduino project and set it up like this:
 ```C++
 //Include some libraries

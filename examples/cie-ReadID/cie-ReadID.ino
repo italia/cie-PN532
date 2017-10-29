@@ -66,6 +66,7 @@ void loop(void) {
   Serial.println(F("ms"));
 
   //Verify the card is valid
+  //WARNING: CARD VERIFICATION HAS NOT BEEN IMPLEMENTED YET
   startTime = millis();
   bool isValid = cie.isCardValid();
   Serial.print(F("Card is "));
