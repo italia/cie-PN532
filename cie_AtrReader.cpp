@@ -5,7 +5,7 @@
     @license  BSD (see License)
 
 	
-	Reads and parses anAtr encoded binary content
+	Reads and parses an Atr encoded binary content
 
 	@section  HISTORY
 

@@ -27,7 +27,7 @@ attraverso il seguente comando:
 
     ``pip install breathe``
 
-Dopo aver corretamente installato il software richiesto bisognerà inizializzare Sphnix, quindi spostarsi 
+Dopo aver correttamente installato il software richiesto bisognerà inizializzare Sphinx, quindi spostarsi 
 nella ``directory`` in cui si vuole installare la *documentazione* stessa e lanciare il seguente comando:
 
     ``sphinx-quickstart``
@@ -39,7 +39,7 @@ Per generare quest'ultima bisognerà utilizzare il comando [1]_:
 
     ``make html``
 
-L'intera documentazione quindi sarà modificabile semplicemente mediante la modfica e la creazione di file 
+L'intera documentazione quindi sarà modificabile semplicemente mediante la modifica e la creazione di file 
 con estensione **.rst** [2]_. 
 
 Collegamenti

@@ -199,10 +199,10 @@
 <parametername>contentLength</parametername>
 </parameternamelist>
 <parameterdescription>
-<para>The lenght of the file</para></parameterdescription>
+<para>The length of the file</para></parameterdescription>
 </parameteritem>
 </parameterlist>
-<simplesect kind="return"><para>A boolean value indicating whether the operation suceeded or not </para></simplesect>
+<simplesect kind="return"><para>A boolean value indicating whether the operation succeeded or not </para></simplesect>
 </para>        </detaileddescription>
         <inbodydescription>
         </inbodydescription>
@@ -236,10 +236,10 @@
 <parametername>contentLength</parametername>
 </parameternamelist>
 <parameterdescription>
-<para>The lenght of the file</para></parameterdescription>
+<para>The length of the file</para></parameterdescription>
 </parameteritem>
 </parameterlist>
-<simplesect kind="return"><para>A boolean value indicating whether the operation suceeded or not </para></simplesect>
+<simplesect kind="return"><para>A boolean value indicating whether the operation succeeded or not </para></simplesect>
 </para>        </detaileddescription>
         <inbodydescription>
         </inbodydescription>
@@ -273,10 +273,10 @@
 <parametername>contentLength</parametername>
 </parameternamelist>
 <parameterdescription>
-<para>The lenght of the file</para></parameterdescription>
+<para>The length of the file</para></parameterdescription>
 </parameteritem>
 </parameterlist>
-<simplesect kind="return"><para>A boolean value indicating whether the operation suceeded or not </para></simplesect>
+<simplesect kind="return"><para>A boolean value indicating whether the operation succeeded or not </para></simplesect>
 </para>        </detaileddescription>
         <inbodydescription>
         </inbodydescription>
@@ -310,10 +310,10 @@
 <parametername>contentLength</parametername>
 </parameternamelist>
 <parameterdescription>
-<para>The lenght of the file</para></parameterdescription>
+<para>The length of the file</para></parameterdescription>
 </parameteritem>
 </parameterlist>
-<simplesect kind="return"><para>A boolean value indicating whether the operation suceeded or not </para></simplesect>
+<simplesect kind="return"><para>A boolean value indicating whether the operation succeeded or not </para></simplesect>
 </para>        </detaileddescription>
         <inbodydescription>
         </inbodydescription>
@@ -347,10 +347,10 @@
 <parametername>contentLength</parametername>
 </parameternamelist>
 <parameterdescription>
-<para>The lenght of the file</para></parameterdescription>
+<para>The length of the file</para></parameterdescription>
 </parameteritem>
 </parameterlist>
-<simplesect kind="return"><para>A boolean value indicating whether the operation suceeded or not </para></simplesect>
+<simplesect kind="return"><para>A boolean value indicating whether the operation succeeded or not </para></simplesect>
 </para>        </detaileddescription>
         <inbodydescription>
         </inbodydescription>
@@ -384,10 +384,10 @@
 <parametername>contentLength</parametername>
 </parameternamelist>
 <parameterdescription>
-<para>The lenght of the file</para></parameterdescription>
+<para>The length of the file</para></parameterdescription>
 </parameteritem>
 </parameterlist>
-<simplesect kind="return"><para>A boolean value indicating whether the operation suceeded or not </para></simplesect>
+<simplesect kind="return"><para>A boolean value indicating whether the operation succeeded or not </para></simplesect>
 </para>        </detaileddescription>
         <inbodydescription>
         </inbodydescription>
@@ -453,7 +453,7 @@
 <para>How to determine the length of the file (either FIXED_LENGTH or AUTODETECT_BER_LENGTH or AUTODETECT_ATR_LENGTH)</para></parameterdescription>
 </parameteritem>
 </parameterlist>
-<simplesect kind="return"><para>A boolean value indicating whether the operation suceeded or not </para></simplesect>
+<simplesect kind="return"><para>A boolean value indicating whether the operation succeeded or not </para></simplesect>
 </para>        </detaileddescription>
         <inbodydescription>
         </inbodydescription>
@@ -506,7 +506,7 @@
 <para>The number of bytes to read</para></parameterdescription>
 </parameteritem>
 </parameterlist>
-<simplesect kind="return"><para>A boolean value indicating whether the operation suceeded or not </para></simplesect>
+<simplesect kind="return"><para>A boolean value indicating whether the operation succeeded or not </para></simplesect>
 </para>        </detaileddescription>
         <inbodydescription>
         </inbodydescription>
@@ -557,10 +557,10 @@
 <parametername>contentLength</parametername>
 </parameternamelist>
 <parameterdescription>
-<para>The lenght of the file</para></parameterdescription>
+<para>The length of the file</para></parameterdescription>
 </parameteritem>
 </parameterlist>
-<simplesect kind="return"><para>A boolean value indicating whether the operation suceeded or not </para></simplesect>
+<simplesect kind="return"><para>A boolean value indicating whether the operation succeeded or not </para></simplesect>
 </para>        </detaileddescription>
         <inbodydescription>
         </inbodydescription>
@@ -586,7 +586,7 @@
 <para>A function which will be invoked when a new triple has been read</para></parameterdescription>
 </parameteritem>
 </parameterlist>
-<simplesect kind="return"><para>A boolean value indicating whether the operation suceeded or not </para></simplesect>
+<simplesect kind="return"><para>A boolean value indicating whether the operation succeeded or not </para></simplesect>
 </para>        </detaileddescription>
         <inbodydescription>
         </inbodydescription>
@@ -644,7 +644,7 @@
 <para>The Dedicated File (either ROOT_MF or CIE_DF)</para></parameterdescription>
 </parameteritem>
 </parameterlist>
-<simplesect kind="return"><para>A boolean value indicating whether the operation suceeded or not </para></simplesect>
+<simplesect kind="return"><para>A boolean value indicating whether the operation succeeded or not </para></simplesect>
 </para>        </detaileddescription>
         <inbodydescription>
         </inbodydescription>
@@ -677,7 +677,7 @@
 <para>The efid of the Elementary File (must be two bytes)</para></parameterdescription>
 </parameteritem>
 </parameterlist>
-<simplesect kind="return"><para>A boolean value indicating whether the operation suceeded or not </para></simplesect>
+<simplesect kind="return"><para>A boolean value indicating whether the operation succeeded or not </para></simplesect>
 </para>        </detaileddescription>
         <inbodydescription>
         </inbodydescription>
@@ -711,7 +711,7 @@
         <briefdescription>
 <para>Selects the ROOT Master File. </para>        </briefdescription>
         <detaileddescription>
-<para><simplesect kind="return"><para>A boolean value indicating whether the operation suceeded or not </para></simplesect>
+<para><simplesect kind="return"><para>A boolean value indicating whether the operation succeeded or not </para></simplesect>
 </para>        </detaileddescription>
         <inbodydescription>
         </inbodydescription>
@@ -776,7 +776,7 @@
 <para>The chosen strategy by user (either AUTODETECT_BER_LENGTH or FIXED_LENGTH)</para></parameterdescription>
 </parameteritem>
 </parameterlist>
-<simplesect kind="return"><para>A boolean value indicating whether the operation suceeded or not </para></simplesect>
+<simplesect kind="return"><para>A boolean value indicating whether the operation succeeded or not </para></simplesect>
 </para>        </detaileddescription>
         <inbodydescription>
         </inbodydescription>

@@ -10,14 +10,14 @@ Questa libreria dipende dalla più complessa e articolata libreria Adafruit_PN53
 
     https://github.com/adafruit/Adafruit-PN532
 
-È fondamentale installare entrambe le libreire Adafruit_PN532 e cie_PN532 nella directory ``/libraries`` di Arduino. Puoi seguire le istruzioni anche sulla guida ufficiale messa a diposizione da Arduino.
+È fondamentale installare entrambe le librerie Adafruit_PN532 e cie_PN532 nella directory ``/libraries`` di Arduino. Puoi seguire le istruzioni anche sulla guida ufficiale messa a diposizione da Arduino.
 
     https://www.arduino.cc/en/Guide/Libraries
 
 Collegamento tra Arduino Uno e PN532 
 --------------------------------------
 
-Al momento è supportata solamente la connesione SPI. La figura sottostante rappresenta lo schema da emulare per il corretto funzionamento dell'intero sistema.
+Al momento è supportata solamente la connessione SPI. La figura sottostante rappresenta lo schema da emulare per il corretto funzionamento dell'intero sistema.
 
 .. image:: ../images/pn532-wiring-spi.png
 

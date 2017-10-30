@@ -84,7 +84,7 @@
 <parametername>rootTriple</parametername>
 </parameternamelist>
 <parameterdescription>
-<para>The pointer to the root triple which will contain all of the others as its children </para></parameterdescription>
+<para>The pointer to the root triple which will contain all the others as its children </para></parameterdescription>
 </parameteritem>
 <parameteritem>
 <parameternamelist>

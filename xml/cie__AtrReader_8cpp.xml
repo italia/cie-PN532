@@ -76,7 +76,7 @@
     </briefdescription>
     <detaileddescription>
 <para><simplesect kind="author"><para>Developers Italia  BSD (see License)</para></simplesect>
-Reads and parses anAtr encoded binary content</para><sect1 id="cie__PN532_8h_1HISTORY">
+Reads and parses an Atr encoded binary content</para><sect1 id="cie__PN532_8h_1HISTORY">
 <title>HISTORY</title>
 <para>v1.0 - Parsing of the most interesting parts </para></sect1>
     </detaileddescription>

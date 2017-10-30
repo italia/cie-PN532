@@ -6,8 +6,8 @@ Contributing
 
 È possibile contribuire allo sviluppo di questa libreria **Open-Source** grazie alla repository 
 messa a disposizione su GitHub_. Crediamo che con il supporto della community dei developers 
-italiani, la libreria possa fare grandi passi avanti, e sopratutto riuscire sempre più ad assumere 
-un aspetto più efficente e produttivo.
+italiani, la libreria possa fare grandi in passi avanti e riuscire progressivamente ad assumere 
+un aspetto sempre più efficiente e produttivo.
 
 .. _GitHub: https://github.com/BrightSoul/cie-PN532`_.
 

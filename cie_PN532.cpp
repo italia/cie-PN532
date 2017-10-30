@@ -119,7 +119,7 @@ void cie_PN532::printHex(byte* buffer, const word length) {
   @brief  Reads the binary content the EF_DH elementary file
 
   @param  contentBuffer The pointer to data containing the contents of the file
-  @param  contentLength The lenght of the file
+  @param  contentLength The length of the file
 	
   @returns  A boolean value indicating whether the operation succeeded or not
 */
@@ -136,7 +136,7 @@ bool cie_PN532::read_EF_DH(byte* contentBuffer, word* contentLength) {
   @brief  Reads the binary content of the EF_ATR elementary file
 
   @param  contentBuffer The pointer to data containing the contents of the file
-  @param  contentLength The lenght of the file
+  @param  contentLength The length of the file
 
   @returns  A boolean value indicating whether the operation succeeded or not
 */
@@ -152,7 +152,7 @@ bool cie_PN532::read_EF_ATR(byte* contentBuffer, word* contentLength) {
   @brief  Reads the binary content of the SN_ICC elementary file
 
   @param  contentBuffer The pointer to data containing the contents of the file
-  @param  contentLength The lenght of the file
+  @param  contentLength The length of the file
 
   @returns  A boolean value indicating whether the operation succeeded or not
 */
@@ -169,7 +169,7 @@ bool cie_PN532::read_EF_SN_ICC(byte* contentBuffer, word* contentLength) {
   @brief  Reads the binary content of the EF_ID_Servizi elementary file
 
   @param  contentBuffer The pointer to data containing the contents of the file
-  @param  contentLength The lenght of the file
+  @param  contentLength The length of the file
 
   @returns  A boolean value indicating whether the operation succeeded or not
 */

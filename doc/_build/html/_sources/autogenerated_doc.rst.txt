@@ -1,9 +1,6 @@
 CIE-PN532 API per Arduino
 ===============================
 
-Utilizzo di Sphnix e Doxygen
--------------------------------
-
 Di seguito è possibile trovare tutte le **API** presenti nel codice.
 Il risultato visualizzato è frutto dell'integrazione tra Doxygen e Sphinx.
 
