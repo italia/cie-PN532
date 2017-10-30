@@ -2,8 +2,12 @@
 Arduino library for SPI access to the PN532 NFC chip in the Italian Electronic Identity Card (CIE).
 
 ___
-**WARNING: this library does not yet detect cloned cards.**
+![Warning](images/warning.png "This library does NOT yet detect cloned cards")
 ___
+
+[![Online documentation](images/documentation.png "Online documentation")](https://cie-pn532.azurewebsites.net) [![Demonstration video](images/video.png "Demonstration video")](https://www.youtube.com/watch?v=xGILUdw0EKQ)
+
+
 ## Prerequisites
 This library depends upon the **Adafruit_PN532** library which you can obtain from its GitHub Repository.
 
