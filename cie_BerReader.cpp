@@ -45,8 +45,7 @@ bool cie_BerReader::readTriples(const cie_EFPath filePath, cieBerTripleCallbackF
   byte currentDepth = 1;
   byte triplesCount = 0;
   cie_BerTriple* tripleStack = new cie_BerTriple[maxDepth];
-  bool willEncapsulate = false;
-  bool isEncapsulating = false;
+  bool willEncapsulate = false; 
 
   byte oid_subjectKeyIdentifier[] = {0x67, 0x81, 0x08, 0x01, 0x01, 0x01}; //2.5.29.14 
   byte oid_keyUsage[] = {0x55, 0x1D, 0x0F}; //2.5.29.15
@@ -54,14 +53,42 @@ bool cie_BerReader::readTriples(const cie_EFPath filePath, cieBerTripleCallbackF
   byte oid_rsaEncryption[] = {0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x01}; //1.2.840.113549.1.1.1
   byte oid_mRTDSignatureData[] = {0x67, 0x81, 0x08, 0x01, 0x01, 0x01}; //2.23.136.1.1.1
   bool result = true;
+  *length = 0;
   do {
-
     word tripleLength;
     if (!readTriple(filePath, &tripleStack[currentDepth-1], &tripleLength)) {
       result = false;
       break;
     }
+    if (*length == 0) {
+      *length = tripleLength;
+    }
     tripleStack[currentDepth-1].depth = currentDepth;
+
+    byte isBinaryString = tripleStack[currentDepth-1].type == 0x03 || tripleStack[currentDepth-1].type == 0x04;
+    bool isObjectIdentifier = tripleStack[currentDepth-1].type == 0x06;
+    //Some OCTET STRINGS and BIT STRING might be encapsulating other ASN.1 triples
+    //Find them by their preceding Object Identifier
+    if (isObjectIdentifier)
+    {
+      byte oid[tripleStack[currentDepth-1].contentLength]; 
+      _cie->readBinaryContent(filePath, oid, tripleStack[currentDepth-1].contentOffset, tripleStack[currentDepth-1].contentLength);
+
+      if (areEqual(oid, tripleStack[currentDepth-1].contentLength, oid_subjectKeyIdentifier, sizeof(oid_subjectKeyIdentifier)) ||
+          areEqual(oid, tripleStack[currentDepth-1].contentLength, oid_keyUsage, sizeof(oid_keyUsage)) || 
+          areEqual(oid, tripleStack[currentDepth-1].contentLength, oid_authorityKeyIdentifier, sizeof(oid_authorityKeyIdentifier)) || 
+          areEqual(oid, tripleStack[currentDepth-1].contentLength, oid_rsaEncryption, sizeof(oid_rsaEncryption)) || 
+          (areEqual(oid, tripleStack[currentDepth-1].contentLength, oid_mRTDSignatureData, sizeof(oid_mRTDSignatureData)) && (currentDepth+1<=maxDepth))) {
+        willEncapsulate = true;
+      } else {
+        willEncapsulate = false;
+      }
+    } else if (isBinaryString && willEncapsulate) {
+      willEncapsulate = false;
+      tripleStack[currentDepth-1].encoding = 0x01;
+    }
+
+
     if (*callback != NULL) {
       if (!(*callback)(&tripleStack[currentDepth-1])) {
         //Navigation interrupted by callback, we stop here.
@@ -94,47 +121,21 @@ bool cie_BerReader::readTriples(const cie_EFPath filePath, cieBerTripleCallbackF
 
 
     word contentLength = tripleStack[currentDepth-1].contentLength;
-    if (currentDepth == 1) {
-      *length = tripleLength;
-    }
-
+    word myOffset = tripleStack[currentDepth-1].offset;
     //check if we've finished reading a parent (or granparent) triple and go up levels accordingly
     if (currentDepth > 1) {
 
       //we can go up only if we're not at the root level
       for (byte i = currentDepth-1; i>0; i--) {
 
-        byte isBinaryString = tripleStack[i].type == 0x03 || tripleStack[i].type == 0x04;
-        bool isObjectIdentifier = tripleStack[i].type == 0x06;
         bool isConstructed = tripleStack[i].encoding == 0x01;
         bool isLastInParent = _currentOffset + contentLength >= tripleStack[i-1].contentOffset + tripleStack[i-1].contentLength;
         bool canGoDown = currentDepth + 1 <= maxDepth;
-        bool stillToRead = _currentOffset < (tripleStack[i].contentOffset + tripleStack[i].contentLength);
-        
-
-        //Some OCTET STRINGS and BIT STRING might be encapsulating other ASN.1 triples
-        //Find them by their preceding Object Identifier
-        if (isObjectIdentifier)
-        {
-          byte oid[tripleStack[i].contentLength]; 
-          _cie->readBinaryContent(filePath, oid, tripleStack[i].contentOffset, tripleStack[i].contentLength);
-
-          if (areEqual(oid, tripleStack[i].contentLength, oid_subjectKeyIdentifier, sizeof(oid_subjectKeyIdentifier)) ||
-              areEqual(oid, tripleStack[i].contentLength, oid_keyUsage, sizeof(oid_keyUsage)) || 
-              areEqual(oid, tripleStack[i].contentLength, oid_authorityKeyIdentifier, sizeof(oid_authorityKeyIdentifier)) || 
-              areEqual(oid, tripleStack[i].contentLength, oid_rsaEncryption, sizeof(oid_rsaEncryption)) || 
-              (areEqual(oid, tripleStack[i].contentLength, oid_mRTDSignatureData, sizeof(oid_mRTDSignatureData)) && (currentDepth+1<=maxDepth))) {
-            willEncapsulate = true;
-          }
-        } else if (isBinaryString && willEncapsulate) {
-          isConstructed = true;
-          willEncapsulate = false;
-          isEncapsulating = true;
-        }
+        bool stillToRead = _currentOffset < (tripleStack[i].contentOffset + tripleStack[i].contentLength);       
 
         if (isLastInParent && !(isConstructed && canGoDown && stillToRead)) {
           currentDepth-=1;
-          isEncapsulating = false;
+          _currentOffset = tripleStack[i].contentOffset + tripleStack[i].contentLength;
         } else {
           break;
         }
@@ -144,17 +145,15 @@ bool cie_BerReader::readTriples(const cie_EFPath filePath, cieBerTripleCallbackF
     }
 
     //Let's see if we should go down one level
-    bool isConstructed = isEncapsulating || (tripleStack[currentDepth-1].encoding == 0x01);
+    bool isConstructed = tripleStack[currentDepth-1].encoding == 0x01;
     bool isAtBeginning = _currentOffset == tripleStack[currentDepth-1].contentOffset;
     bool hasNonZeroLength = tripleStack[currentDepth-1].contentLength > 0;
     bool canGoDown = currentDepth + 1 <= maxDepth;
-    isEncapsulating = false;
     if (isConstructed && isAtBeginning && hasNonZeroLength && canGoDown) {
       currentDepth += 1;
-    } else {
-      _currentOffset += contentLength;
+    } else if (!isConstructed) {
+      _currentOffset = tripleStack[currentDepth-1].contentOffset + tripleStack[currentDepth-1].contentLength;
     }
-
   } while(_currentOffset < *length);
 
   delete [] tripleStack;
@@ -267,16 +266,20 @@ bool cie_BerReader::detectLength(const cie_EFPath filePath, word* contentOffset,
   @param encoding The pointer to the detected binary content encoding (either primitive or constructed)
   @param type The pointer to the detected type value
   @param tagOctets The pointer to the number of tag octets found in this triple
-  
+
   @returns  A value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
 bool cie_BerReader::detectTag (const cie_EFPath filePath, byte* classification, byte* encoding, unsigned int* type, byte* tagOctets) {
 
-  byte tag;
-  if (!readOctet(filePath, &tag)) {
-    PN532DEBUGPRINT.println(F("Couldn't detect a tag in the BER content"));
-    return false;
+  byte tag = 0x00;
+  *tagOctets = 0;
+  while (tag == 0x00) { //End of content can't be a tag
+    if (!readOctet(filePath, &tag)) {
+      PN532DEBUGPRINT.println(F("Couldn't detect a tag in the BER content"));
+      return false;
+    }
+    *tagOctets += 1;
   }
 
   //bit 6 encodes whether the type is primitive or constructed
@@ -293,7 +296,7 @@ bool cie_BerReader::detectTag (const cie_EFPath filePath, byte* classification, 
       *type = 0x00;
       //The tag number is encoded in the following octets, where bit 8 of each is 1 if there are more octets
       bool moreOctets = false;
-      *tagOctets = 1;
+      
       do
       {
         *tagOctets += 1;
@@ -309,8 +312,6 @@ bool cie_BerReader::detectTag (const cie_EFPath filePath, byte* classification, 
         moreOctets = ((tag & 0b10000000) == 0b10000000);
       } while (moreOctets);
       return true;
-  } else {
-    *tagOctets = 1;
   }
   return true;
 }
