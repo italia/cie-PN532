@@ -5,6 +5,7 @@ ___
 ![Warning](images/warning.png "This library does NOT yet detect cloned cards")
 ___
 
+## Online resources
 [![Online documentation](images/documentation.png "Online documentation")](https://cie-pn532.azurewebsites.net) [![Demonstration video](images/video.png "Demonstration video")](https://www.youtube.com/watch?v=xGILUdw0EKQ)
 
 
