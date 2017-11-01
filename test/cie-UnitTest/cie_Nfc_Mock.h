@@ -21,6 +21,7 @@ class cie_Nfc_Mock: public cie_Nfc {
     cie_Command* _expectedCommands;
     byte _expectedCommandsCount;
     byte _executedCommandsCount;
+    byte _attemptedCommandsCount;
 };
 
 #endif
