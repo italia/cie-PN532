@@ -18,6 +18,7 @@
 #include <Arduino.h>
 class cie_Key {
   public:
+	~cie_Key();
 	byte* exponent;
 	byte exponentLength;
 	byte* modulo;

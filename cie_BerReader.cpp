@@ -151,7 +151,7 @@ bool cie_BerReader::readTriples(const cie_EFPath filePath, cieBerTripleCallbackF
     bool canGoDown = currentDepth + 1 <= maxDepth;
     if (isConstructed && isAtBeginning && hasNonZeroLength && canGoDown) {
       currentDepth += 1;
-    } else if (!isConstructed) {
+    } else if (!isConstructed || !canGoDown) {
       _currentOffset = tripleStack[currentDepth-1].contentOffset + tripleStack[currentDepth-1].contentLength;
     }
   } while(_currentOffset < *length);

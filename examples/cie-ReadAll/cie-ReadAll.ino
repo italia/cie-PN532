@@ -69,6 +69,7 @@ void loop(void) {
   cie.print_EF_SOD(&ef_sod_length);
   Serial.print(F("EF_SOD length was "));
   Serial.println(ef_sod_length);
+  printFreeMemory();
 
   Serial.println();
   Serial.println(F("Read complete, you can remove the card now"));
@@ -79,43 +80,55 @@ void readValue(readValueFunc func, const char* name) {
   byte* buffer = new byte[bufferLength];
   unsigned long startedAt = millis();
   bool success = (cie.*func)(buffer, &bufferLength);
-  if (!success) {
+  if (success) {
+    Serial.print(name);
+    Serial.print(" (");
+    Serial.print(bufferLength);
+    Serial.print(F(" bytes, "));
+    Serial.print(millis()-startedAt);
+    Serial.print(F(" ms) "));
+    cie.printHex(buffer, bufferLength);
+  } else {
     Serial.print(F("Error reading "));
     Serial.println(name);
-    return;
   }
-  Serial.print(name);
-  Serial.print(" (");
-  Serial.print(bufferLength);
-  Serial.print(F(" bytes, "));
-  Serial.print(millis()-startedAt);
-  Serial.print(F(" ms) "));
-  cie.printHex(buffer, bufferLength);
-  delete [] buffer; 
+  delete [] buffer;
+  printFreeMemory();
 }
 
 void readKey(readKeyFunc func, const char* name) {
-  word bufferLength = 600;
   cie_Key* key = new cie_Key();
   unsigned long startedAt = millis();
   bool success = (cie.*func)(key);
-  if (!success) {
+  if (success) {
+    Serial.print(name);
+    Serial.print(" (");
+    Serial.print(millis()-startedAt);
+    Serial.println(F(" ms)"));
+    Serial.print(F("  Modulo ("));
+    Serial.print(key->moduloLength*8);
+    Serial.print(F(" bits) "));
+    cie.printHex(key->modulo, key->moduloLength);
+    Serial.print(F("  Exponent ("));
+    Serial.print(key->exponentLength*8);
+    Serial.print(F(" bits) "));
+    cie.printHex(key->exponent, key->exponentLength);
+  } else {
     Serial.print(F("Error reading "));
     Serial.println(name);
-    return;
   }
-  Serial.print(name);
-  Serial.print(" (");
-  Serial.print(millis()-startedAt);
-  Serial.println(F(" ms)"));
-  Serial.print(F("  Modulo ("));
-  Serial.print(key->moduloLength*8);
-  Serial.print(F(" bits) "));
-  cie.printHex(key->modulo, key->moduloLength);
-  
-  Serial.print(F("  Exponent ("));
-  Serial.print(key->exponentLength*8);
-  Serial.print(F(" bits) "));
-  cie.printHex(key->exponent, key->exponentLength);
   delete key;
+  printFreeMemory();
+}
+
+void printFreeMemory() {
+  Serial.print(F("We have "));
+  Serial.print(freeRam());
+  Serial.println(F(" bytes of memory left"));
+}
+
+int freeRam () {
+  extern int __heap_start, *__brkval; 
+  int v; 
+  return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
 }

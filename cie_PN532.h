@@ -33,12 +33,7 @@ class cie_AtrReader;
 #include "cie_AtrReader.h"
 #include "cie_BerReader.h"
 #include "cie_Key.h"
-
-// If using the breakout with SPI, define the pins for SPI communication.
-#define PN532_SCK  (2)
-#define PN532_MOSI (3)
-#define PN532_SS   (4)
-#define PN532_MISO (5)
+#include "cie_Nfc_Adafruit.h"
 
 // If using the breakout or shield with I2C, define just the pins connected
 // to the IRQ and reset lines.  Use the values below (2, 3) for the shield!
@@ -93,10 +88,13 @@ class cie_PN532
  public:
   cie_PN532();
   cie_PN532(byte clk, byte miso, byte mosi, byte ss);
-  cie_PN532(Adafruit_PN532* nfc);
+  cie_PN532(cie_Nfc* nfc);
   ~cie_PN532();
-  void begin(void);
-  bool detectCard();
+
+  //PN532 data exchange methods
+  virtual void begin(void);
+  virtual bool detectCard();
+
   
   // Read binary content of unencrypted Elementary Files
   bool     read_EF_DH(byte* contentBuffer, word* contentLength);
@@ -120,16 +118,19 @@ class cie_PN532
 
  private:
   //fields
-  Adafruit_PN532* _nfc;
+  cie_Nfc* _nfc;
   cie_BerReader* _berReader;
   cie_AtrReader* _atrReader;
   byte _currentDedicatedFile;
   unsigned long _currentElementaryFile;
 
+  //PN532 data exchange methods
+  virtual bool sendCommand(byte* command, const byte commandLength, byte* response, byte* responseLength);
+
+
   //methods
   void initFields();
   bool sendCommand(byte* command, const byte commandLength);
-  bool sendCommand(byte* command, const byte commandLength, byte* response, byte* responseLength);
   bool select_SDO_Servizi_Int_Kpriv();
   bool ensureSelected(const cie_EFPath filePath);
   bool ensureDedicatedFileIsSelected(const byte df);
@@ -150,6 +151,7 @@ class cie_PN532
   void calculateSk(const byte valueType, byte* kIfd, byte* kIcc, byte* sk, byte* skLength);
 
 };
+
 
 #endif
 

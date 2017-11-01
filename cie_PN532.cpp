@@ -27,17 +27,22 @@
   @brief Create with the typical breakout wiring, as described by Adafruit: https://learn.adafruit.com/adafruit-pn532-rfid-nfc/breakout-wiring
 */
 /**************************************************************************/
-cie_PN532::cie_PN532 () : cie_PN532(2, 5, 3, 4) { 
+cie_PN532::cie_PN532 () : cie_PN532(2, 5, 3, 4) {
 }
 
 /**************************************************************************/
 /*!
   @brief Create with a customized wiring
+
+  @param  clk The CLK pin number
+  @param  miso The MISO pin number
+  @param  mosi The MOSI pin number
+  @param  ss The SS pin number
 */
 /**************************************************************************/
 cie_PN532::cie_PN532 (byte clk, byte miso, byte mosi, byte ss)
 {
-  _nfc = new Adafruit_PN532(clk, miso, mosi, ss);
+  _nfc = new cie_Nfc_Adafruit(clk, miso, mosi, ss);
   initFields();
 }
 
@@ -46,7 +51,7 @@ cie_PN532::cie_PN532 (byte clk, byte miso, byte mosi, byte ss)
   @brief Create with a custom instance of the Adafruit_PN532 class
 */
 /**************************************************************************/
-cie_PN532::cie_PN532 (Adafruit_PN532* nfc)
+cie_PN532::cie_PN532 (cie_Nfc* nfc)
 {
   _nfc = nfc;
   initFields();
@@ -67,22 +72,11 @@ void cie_PN532::initFields() {
 
 /**************************************************************************/
 /*!
-  @brief Initialize the PN532 board
+  @brief Initializes the PN532 board
 */
 /**************************************************************************/
 void cie_PN532::begin() {
   _nfc->begin();
-  uint32_t versiondata = _nfc->getFirmwareVersion();
-  if (! versiondata) {
-    PN532DEBUGPRINT.print(F("Didn't find PN53x board"));
-    while (1); // halt
-  }
-  // Got ok data, print it out!
-  PN532DEBUGPRINT.print(F("Found chip PN5")); PN532DEBUGPRINT.println((versiondata>>24) & 0b11111111, HEX); 
-  PN532DEBUGPRINT.print(F("Firmware ver. ")); PN532DEBUGPRINT.print((versiondata>>16) & 0b11111111, DEC); 
-  PN532DEBUGPRINT.print('.'); PN532DEBUGPRINT.println((versiondata>>8) & 0b11111111, DEC);
-  _nfc->SAMConfig();
-
   PN532DEBUGPRINT.println(F("PN53x initialized, waiting for a CIE card..."));
 }
 
@@ -93,7 +87,7 @@ void cie_PN532::begin() {
 */
 /**************************************************************************/
 bool cie_PN532::detectCard() {
-  bool success = _nfc->inListPassiveTarget();
+  bool success = _nfc->detectCard();
   if (success) {
     _currentDedicatedFile = NULL_DF;
     _currentDedicatedFile = NULL_EF;
@@ -111,7 +105,20 @@ bool cie_PN532::detectCard() {
 */
 /**************************************************************************/
 void cie_PN532::printHex(byte* buffer, const word length) {
-  _nfc->PrintHex(buffer, length);
+  for (word szPos=0; szPos < length; szPos++)
+  {
+    PN532DEBUGPRINT.print(F("0x"));
+    // Append leading 0 for small values
+    if (buffer[szPos] <= 0xF) {
+      PN532DEBUGPRINT.print(F("0"));
+    }
+    PN532DEBUGPRINT.print(buffer[szPos]&0xff, HEX);
+    if ((length > 1) && (szPos != length - 1))
+    {
+      PN532DEBUGPRINT.print(F(" "));
+    }
+  }
+  PN532DEBUGPRINT.println();
 }
 
 /**************************************************************************/
@@ -259,14 +266,13 @@ bool cie_PN532::print_EF_SOD(word* contentLength) {
   if (!determineLength(filePath, contentLength, AUTODETECT_BER_LENGTH)) {
         return false;
   }
-
   word offset = READ_FROM_START;
   while (offset < *contentLength) {
     word contentPageLength = clamp(*contentLength-offset, PAGE_LENGTH);
     byte* pageBuffer = new byte[contentPageLength];
     bool success = readBinaryContent(filePath, pageBuffer, offset, contentPageLength);
     if (success) {
-      _nfc->PrintHex(pageBuffer, contentPageLength);
+      printHex(pageBuffer, contentPageLength);
     }
     delete [] pageBuffer;
 
@@ -310,7 +316,7 @@ bool cie_PN532::select_SDO_Servizi_Int_Kpriv() {
 
 /**************************************************************************/
 /*!
-  @brief  Sends an APDU command which is not returning any data to the CIE via the PN532 terminal and checks whether the response has a valid status word
+  @brief  Sends an APDU command which won't return any data to the CIE via the PN532 terminal and checks whether the response has a valid status word
   
   @param  command A pointer to the APDU command bytes
   @param  commandLength Length of the command
@@ -340,10 +346,8 @@ bool cie_PN532::sendCommand(byte* command, const byte commandLength) {
 */
 /**************************************************************************/
 bool cie_PN532::sendCommand(byte* command, const byte commandLength, byte* responseBuffer, byte* responseLength) {
-  if (!_nfc->inDataExchange(command, commandLength, responseBuffer, responseLength) 
+  if (!_nfc->sendCommand(command, commandLength, responseBuffer, responseLength) 
   || !hasSuccessStatusWord(responseBuffer, *responseLength)) {
-    Serial.println("ERRORR");
-    _nfc->PrintHex(responseBuffer, *responseLength);
     return false;
   }
   return true;
@@ -537,7 +541,7 @@ bool cie_PN532::ensureElementaryFileIsSelected(cie_EFPath filePath) {
   bool success = sendCommand(selectCommand, sizeof(selectCommand));
   if (!success) {
     PN532DEBUGPRINT.print(F("Couldn't select the EF by its EFID "));
-    _nfc->PrintHex(efid, 2);
+    printHex(efid, 2);
     return false;
   }
   _currentElementaryFile = filePath.id;
@@ -649,7 +653,6 @@ bool cie_PN532::determineLength(const cie_EFPath filePath, word* contentLength, 
     break;
 
     case AUTODETECT_BER_LENGTH:
-      cie_BerTriple* triple;
       if (!_berReader->readTriples(filePath, nullptr, contentLength, 1)) {
         return false;
       }
@@ -874,7 +877,7 @@ bool cie_PN532::hasSuccessStatusWord(byte* response, const word responseLength) 
   }
   PN532DEBUGPRINT.print(F(" "));
   byte statusWord[2] = { msByte, lsByte };
-  _nfc->PrintHex(statusWord, 2);
+  printHex(statusWord, 2);
   
   return false;
 }
@@ -964,7 +967,7 @@ void calculateSk(const byte valueType, byte* kIfd, byte* kIcc, byte* sk, byte* s
 /**************************************************************************/
 cie_PN532::~cie_PN532()
 {
-    delete _atrReader;
-    delete _berReader;
-    delete _nfc;
+  delete _atrReader;
+  delete _berReader;
+  delete _nfc;
 }
