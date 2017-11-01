@@ -82,8 +82,8 @@ bool cie_Nfc_Adafruit::detectCard() {
   @returns  A boolean value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
-bool cie_Nfc_Adafruit::sendCommand(byte* send, byte sendLength, byte* response, byte* responseLength) {
-  return _nfc->inDataExchange(send, sendLength, response, responseLength);
+bool cie_Nfc_Adafruit::sendCommand(byte* command, byte commandLength, byte* response, byte* responseLength) {
+  return _nfc->inDataExchange(command, commandLength, response, responseLength);
 }
 
 /**************************************************************************/
