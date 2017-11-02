@@ -17,6 +17,7 @@ class cie_Nfc_Mock: public cie_Nfc {
     bool allExpectedCommandsExecuted();
 
   private:
+    void clear();
     bool areEqual(byte* originalBuffer, byte* comparedBuffer, const byte offset, const byte length);
     cie_Command* _expectedCommands;
     byte _expectedCommandsCount;
