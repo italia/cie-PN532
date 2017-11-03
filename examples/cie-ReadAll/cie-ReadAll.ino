@@ -41,6 +41,8 @@ void setup(void) {
   #endif
   Serial.begin(115200);
   cie.begin();
+  //Uncomment this to output the APDU commands sent to the terminal
+  //cie.verbose = true;
 }
 
 

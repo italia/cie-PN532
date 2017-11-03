@@ -38,6 +38,8 @@ void setup(void) {
   #endif
   Serial.begin(115200);
   cie.begin();
+  //Uncomment this to output the APDU commands sent to the terminal
+  //cie.verbose = true;
 }
 
 
@@ -74,7 +76,6 @@ void loop(void) {
   Serial.print(F("Checking the card for validity took "));
   Serial.print(millis()-startTime);
   Serial.println(F("ms"));
-
 
   Serial.println();
   Serial.print(F("Free memory left: "));

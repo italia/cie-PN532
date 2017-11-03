@@ -67,6 +67,7 @@ void cie_PN532::initFields() {
   _currentElementaryFile = NULL_EF;
   _berReader = new cie_BerReader(this);
   _atrReader = new cie_AtrReader(this);
+  verbose = false;
 }
 
 
@@ -231,15 +232,17 @@ bool cie_PN532::isCardValid() {
   bool success = true;
   //Steps of the algorithm
   //1. Read the Servizi_Int.Kpub public key
-  //2. Perform device authentication to establish a secure messaging context
+  //2. (Is this needed???) Perform device authentication to establish a secure messaging context
   //3. Select the authentication key
   //4. Send the Internal Authenticate APDU command with a RND.IFD of 8 bytes
-  //5. Verify the signature is correct
+  //5. Verify the response is correct
+  //6. Check if EF.Servizi_int.Kpub has a correct signature in EF_SOD
   if (!read_EF_Servizi_Int_Kpub(&key)
-    || !establishSecureMessaging()
+    //|| !establishSecureMessaging()
     || !select_SDO_Servizi_Int_Kpriv()
     || !internalAuthenticate_PkDhScheme(response, &responseLength)
-    //|| !verifySignature(...)
+    //|| !verifyChallengeResponse(...)
+    //|| !verify_Servizi_Int_Kpub(...)
   ) {
     success = false;
   }
@@ -346,11 +349,18 @@ bool cie_PN532::sendCommand(byte* command, const byte commandLength) {
 */
 /**************************************************************************/
 bool cie_PN532::sendCommand(byte* command, const byte commandLength, byte* responseBuffer, byte* responseLength) {
+  bool success = true;
   if (!_nfc->sendCommand(command, commandLength, responseBuffer, responseLength) 
   || !hasSuccessStatusWord(responseBuffer, *responseLength)) {
-    return false;
+    success = false;
   }
-  return true;
+  if (verbose) {
+    PN532DEBUGPRINT.print(F("Command ("));
+    PN532DEBUGPRINT.print(success ? F("success") : F("failure"));
+    PN532DEBUGPRINT.print(F("): "));
+    printHex(command, commandLength);
+  }
+  return success;
 }
 
 

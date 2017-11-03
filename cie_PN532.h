@@ -90,6 +90,7 @@ class cie_PN532
   cie_PN532(byte clk, byte miso, byte mosi, byte ss);
   cie_PN532(cie_Nfc* nfc);
   ~cie_PN532();
+  bool verbose;
 
   //PN532 data exchange methods
   virtual void begin(void);

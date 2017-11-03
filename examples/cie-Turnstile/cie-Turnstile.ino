@@ -50,6 +50,9 @@ void setup(void) {
   #endif
   Serial.begin(115200);
   cie.begin();  
+  //Uncomment this to output the APDU commands sent to the terminal
+  //cie.verbose = true;
+
   matrix.begin(0x70);
   count = 0;
   clearMatrix();
@@ -98,7 +101,6 @@ void loop(void) {
   closeTurnstile();
   printCount();
   
-
 
   Serial.println();
   Serial.println(F("Read complete, you can remove the card now"));

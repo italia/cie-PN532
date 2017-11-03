@@ -37,7 +37,8 @@ void setup(void) {
   #endif
   Serial.begin(115200);
   cie.begin();  
-  Serial.println(F("PN532 initialized, waiting for a CIE card..."));
+  //Uncomment this to output the APDU commands sent to the terminal
+  //cie.verbose = true;
 }
 
 
