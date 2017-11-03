@@ -59,10 +59,7 @@ bool cie_Nfc_Mock::sendCommand(byte* command, byte commandLength, byte* response
   
   bool isSameCommand = areEqual(command, _expectedCommands[_executedCommandsCount].command, _expectedCommands[_executedCommandsCount].commandOffset, _expectedCommands[_executedCommandsCount].commandLength);
   if (isSameCommand) {
-    for (byte i = 0; i < _expectedCommands[_executedCommandsCount].responseLength; i++) {
-      response[i] = _expectedCommands[_executedCommandsCount].response[i];
-    }
-    *responseLength = _expectedCommands[_executedCommandsCount].responseLength;
+    memcpy(response, _expectedCommands[_executedCommandsCount].response, *responseLength);
     _executedCommandsCount += 1;
     return true;
   } else {
@@ -80,7 +77,7 @@ void cie_Nfc_Mock::expectCommands(const byte count) {
   clear();
   _executedCommandsCount = 0;
   _attemptedCommandsCount = 0;
-  _expectedCommandsCount = count;
+  _expectedCommandsCount = 0;
   _expectedCommands = new cie_Command[_expectedCommandsCount];
 }
 
@@ -98,11 +95,12 @@ void cie_Nfc_Mock::expectCommands(const byte count) {
 */
 /**************************************************************************/
 void cie_Nfc_Mock::expectCommand(byte* command, const byte commandOffset, const byte commandLength, byte* response, const byte responseLength) {
-  _expectedCommands[_executedCommandsCount].command = command;
-  _expectedCommands[_executedCommandsCount].commandLength = commandLength;
-  _expectedCommands[_executedCommandsCount].commandOffset = commandOffset;
-  _expectedCommands[_executedCommandsCount].response = response;
-  _expectedCommands[_executedCommandsCount].responseLength = responseLength;
+  _expectedCommands[_expectedCommandsCount].command = command;
+  _expectedCommands[_expectedCommandsCount].commandLength = commandLength;
+  _expectedCommands[_expectedCommandsCount].commandOffset = commandOffset;
+  _expectedCommands[_expectedCommandsCount].response = response;
+  _expectedCommands[_expectedCommandsCount].responseLength = responseLength;
+  _expectedCommandsCount += 1;
 }
 
 
@@ -137,7 +135,11 @@ bool cie_Nfc_Mock::areEqual(byte* originalBuffer, byte* comparedBuffer, const by
       Serial.print(_executedCommandsCount);
       Serial.print(F(" was not expected (byte "));
       Serial.print(i);
-      Serial.println(F(" was different)"));
+      Serial.print(F(" was different: expected "));
+      printHex(comparedBuffer[i], 1);
+      Serial.print(F(" but received "));
+      printHex(originalBuffer[i+offset], 1);
+      Serial.println(F(")"));
       return false;
     }
   }
@@ -156,6 +158,32 @@ void cie_Nfc_Mock::clear() {
     delete [] _expectedCommands[i].response;
   }
   delete [] _expectedCommands;
+}
+
+
+/**************************************************************************/
+/*!
+    @brief  Prints a hexadecimal value in plain characters
+
+    @param  data      Pointer to the byte data
+    @param  numBytes  Data length in bytes
+*/
+/**************************************************************************/
+void cie_Nfc_Mock::printHex(const byte * data, const byte numBytes)
+{
+  uint32_t szPos;
+  for (szPos=0; szPos < numBytes; szPos++)
+  {
+    Serial.print(F("0x"));
+    // Append leading 0 for small values
+    if (data[szPos] <= 0xF)
+      Serial.print(F("0"));
+    Serial.print(data[szPos]&0xff, HEX);
+    if ((numBytes > 1) && (szPos != numBytes - 1))
+    {
+      Serial.print(F(" "));
+    }
+  }
 }
 
 
