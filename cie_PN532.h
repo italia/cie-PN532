@@ -54,7 +54,7 @@ class cie_AtrReader;
 #define EF_SN_ICC_LENGTH                      (0x0C)
 
 //Read lengths
-#define PAGE_LENGTH                           (0x34)
+#define PAGE_LENGTH                           (0xE4)
 #define READ_FROM_START                       (0x00)
 #define STATUS_WORD_LENGTH                    (0x02)
 
@@ -115,7 +115,6 @@ class cie_PN532
   void     printHex(byte* buffer, const word length);
   bool     print_EF_SOD(word* contentLength);
   bool     parse_EF_SOD(cieBerTripleCallbackFunc callback);
-  void     generateRandomBytes(byte* buffer, const word offset, const byte length);
 
  private:
   //fields
@@ -126,12 +125,12 @@ class cie_PN532
   unsigned long _currentElementaryFile;
 
   //PN532 data exchange methods
-  virtual bool sendCommand(byte* command, const byte commandLength, byte* response, byte* responseLength);
+  virtual bool sendCommand(byte* command, const byte commandLength, byte* response, word* responseLength);
 
 
   //methods
   void initFields();
-  bool sendCommand(byte* command, const byte commandLength);
+  bool sendCommand(byte* command, const word commandLength);
   bool select_SDO_Servizi_Int_Kpriv();
   bool ensureSelected(const cie_EFPath filePath);
   bool ensureDedicatedFileIsSelected(const byte df);
@@ -146,9 +145,10 @@ class cie_PN532
   
   //authentication related methods
   bool establishSecureMessaging();
-  bool getChallenge(byte* contentBuffer, byte* contentLength);
+  bool getChallenge(byte* contentBuffer, word* contentLength);
   bool mutualAuthenticate(byte* snIccBuffer, const byte snIccBufferLength, byte* rndIccBuffer, const byte rndIccBufferLength);
-  bool internalAuthenticate_PkDhScheme(byte* responseBuffer, byte* responseLength);
+  bool internalAuthenticate_PkDhScheme(byte* responseBuffer, word* responseLength);
+  //bool verifyChallengeResponseSignature(cie_Key* pubKey, byte* signedData, );
   void calculateSk(const byte valueType, byte* kIfd, byte* kIcc, byte* sk, byte* skLength);
 
 };

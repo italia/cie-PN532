@@ -91,6 +91,9 @@ test(selectIasApplication_must_send_a_select_command_only_if_it_was_not_already_
 
 }
 
+test(verification_of_a_challenge_response_must_succeed) {
+}
+
 
 void setup(void) {
   #ifndef ESP8266

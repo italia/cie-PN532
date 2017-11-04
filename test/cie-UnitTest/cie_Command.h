@@ -8,7 +8,7 @@ struct cie_Command {
     byte commandOffset;
     byte commandLength;
     byte* response;
-    byte responseLength;
+    word responseLength;
 };
 
 #endif

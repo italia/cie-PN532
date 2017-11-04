@@ -227,28 +227,27 @@ bool cie_PN532::read_EF_Servizi_Int_Kpub(cie_Key* key) {
 /**************************************************************************/
 bool cie_PN532::isCardValid() {
   cie_Key key;
-  byte responseLength = 20 + STATUS_WORD_LENGTH;
+  if (!read_EF_Servizi_Int_Kpub(&key)) {
+    return false;
+  }
+  word responseLength = key.moduloLength + STATUS_WORD_LENGTH;
   byte* response = new byte[responseLength];
+  for (word i = 0; i < responseLength; i++) {
+    response[i] = 0x00;
+  }
   bool success = true;
-  //Steps of the algorithm
-  //1. Read the Servizi_Int.Kpub public key
-  //2. (Is this needed???) Perform device authentication to establish a secure messaging context
-  //3. Select the authentication key
-  //4. Send the Internal Authenticate APDU command with a RND.IFD of 8 bytes
-  //5. Verify the response is correct
-  //6. Check if EF.Servizi_int.Kpub has a correct signature in EF_SOD
-  if (!read_EF_Servizi_Int_Kpub(&key)
-    //|| !establishSecureMessaging()
-    || !select_SDO_Servizi_Int_Kpriv()
-    || !internalAuthenticate_PkDhScheme(response, &responseLength)
+  //Steps for checking this is not a cloned card
+  //1. Select the SDO.Servizi_Int.Kpriv key
+  //2. Send the Internal Authenticate APDU command
+  //3. Verify the response is correct
+  //4. Check if EF.Servizi_int.Kpub has a correct signature in EF_SOD
+  if (!select_SDO_Servizi_Int_Kpriv()
+      || !internalAuthenticate_PkDhScheme(response, &responseLength)
     //|| !verifyChallengeResponse(...)
     //|| !verify_Servizi_Int_Kpub(...)
   ) {
     success = false;
   }
-  //TODO: free resources in a Dispose() method of the cie_Key class
-  delete [] key.modulo;
-  delete [] key.exponent;
   delete [] response;
 
   return success;
@@ -327,8 +326,8 @@ bool cie_PN532::select_SDO_Servizi_Int_Kpriv() {
   @returns  A boolean value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
-bool cie_PN532::sendCommand(byte* command, const byte commandLength) {
-  byte responseLength = STATUS_WORD_LENGTH;
+bool cie_PN532::sendCommand(byte* command, const word commandLength) {
+  word responseLength = STATUS_WORD_LENGTH;
   byte* responseBuffer = new byte[responseLength];
   bool success = sendCommand(command, commandLength, responseBuffer, &responseLength);
   delete [] responseBuffer;
@@ -348,7 +347,7 @@ bool cie_PN532::sendCommand(byte* command, const byte commandLength) {
   @returns  A boolean value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
-bool cie_PN532::sendCommand(byte* command, const byte commandLength, byte* responseBuffer, byte* responseLength) {
+bool cie_PN532::sendCommand(byte* command, const byte commandLength, byte* responseBuffer, word* responseLength) {
   bool success = true;
   if (!_nfc->sendCommand(command, commandLength, responseBuffer, responseLength) 
   || !hasSuccessStatusWord(responseBuffer, *responseLength)) {
@@ -370,22 +369,24 @@ bool cie_PN532::sendCommand(byte* command, const byte commandLength, byte* respo
 
   @param  responseBuffer A pointer to the buffer which will contain the response for the internal authentication command
   @param  responseLength The length of the response
-  
   @returns  A boolean value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
-bool cie_PN532::internalAuthenticate_PkDhScheme(byte* responseBuffer, byte* responseLength) {
+bool cie_PN532::internalAuthenticate_PkDhScheme(byte* responseBuffer, word* responseLength) {
   byte internalAuthenticateCommand[] = {
-    0x0C, //CLA
+    0x00, //CLA
     0x88, //INS: INTERNAL AUTHENTICATE PK-DH scheme
     0x00, //P1: algorithm reference -> no further information (information available in the current SE)
     0x00, //P2: secret reference -> no further information (information available in the current SE)
     0x08, //Lc: Length of the rndIfd
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, //rndIfd
-    *responseLength //Number of bytes expected in the response
+    0x00 //Return all bytes
   };
-  generateRandomBytes(internalAuthenticateCommand, 5, 8);
+  _nfc->generateRandomBytes(internalAuthenticateCommand, 5, 8);
   bool success = sendCommand(internalAuthenticateCommand, sizeof(internalAuthenticateCommand), responseBuffer, responseLength);
+  Serial.print("RESPONSE AUTH ");
+  Serial.print(*responseLength);
+  printHex(responseBuffer, *responseLength);
   if (!success) {
     PN532DEBUGPRINT.println(F("Couldn't perform internal authentication"));
   }
@@ -409,9 +410,9 @@ bool cie_PN532::mutualAuthenticate(byte* snIccBuffer, const byte snIccBufferLeng
 
   //Prepare randoms
   byte* rndIfd = new byte[RND_LENGTH];
-  generateRandomBytes(rndIfd, 0, RND_LENGTH);
+  _nfc->generateRandomBytes(rndIfd, 0, RND_LENGTH);
   byte* kIfd = new byte[K_LENGTH];
-  generateRandomBytes(kIfd, 0, K_LENGTH);
+  _nfc->generateRandomBytes(kIfd, 0, K_LENGTH);
 
   delete [] rndIfd;
   delete [] kIfd;
@@ -436,7 +437,7 @@ bool cie_PN532::establishSecureMessaging() {
   word snIccLength = EF_SN_ICC_LENGTH;
   byte* snIcc = new byte[snIccLength];
 
-  byte rndIccLength = RND_LENGTH + STATUS_WORD_LENGTH;
+  word rndIccLength = RND_LENGTH + STATUS_WORD_LENGTH;
   byte* rndIcc = new byte[rndIccLength];
 
   //Steps
@@ -474,7 +475,7 @@ bool cie_PN532::establishSecureMessaging() {
   @returns  A boolean value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
-bool cie_PN532::getChallenge(byte* contentBuffer, byte* contentLength) {
+bool cie_PN532::getChallenge(byte* contentBuffer, word* contentLength) {
   byte getChallengeCommand[] = {
     0x00, //CLA
     0x84, //INS: GET CHALLENGE
@@ -716,9 +717,9 @@ bool cie_PN532::readBinaryContent(const cie_EFPath filePath, byte* contentBuffer
   }
   bool success = false;
   word offset = startingOffset;
-  byte preambleOctets = 2;
   do {
     word contentPageLength = clamp(contentLength+startingOffset-offset, PAGE_LENGTH);
+    byte preambleOctets = contentPageLength > 0x80 ? 3 : 2; //Discretionary data: three bytes for responses of length > 0x80
     byte readCommand[] = {
       0x00, //CLA
       0xB1, //INS: READ BINARY (ODD INS)
@@ -729,12 +730,13 @@ bool cie_PN532::readBinaryContent(const cie_EFPath filePath, byte* contentBuffer
       (byte) (offset >> 8), (byte) (offset & 0b11111111), //the offset
       (byte) (contentPageLength + preambleOctets) //Le: bytes to be returned in the response
     };
-    byte responseLength = ((byte) contentPageLength) + preambleOctets + STATUS_WORD_LENGTH;
+    word responseLength = ((byte) contentPageLength) + preambleOctets + STATUS_WORD_LENGTH;
     byte* responseBuffer = new byte[responseLength];  
-    success = sendCommand(readCommand, 10, responseBuffer, &responseLength);
+    success = sendCommand(readCommand, sizeof(readCommand), responseBuffer, &responseLength);
     //Copy data over to the buffer
     if (success) {
-      //The read binary command with ODD INS incapsulated the response with two preamble octets. Don't include them, they're not part of the content.
+      //The read binary command with ODD INS incapsulated the response with two or three preamble octets. Don't include them, they're not part of the content.
+      //See page 147 in the Gixel manual http://www.unsads.com/specs/IASECC/IAS_ECC_v1.0.1_UK.pdf
       for (word i = preambleOctets; i < contentPageLength + preambleOctets; i++) {
         contentBuffer[offset - startingOffset + i - preambleOctets] = responseBuffer[i];
       }
@@ -742,7 +744,7 @@ bool cie_PN532::readBinaryContent(const cie_EFPath filePath, byte* contentBuffer
     delete [] responseBuffer;  
     offset += contentPageLength;
     
-  } while(success && (offset < contentLength));  
+  } while(success && (offset < contentLength));
   if (!success) {
     PN532DEBUGPRINT.println(F("Couldn't fetch the elementary file content"));
   }  
@@ -909,24 +911,6 @@ word cie_PN532::clamp(const word value, const byte maxValue) {
     return maxValue;
   } else {
     return value;
-  }
-}
-
-
-/**************************************************************************/
-/*!
-    @brief  Populates a buffer with random generated bytes
-	
-    @param  buffer The pointer to a byte array
-    @param  offset The starting offset in the buffer
-    @param  length The number of random bytes to generate
-
-*/
-/**************************************************************************/
-void cie_PN532::generateRandomBytes(byte* buffer, const word offset, const byte length) {
-  randomSeed(analogRead(0)*micros()); //Use an unconnected analog pin as the random seed
-  for (word i = offset; i<offset+length; i++) {
-    buffer[i] = (byte) random(256);
   }
 }
 
