@@ -10,11 +10,13 @@ ___
 
 
 ## Prerequisites
-This library depends upon the **Adafruit_PN532** library which you can obtain from its GitHub Repository.
+This library depends upon a modified version of the **Adafruit_PN532** library which you can obtain from this GitHub Repository.
+https://github.com/BrightSoul/Adafruit-PN532
 
-https://github.com/adafruit/Adafruit-PN532
+It also depends on the library BigNumber you can obtain here.
+https://github.com/BrightSoul/Adafruit-PN532
 
-You must install both the Adafruit_PN532 and cie_PN532 in your Arduino _libraries_ directory.
+You must install the Adafruit_PN532, BigNumber and cie_PN532 in your Arduino _libraries_ directory.
 Plese follow the instructions from the Arduino guide.
 
 https://www.arduino.cc/en/Guide/Libraries

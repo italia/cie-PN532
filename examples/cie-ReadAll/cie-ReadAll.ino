@@ -107,10 +107,10 @@ void readKey(readKeyFunc func, const char* name) {
     Serial.print(" (");
     Serial.print(millis()-startedAt);
     Serial.println(F(" ms)"));
-    Serial.print(F("  Modulo ("));
-    Serial.print(key->moduloLength*8);
+    Serial.print(F("  Modulus ("));
+    Serial.print(key->modulusLength*8);
     Serial.print(F(" bits) "));
-    cie.printHex(key->modulo, key->moduloLength);
+    cie.printHex(key->modulus, key->modulusLength);
     Serial.print(F("  Exponent ("));
     Serial.print(key->exponentLength*8);
     Serial.print(F(" bits) "));

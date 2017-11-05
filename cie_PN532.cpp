@@ -193,7 +193,7 @@ bool cie_PN532::read_EF_ID_Servizi(byte* contentBuffer, word* contentLength) {
 /*!
   @brief  Reads the binary content of the EF.Int.Kpub elementary file
 
-  @param  key The pointer to a cie_Key object which will be populated with the modulo and exponent values
+  @param  key The pointer to a cie_Key object which will be populated with the modulus and exponent values
 
   @returns  A boolean value indicating whether the operation succeeded or not
 */
@@ -208,7 +208,7 @@ bool cie_PN532::read_EF_Int_Kpub(cie_Key* key) {
 /*!
   @brief  Reads the binary content of the EF.Servizi_Int.Kpub elementary file
 
-  @param  key The pointer to a cie_Key object which will be populated with the modulo and exponent values
+  @param  key The pointer to a cie_Key object which will be populated with the modulus and exponent values
 
   @returns  A boolean value indicating whether the operation succeeded or not
 */
@@ -226,15 +226,13 @@ bool cie_PN532::read_EF_Servizi_Int_Kpub(cie_Key* key) {
 */
 /**************************************************************************/
 bool cie_PN532::isCardValid() {
-  cie_Key key;
-  if (!read_EF_Servizi_Int_Kpub(&key)) {
+  cie_Key* key = new cie_Key();
+  if (!read_EF_Servizi_Int_Kpub(key)) {
     return false;
   }
-  word responseLength = key.moduloLength + STATUS_WORD_LENGTH;
+  word responseLength = key->modulusLength + STATUS_WORD_LENGTH;
   byte* response = new byte[responseLength];
-  for (word i = 0; i < responseLength; i++) {
-    response[i] = 0x00;
-  }
+
   bool success = true;
   //Steps for checking this is not a cloned card
   //1. Select the SDO.Servizi_Int.Kpriv key
@@ -242,8 +240,8 @@ bool cie_PN532::isCardValid() {
   //3. Verify the response is correct
   //4. Check if EF.Servizi_int.Kpub has a correct signature in EF_SOD
   if (!select_SDO_Servizi_Int_Kpriv()
-      || !internalAuthenticate_PkDhScheme(response, &responseLength)
-    //|| !verifyChallengeResponse(...)
+      || !internalAuthenticate(response, &responseLength)
+      || !verifyInternalAuthenticateResponse(key, response, responseLength)
     //|| !verify_Servizi_Int_Kpub(...)
   ) {
     success = false;
@@ -372,7 +370,7 @@ bool cie_PN532::sendCommand(byte* command, const byte commandLength, byte* respo
   @returns  A boolean value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
-bool cie_PN532::internalAuthenticate_PkDhScheme(byte* responseBuffer, word* responseLength) {
+bool cie_PN532::internalAuthenticate(byte* responseBuffer, word* responseLength) {
   byte internalAuthenticateCommand[] = {
     0x00, //CLA
     0x88, //INS: INTERNAL AUTHENTICATE PK-DH scheme
@@ -388,6 +386,80 @@ bool cie_PN532::internalAuthenticate_PkDhScheme(byte* responseBuffer, word* resp
     PN532DEBUGPRINT.println(F("Couldn't perform internal authentication"));
   }
   return success;
+}
+
+
+/**************************************************************************/
+/*!
+  @brief  Verify if the response returned for an INTERNAL AUTHENTICATE command is valid
+
+  @param  pubKey A pointer to public key that is going to be used for decryption
+  @param  cypher The encrypted response returned for the INTERNAL AUTHENTICATE command
+  @param  cypherLength The length of the cypher, should be the same size of the public key modulus
+
+  @returns A boolean value indicating whether the response was valid or not
+*/
+/**************************************************************************/
+bool cie_PN532::verifyInternalAuthenticateResponse(cie_Key* pubKey, byte* cypher, const word cypherLength) {
+  if (cypherLength != pubKey->modulusLength) {
+    PN532DEBUGPRINT.println(F("Cypher length and public key modolus length don't match"));
+    return false;
+  }
+
+  //make it little endian
+  /*reverse(cypher, cypherLength);
+  for (byte i = 0; i < (cypherLength - (cypherLength % 2)) / 2; i++) {
+    byte cypherOctet = cypher[i];
+    cypher[i] = cypher[cypherLength-i-1];
+    cypher[cypherLength-i-1] = cypherOctet;
+  }*/
+  BigNumber* message = new BigNumber();
+  byteArrayToBigNumber(cypher, cypherLength, message);
+
+  delete [] cypher;
+  BigNumber* modulus = new BigNumber();
+  byteArrayToBigNumber(pubKey->modulus, pubKey->modulusLength, modulus);
+
+  BigNumber* exponent = new BigNumber();
+  byteArrayToBigNumber(pubKey->exponent, pubKey->exponentLength, exponent);
+  delete pubKey;
+
+  Serial.println(F("MODULUS "));
+  char * s = modulus->toString();
+  Serial.println (s);
+  delete [] s;
+  
+  message->powMod(*exponent, *modulus);
+  
+  delete exponent;
+  delete modulus;
+
+  Serial.println(F("RESULT "));
+  char * m = message->toString();
+  Serial.println (m);
+  delete [] m;
+
+  delete message;
+
+  return false;
+}
+
+
+/**************************************************************************/
+/*!
+  @brief  Converts a byte array to a BigNumber
+
+  @param  bigNumber A pointer to the BigNumber object
+  @param  buffer A pointer to the number data, big endian
+  @param  cypherLength The length of the number
+*/
+/**************************************************************************/
+void cie_PN532::byteArrayToBigNumber(byte* buffer, const word bufferLength, BigNumber* value) {
+  //Thanks Mnementh from StackOverflow https://stackoverflow.com/questions/1026761/how-to-convert-a-byte-array-to-its-numeric-value-java
+  for (word i = 0; i < bufferLength; i++)
+  {
+      *value += (*value << 8) + (buffer[i] & 0xFF);
+  }
 }
 
 
@@ -416,7 +488,7 @@ bool cie_PN532::mutualAuthenticate(byte* snIccBuffer, const byte snIccBufferLeng
 
   //TODO: Page 59 - 5.2.2.2 Authentication steps 
   //http://www.unsads.com/specs/IASECC/IAS_ECC_v1.0.1_UK.pdf
-  Serial.println("Not yet implemented");
+  PN532DEBUGPRINT.println(F("Not yet implemented"));
 
   return false;
 
@@ -751,25 +823,22 @@ bool cie_PN532::readBinaryContent(const cie_EFPath filePath, byte* contentBuffer
 
 /**************************************************************************/
 /*!
-  @brief Reads the key content (BER encoded modulo and exponent) from the indicated Elementary File
+  @brief Reads the key content (BER encoded modulus and exponent) from the indicated Elementary File
 
   @param filePath a structure indicating the parent Dedicated File (either ROOT_MF or CIE_DF), the selection mode (either SELECT_BY_EFID or SELECT_BY_SFI) and the file identifier (either a sfi or an efid)  
-  @param key A pointer to a which object which will be populated with the modulo and exponent
+  @param key A pointer to a which object which will be populated with the modulus and exponent
 
   @returns  A boolean value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
 bool cie_PN532::readKey(const cie_EFPath filePath, cie_Key* key) {
   //This is the fasted way but assumes we'll find a 2048-bit key and a 24-bit exponent valued 0x010001
-  //TODO: use public methods of the cie_Key class to allocate memory for buffers
-  //And make exponent and modulo readonly by using getter and setter methods
+  //TODO: proper BER parsing by using the cie_BerReader class
   key->exponentLength = 3;
   key->exponent = new byte[key->exponentLength] { 0x01, 0x00, 0x01 };
-  key->moduloLength = 256;
-  key->modulo = new byte[key->moduloLength];
-  return readBinaryContent(filePath, key->modulo, 9, key->moduloLength);
-
-  //TODO: proper BER parsing by using the cie_BerReader class
+  key->modulusLength = 257;
+  key->modulus = new byte[key->modulusLength];
+  return readBinaryContent(filePath, key->modulus, 8, key->modulusLength);
 }
 
 

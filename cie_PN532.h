@@ -27,8 +27,7 @@ class cie_BerTriple;
 class cie_BerReader;
 class cie_AtrReader;
 
-
-#include <Adafruit_PN532.h>
+#include <BigNumber.h>
 #include "cie_EFPath.h"
 #include "cie_AtrReader.h"
 #include "cie_BerReader.h"
@@ -147,10 +146,10 @@ class cie_PN532
   bool establishSecureMessaging();
   bool getChallenge(byte* contentBuffer, word* contentLength);
   bool mutualAuthenticate(byte* snIccBuffer, const byte snIccBufferLength, byte* rndIccBuffer, const byte rndIccBufferLength);
-  bool internalAuthenticate_PkDhScheme(byte* responseBuffer, word* responseLength);
-  //bool verifyChallengeResponseSignature(cie_Key* pubKey, byte* signedData, );
+  bool internalAuthenticate(byte* responseBuffer, word* responseLength);
+  bool verifyInternalAuthenticateResponse(cie_Key* pubKey, byte* cypher, const word cypherLength);
   void calculateSk(const byte valueType, byte* kIfd, byte* kIcc, byte* sk, byte* skLength);
-
+  void byteArrayToBigNumber(byte* buffer, const word bufferLength, BigNumber* bigNumber);
 };
 
 

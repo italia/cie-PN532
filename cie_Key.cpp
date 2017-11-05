@@ -15,5 +15,5 @@
 
 cie_Key::~cie_Key() {
     delete [] exponent;
-    delete [] modulo;
+    delete [] modulus;
 }

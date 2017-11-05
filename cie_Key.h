@@ -21,7 +21,7 @@ class cie_Key {
 	~cie_Key();
 	byte* exponent;
 	byte exponentLength;
-	byte* modulo;
-	word moduloLength;
+	byte* modulus;
+	word modulusLength;
 };
 #endif
