@@ -384,9 +384,6 @@ bool cie_PN532::internalAuthenticate_PkDhScheme(byte* responseBuffer, word* resp
   };
   _nfc->generateRandomBytes(internalAuthenticateCommand, 5, 8);
   bool success = sendCommand(internalAuthenticateCommand, sizeof(internalAuthenticateCommand), responseBuffer, responseLength);
-  Serial.print("RESPONSE AUTH ");
-  Serial.print(*responseLength);
-  printHex(responseBuffer, *responseLength);
   if (!success) {
     PN532DEBUGPRINT.println(F("Couldn't perform internal authentication"));
   }
