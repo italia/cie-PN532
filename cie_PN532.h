@@ -150,6 +150,7 @@ class cie_PN532
   bool verifyInternalAuthenticateResponse(cie_Key* pubKey, byte* cypher, const word cypherLength);
   void calculateSk(const byte valueType, byte* kIfd, byte* kIcc, byte* sk, byte* skLength);
   void byteArrayToBigNumber(byte* buffer, const word bufferLength, BigNumber* bigNumber);
+  int freeRam ();
 };
 
 

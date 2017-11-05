@@ -385,6 +385,7 @@ bool cie_PN532::internalAuthenticate(byte* responseBuffer, word* responseLength)
   if (!success) {
     PN532DEBUGPRINT.println(F("Couldn't perform internal authentication"));
   }
+  *responseLength -= STATUS_WORD_LENGTH;
   return success;
 }
 
@@ -402,8 +403,8 @@ bool cie_PN532::internalAuthenticate(byte* responseBuffer, word* responseLength)
 /**************************************************************************/
 bool cie_PN532::verifyInternalAuthenticateResponse(cie_Key* pubKey, byte* cypher, const word cypherLength) {
   if (cypherLength != pubKey->modulusLength) {
-    PN532DEBUGPRINT.println(F("Cypher length and public key modolus length don't match"));
-    return false;
+    PN532DEBUGPRINT.println(F("Cypher length and public key modulus length don't match"));
+    //return false;
   }
 
   //make it little endian
@@ -413,35 +414,40 @@ bool cie_PN532::verifyInternalAuthenticateResponse(cie_Key* pubKey, byte* cypher
     cypher[i] = cypher[cypherLength-i-1];
     cypher[cypherLength-i-1] = cypherOctet;
   }*/
+  Serial.println("INIZIO");
+  //Serial.println(freeRam());
   BigNumber* message = new BigNumber();
   byteArrayToBigNumber(cypher, cypherLength, message);
+  Serial.println("FINE");
 
   delete [] cypher;
-  BigNumber* modulus = new BigNumber();
-  byteArrayToBigNumber(pubKey->modulus, pubKey->modulusLength, modulus);
+  //BigNumber* modulus = new BigNumber();
+  //byteArrayToBigNumber(pubKey->modulus, pubKey->modulusLength, modulus);
 
-  BigNumber* exponent = new BigNumber();
-  byteArrayToBigNumber(pubKey->exponent, pubKey->exponentLength, exponent);
-  delete pubKey;
+  //BigNumber* exponent = new BigNumber();
+  //byteArrayToBigNumber(pubKey->exponent, pubKey->exponentLength, exponent);
+  delete  pubKey;
 
-  Serial.println(F("MODULUS "));
-  char * s = modulus->toString();
-  Serial.println (s);
-  delete [] s;
+  //message->powMod(*exponent, *modulus);
   
-  message->powMod(*exponent, *modulus);
-  
-  delete exponent;
-  delete modulus;
+  //delete exponent;
+  //delete modulus;
 
-  Serial.println(F("RESULT "));
-  char * m = message->toString();
+  Serial.println(F("RESULT OK"));
+  //Serial.println(freeRam());
+  /*char * m = message->toString();
   Serial.println (m);
-  delete [] m;
+  delete [] m;*/
 
   delete message;
 
   return false;
+}
+
+int cie_PN532::freeRam () {
+  extern int __heap_start, *__brkval; 
+  int v; 
+  return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
 }
 
 
@@ -458,6 +464,7 @@ void cie_PN532::byteArrayToBigNumber(byte* buffer, const word bufferLength, BigN
   //Thanks Mnementh from StackOverflow https://stackoverflow.com/questions/1026761/how-to-convert-a-byte-array-to-its-numeric-value-java
   for (word i = 0; i < bufferLength; i++)
   {
+    Serial.println(i);
       *value += (*value << 8) + (buffer[i] & 0xFF);
   }
 }
