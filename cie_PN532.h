@@ -58,7 +58,7 @@ class cie_AtrReader;
 #define STATUS_WORD_LENGTH                    (0x02)
 
 //Random values lengths
-#define RND_LENGTH                            (0x08)
+#define CHALLENGE_LENGTH                      (0x08)
 #define K_LENGTH                              (0x20)
 #define SK_LENGTH                             (0x10)
 
@@ -146,11 +146,9 @@ class cie_PN532
   bool establishSecureMessaging();
   bool getChallenge(byte* contentBuffer, word* contentLength);
   bool mutualAuthenticate(byte* snIccBuffer, const byte snIccBufferLength, byte* rndIccBuffer, const byte rndIccBufferLength);
-  bool internalAuthenticate(byte* responseBuffer, word* responseLength);
-  bool verifyInternalAuthenticateResponse(cie_Key* pubKey, byte* cypher, const word cypherLength);
+  bool internalAuthenticate(byte* responseBuffer, word* responseLength, byte* challenge, const byte challengeLength);
+  bool verifyInternalAuthenticateResponse(cie_Key* pubKey, byte* cypher, const word cypherLength, const byte* message, const word messageLength);
   void calculateSk(const byte valueType, byte* kIfd, byte* kIcc, byte* sk, byte* skLength);
-  void byteArrayToBigNumber(byte* buffer, const word bufferLength, BigNumber* bigNumber);
-  int freeRam ();
 };
 
 

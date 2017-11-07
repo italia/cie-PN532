@@ -233,6 +233,10 @@ bool cie_PN532::isCardValid() {
   word responseLength = key->modulusLength + STATUS_WORD_LENGTH;
   byte* response = new byte[responseLength];
 
+  byte challengeLength = CHALLENGE_LENGTH;
+  byte* challenge = new byte[challengeLength];
+  _nfc->generateRandomBytes(challenge, 0, challengeLength);
+
   bool success = true;
   //Steps for checking this is not a cloned card
   //1. Select the SDO.Servizi_Int.Kpriv key
@@ -240,12 +244,13 @@ bool cie_PN532::isCardValid() {
   //3. Verify the response is correct
   //4. Check if EF.Servizi_int.Kpub has a correct signature in EF_SOD
   if (!select_SDO_Servizi_Int_Kpriv()
-      || !internalAuthenticate(response, &responseLength)
-      || !verifyInternalAuthenticateResponse(key, response, responseLength)
+      || !internalAuthenticate(response, &responseLength, challenge, challengeLength)
+      || !verifyInternalAuthenticateResponse(key, response, responseLength, challenge, challengeLength)
     //|| !verify_Servizi_Int_Kpub(...)
   ) {
     success = false;
   }
+  delete [] challenge;
   delete [] response;
 
   return success;
@@ -367,25 +372,30 @@ bool cie_PN532::sendCommand(byte* command, const byte commandLength, byte* respo
 
   @param  responseBuffer A pointer to the buffer which will contain the response for the internal authentication command
   @param  responseLength The length of the response
+  @param  challenge A pointer to the challenge
+  @param  challengeLength The length of the provided challenge
+
   @returns  A boolean value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
-bool cie_PN532::internalAuthenticate(byte* responseBuffer, word* responseLength) {
-  byte internalAuthenticateCommand[] = {
+bool cie_PN532::internalAuthenticate(byte* responseBuffer, word* responseLength, byte* challenge, const byte challengeLength) {
+  byte internalAuthenticateCommandLength = 6+challengeLength;
+  byte* internalAuthenticateCommand = new byte[internalAuthenticateCommandLength] {
     0x00, //CLA
     0x88, //INS: INTERNAL AUTHENTICATE PK-DH scheme
     0x00, //P1: algorithm reference -> no further information (information available in the current SE)
     0x00, //P2: secret reference -> no further information (information available in the current SE)
     0x08, //Lc: Length of the rndIfd
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, //rndIfd
-    0x00 //Return all bytes
   };
-  _nfc->generateRandomBytes(internalAuthenticateCommand, 5, 8);
-  bool success = sendCommand(internalAuthenticateCommand, sizeof(internalAuthenticateCommand), responseBuffer, responseLength);
+  memcpy(internalAuthenticateCommand+5, challenge, challengeLength);
+  internalAuthenticateCommand[internalAuthenticateCommandLength-1] = 0x00; //Return all bytes
+  
+  bool success = sendCommand(internalAuthenticateCommand, internalAuthenticateCommandLength, responseBuffer, responseLength);
   if (!success) {
     PN532DEBUGPRINT.println(F("Couldn't perform internal authentication"));
   }
   *responseLength -= STATUS_WORD_LENGTH;
+  delete [] internalAuthenticateCommand;
   return success;
 }
 
@@ -397,76 +407,45 @@ bool cie_PN532::internalAuthenticate(byte* responseBuffer, word* responseLength)
   @param  pubKey A pointer to public key that is going to be used for decryption
   @param  cypher The encrypted response returned for the INTERNAL AUTHENTICATE command
   @param  cypherLength The length of the cypher, should be the same size of the public key modulus
+  @param  message A pointer to the original message to be verified
+  @param  messageLength The length of the message
 
   @returns A boolean value indicating whether the response was valid or not
 */
 /**************************************************************************/
-bool cie_PN532::verifyInternalAuthenticateResponse(cie_Key* pubKey, byte* cypher, const word cypherLength) {
-  if (cypherLength != pubKey->modulusLength) {
-    PN532DEBUGPRINT.println(F("Cypher length and public key modulus length don't match"));
-    //return false;
-  }
+bool cie_PN532::verifyInternalAuthenticateResponse(cie_Key* pubKey, byte* cypher, const word cypherLength, const byte* message, const word messageLength) {
 
-  //make it little endian
-  /*reverse(cypher, cypherLength);
-  for (byte i = 0; i < (cypherLength - (cypherLength % 2)) / 2; i++) {
-    byte cypherOctet = cypher[i];
-    cypher[i] = cypher[cypherLength-i-1];
-    cypher[cypherLength-i-1] = cypherOctet;
-  }*/
-  Serial.println("INIZIO");
-  //Serial.println(freeRam());
+  return false;
+
+  //To be implemented
+  /*
   BigNumber* message = new BigNumber();
   byteArrayToBigNumber(cypher, cypherLength, message);
-  Serial.println("FINE");
-
   delete [] cypher;
-  //BigNumber* modulus = new BigNumber();
-  //byteArrayToBigNumber(pubKey->modulus, pubKey->modulusLength, modulus);
+  BigNumber* modulus = new BigNumber();
+  byteArrayToBigNumber(pubKey->modulus, pubKey->modulusLength, modulus);
 
-  //BigNumber* exponent = new BigNumber();
-  //byteArrayToBigNumber(pubKey->exponent, pubKey->exponentLength, exponent);
-  delete  pubKey;
+  BigNumber* exponent = new BigNumber();
+  byteArrayToBigNumber(pubKey->exponent, pubKey->exponentLength, exponent);
+  delete pubKey;
 
-  //message->powMod(*exponent, *modulus);
+  message->powMod(*exponent, *modulus);
   
-  //delete exponent;
-  //delete modulus;
+  delete exponent;
+  delete modulus;
 
-  Serial.println(F("RESULT OK"));
-  //Serial.println(freeRam());
-  /*char * m = message->toString();
-  Serial.println (m);
-  delete [] m;*/
+  bool success = true;
+  for (word i = cypherLength-messageLength; i < cypherLength; i++) {
+    if (message[i] != cypher[i]) {
+      success = false;
+      break;
+    }
+  }
 
   delete message;
 
-  return false;
-}
-
-int cie_PN532::freeRam () {
-  extern int __heap_start, *__brkval; 
-  int v; 
-  return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
-}
-
-
-/**************************************************************************/
-/*!
-  @brief  Converts a byte array to a BigNumber
-
-  @param  bigNumber A pointer to the BigNumber object
-  @param  buffer A pointer to the number data, big endian
-  @param  cypherLength The length of the number
-*/
-/**************************************************************************/
-void cie_PN532::byteArrayToBigNumber(byte* buffer, const word bufferLength, BigNumber* value) {
-  //Thanks Mnementh from StackOverflow https://stackoverflow.com/questions/1026761/how-to-convert-a-byte-array-to-its-numeric-value-java
-  for (word i = 0; i < bufferLength; i++)
-  {
-    Serial.println(i);
-      *value += (*value << 8) + (buffer[i] & 0xFF);
-  }
+  return success;
+  */
 }
 
 
@@ -484,18 +463,19 @@ void cie_PN532::byteArrayToBigNumber(byte* buffer, const word bufferLength, BigN
 /**************************************************************************/
 bool cie_PN532::mutualAuthenticate(byte* snIccBuffer, const byte snIccBufferLength, byte* rndIccBuffer, const byte rndIccBufferLength) {
 
+  /*
   //Prepare randoms
-  byte* rndIfd = new byte[RND_LENGTH];
-  _nfc->generateRandomBytes(rndIfd, 0, RND_LENGTH);
+  byte* rndIfd = new byte[CHALLENGE_LENGTH];
+  _nfc->generateRandomBytes(rndIfd, 0, CHALLENGE_LENGTH);
   byte* kIfd = new byte[K_LENGTH];
-  _nfc->generateRandomBytes(kIfd, 0, K_LENGTH);
+  _nfc->generateRandomBytes(kIfd, 0, CHALLENGE_LENGTH);
 
   delete [] rndIfd;
   delete [] kIfd;
 
   //TODO: Page 59 - 5.2.2.2 Authentication steps 
   //http://www.unsads.com/specs/IASECC/IAS_ECC_v1.0.1_UK.pdf
-  PN532DEBUGPRINT.println(F("Not yet implemented"));
+  PN532DEBUGPRINT.println(F("Not yet implemented"));*/
 
   return false;
 
@@ -510,10 +490,10 @@ bool cie_PN532::mutualAuthenticate(byte* snIccBuffer, const byte snIccBufferLeng
 */
 /**************************************************************************/
 bool cie_PN532::establishSecureMessaging() {
-  word snIccLength = EF_SN_ICC_LENGTH;
+  /*word snIccLength = EF_SN_ICC_LENGTH;
   byte* snIcc = new byte[snIccLength];
 
-  word rndIccLength = RND_LENGTH + STATUS_WORD_LENGTH;
+  word rndIccLength = CHALLENGE_LENGTH + STATUS_WORD_LENGTH;
   byte* rndIcc = new byte[rndIccLength];
 
   //Steps
@@ -537,7 +517,8 @@ bool cie_PN532::establishSecureMessaging() {
   delete [] snIcc;
   delete [] rndIcc;
 
-  return success;
+  return success;*/
+  return false;
 }
 
 
@@ -552,7 +533,7 @@ bool cie_PN532::establishSecureMessaging() {
 */
 /**************************************************************************/
 bool cie_PN532::getChallenge(byte* contentBuffer, word* contentLength) {
-  byte getChallengeCommand[] = {
+  /*byte getChallengeCommand[] = {
     0x00, //CLA
     0x84, //INS: GET CHALLENGE
     0x00, //P1: not used
@@ -563,8 +544,9 @@ bool cie_PN532::getChallenge(byte* contentBuffer, word* contentLength) {
   if (!success) {
     PN532DEBUGPRINT.println(F("Couldn't get challenge"));
   }
-  *contentLength = RND_LENGTH;
-  return success;
+  *contentLength = CHALLENGE_LENGTH;
+  return success;*/
+  return false;
 }
 
 
