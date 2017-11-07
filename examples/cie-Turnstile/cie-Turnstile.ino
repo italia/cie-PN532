@@ -148,7 +148,7 @@ void printCount() {
   }
 }
 
-void printId(byte* buffer) {
+void printId(byte *buffer) {
   for (int i = 0; i < EF_ID_SERVIZI_LENGTH; i+=2) {
     word actualWord = 0x00;
     actualWord = actualWord | (buffer[i] << 8);
@@ -161,7 +161,7 @@ void printId(byte* buffer) {
   }
 }
 
-/*void printId(byte* buffer) {
+/*void printId(byte *buffer) {
   for (int i = 0; i < (EF_ID_SERVIZI_LENGTH*2)+5; i++) {
     word actualWord = 0x00;
     for (int j = 0; j < EF_ID_SERVIZI_LENGTH; j++) {

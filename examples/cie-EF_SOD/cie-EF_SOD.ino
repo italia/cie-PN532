@@ -75,7 +75,7 @@ void loop(void) {
   delay(1000);
 }
 
-bool printTriple(cie_BerTriple* triple) {
+bool printTriple(cie_BerTriple *triple) {
   triplesCount+=1;
   if (triple->depth > 0) {
     for (byte i = 0; i < triple->depth; i++) {

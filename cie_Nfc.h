@@ -20,8 +20,8 @@ class cie_Nfc {
 public:
   virtual void begin() = 0;
   virtual bool detectCard() = 0;
-  virtual bool sendCommand(byte* command, byte commandLength, byte* response, word* responseLength) = 0;
-  virtual void generateRandomBytes(byte* buffer, const word offset, const byte length) = 0;
+  virtual bool sendCommand(byte *command, byte commandLength, byte *response, word *responseLength) = 0;
+  virtual void generateRandomBytes(byte *buffer, const word offset, const byte length) = 0;
 };
 
 #endif

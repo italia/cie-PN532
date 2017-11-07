@@ -49,7 +49,7 @@ bool cie_Nfc_Mock::detectCard() {
   @returns  A boolean value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
-bool cie_Nfc_Mock::sendCommand(byte* command, byte commandLength, byte* response, word* responseLength) {
+bool cie_Nfc_Mock::sendCommand(byte *command, byte commandLength, byte *response, word *responseLength) {
 
   _attemptedCommandsCount += 1;
   if (_attemptedCommandsCount > _expectedCommandsCount) {
@@ -78,7 +78,7 @@ bool cie_Nfc_Mock::sendCommand(byte* command, byte commandLength, byte* response
 
 */
 /**************************************************************************/
-void cie_Nfc_Mock::generateRandomBytes(byte* buffer, const word offset, const byte length) {
+void cie_Nfc_Mock::generateRandomBytes(byte *buffer, const word offset, const byte length) {
   for (word i = offset; i<offset+length; i++) {
     //Generates a predictable sequence of 1's
     buffer[i] = 0x01;
@@ -112,7 +112,7 @@ void cie_Nfc_Mock::expectCommands(const byte count) {
 
 */
 /**************************************************************************/
-void cie_Nfc_Mock::expectCommand(byte* command, const byte commandOffset, const byte commandLength, byte* response, const byte responseLength) {
+void cie_Nfc_Mock::expectCommand(byte *command, const byte commandOffset, const byte commandLength, byte *response, const byte responseLength) {
   _expectedCommands[_expectedCommandsCount].command = command;
   _expectedCommands[_expectedCommandsCount].commandLength = commandLength;
   _expectedCommands[_expectedCommandsCount].commandOffset = commandOffset;
@@ -146,7 +146,7 @@ bool cie_Nfc_Mock::allExpectedCommandsExecuted() {
   @returns  A boolean value indicating whether the two buffers were equal or not
 */
 /**************************************************************************/
-bool cie_Nfc_Mock::areEqual(byte* originalBuffer, byte* comparedBuffer, const byte offset, const byte length) {
+bool cie_Nfc_Mock::areEqual(byte *originalBuffer, byte *comparedBuffer, const byte offset, const byte length) {
   for (byte i = 0; i < length; i++) {
     if (originalBuffer[i+offset] != comparedBuffer[i]) {
       Serial.print(F("Command at index "));
@@ -187,7 +187,7 @@ void cie_Nfc_Mock::clear() {
     @param  numBytes  Data length in bytes
 */
 /**************************************************************************/
-void cie_Nfc_Mock::printHex(const byte * data, const byte numBytes)
+void cie_Nfc_Mock::printHex(const byte  *data, const byte numBytes)
 {
   uint32_t szPos;
   for (szPos=0; szPos < numBytes; szPos++)

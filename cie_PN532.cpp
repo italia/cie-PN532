@@ -51,7 +51,7 @@ cie_PN532::cie_PN532 (byte clk, byte miso, byte mosi, byte ss)
   @brief Create with a custom instance of the Adafruit_PN532 class
 */
 /**************************************************************************/
-cie_PN532::cie_PN532 (cie_Nfc* nfc)
+cie_PN532::cie_PN532 (cie_Nfc *nfc)
 {
   _nfc = nfc;
   initFields();
@@ -105,7 +105,7 @@ bool cie_PN532::detectCard() {
     @param  length The length of the buffer
 */
 /**************************************************************************/
-void cie_PN532::printHex(byte* buffer, const word length) {
+void cie_PN532::printHex(byte *buffer, const word length) {
   for (word szPos=0; szPos < length; szPos++)
   {
     PN532DEBUGPRINT.print(F("0x"));
@@ -132,7 +132,7 @@ void cie_PN532::printHex(byte* buffer, const word length) {
   @returns  A boolean value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
-bool cie_PN532::read_EF_DH(byte* contentBuffer, word* contentLength) {
+bool cie_PN532::read_EF_DH(byte *contentBuffer, word *contentLength) {
   //cie_EFPath filePath = { ROOT_MF, SELECT_BY_SFI, 0x1B }; //efid 0xD004
   cie_EFPath filePath = { ROOT_MF, SELECT_BY_EFID, 0xD004 }; //efid 0xD004
   return readElementaryFile(filePath, contentBuffer, contentLength, AUTODETECT_BER_LENGTH);
@@ -149,7 +149,7 @@ bool cie_PN532::read_EF_DH(byte* contentBuffer, word* contentLength) {
   @returns  A boolean value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
-bool cie_PN532::read_EF_ATR(byte* contentBuffer, word* contentLength) {
+bool cie_PN532::read_EF_ATR(byte *contentBuffer, word *contentLength) {
   cie_EFPath filePath = { ROOT_MF, SELECT_BY_SFI, 0x1D }; //efid 0x2F01
   return readElementaryFile(filePath, contentBuffer, contentLength, AUTODETECT_ATR_LENGTH);
 }
@@ -165,7 +165,7 @@ bool cie_PN532::read_EF_ATR(byte* contentBuffer, word* contentLength) {
   @returns  A boolean value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
-bool cie_PN532::read_EF_SN_ICC(byte* contentBuffer, word* contentLength) {
+bool cie_PN532::read_EF_SN_ICC(byte *contentBuffer, word *contentLength) {
   cie_EFPath filePath = { ROOT_MF, SELECT_BY_EFID, 0xD003 }; //What's the sfi for this file?
   *contentLength = clamp(*contentLength, EF_SN_ICC_LENGTH);
   return readElementaryFile(filePath, contentBuffer, contentLength, FIXED_LENGTH);
@@ -182,7 +182,7 @@ bool cie_PN532::read_EF_SN_ICC(byte* contentBuffer, word* contentLength) {
   @returns  A boolean value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
-bool cie_PN532::read_EF_ID_Servizi(byte* contentBuffer, word* contentLength) {
+bool cie_PN532::read_EF_ID_Servizi(byte *contentBuffer, word *contentLength) {
   cie_EFPath filePath = { CIE_DF, SELECT_BY_SFI, 0x01 }; //efid 0x1001
   *contentLength = clamp(*contentLength, EF_ID_SERVIZI_LENGTH);
   return readElementaryFile(filePath, contentBuffer, contentLength, FIXED_LENGTH);
@@ -198,7 +198,7 @@ bool cie_PN532::read_EF_ID_Servizi(byte* contentBuffer, word* contentLength) {
   @returns  A boolean value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
-bool cie_PN532::read_EF_Int_Kpub(cie_Key* key) {
+bool cie_PN532::read_EF_Int_Kpub(cie_Key *key) {
   cie_EFPath filePath = { CIE_DF, SELECT_BY_SFI, 0x04 }; //efid 0x1004
   return readKey(filePath, key);
 }
@@ -213,7 +213,7 @@ bool cie_PN532::read_EF_Int_Kpub(cie_Key* key) {
   @returns  A boolean value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
-bool cie_PN532::read_EF_Servizi_Int_Kpub(cie_Key* key) {
+bool cie_PN532::read_EF_Servizi_Int_Kpub(cie_Key *key) {
   cie_EFPath filePath = { CIE_DF, SELECT_BY_SFI, 0x05 }; //efid 0x1005
   return readKey(filePath, key);
 }
@@ -226,15 +226,15 @@ bool cie_PN532::read_EF_Servizi_Int_Kpub(cie_Key* key) {
 */
 /**************************************************************************/
 bool cie_PN532::isCardValid() {
-  cie_Key* key = new cie_Key();
+  cie_Key *key = new cie_Key();
   if (!read_EF_Servizi_Int_Kpub(key)) {
     return false;
   }
   word responseLength = key->modulusLength + STATUS_WORD_LENGTH;
-  byte* response = new byte[responseLength];
+  byte *response = new byte[responseLength];
 
   byte challengeLength = CHALLENGE_LENGTH;
-  byte* challenge = new byte[challengeLength];
+  byte *challenge = new byte[challengeLength];
   _nfc->generateRandomBytes(challenge, 0, challengeLength);
 
   bool success = true;
@@ -266,7 +266,7 @@ bool cie_PN532::isCardValid() {
   @returns  A boolean value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
-bool cie_PN532::print_EF_SOD(word* contentLength) {
+bool cie_PN532::print_EF_SOD(word *contentLength) {
   cie_EFPath filePath = { CIE_DF, SELECT_BY_SFI, 0x06 }; //efid 0x1006
   if (!determineLength(filePath, contentLength, AUTODETECT_BER_LENGTH)) {
         return false;
@@ -274,7 +274,7 @@ bool cie_PN532::print_EF_SOD(word* contentLength) {
   word offset = READ_FROM_START;
   while (offset < *contentLength) {
     word contentPageLength = clamp(*contentLength-offset, PAGE_LENGTH);
-    byte* pageBuffer = new byte[contentPageLength];
+    byte *pageBuffer = new byte[contentPageLength];
     bool success = readBinaryContent(filePath, pageBuffer, offset, contentPageLength);
     if (success) {
       printHex(pageBuffer, contentPageLength);
@@ -329,9 +329,9 @@ bool cie_PN532::select_SDO_Servizi_Int_Kpriv() {
   @returns  A boolean value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
-bool cie_PN532::sendCommand(byte* command, const word commandLength) {
+bool cie_PN532::sendCommand(byte *command, const word commandLength) {
   word responseLength = STATUS_WORD_LENGTH;
-  byte* responseBuffer = new byte[responseLength];
+  byte *responseBuffer = new byte[responseLength];
   bool success = sendCommand(command, commandLength, responseBuffer, &responseLength);
   delete [] responseBuffer;
   return success;
@@ -350,7 +350,7 @@ bool cie_PN532::sendCommand(byte* command, const word commandLength) {
   @returns  A boolean value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
-bool cie_PN532::sendCommand(byte* command, const byte commandLength, byte* responseBuffer, word* responseLength) {
+bool cie_PN532::sendCommand(byte *command, const byte commandLength, byte *responseBuffer, word *responseLength) {
   bool success = true;
   if (!_nfc->sendCommand(command, commandLength, responseBuffer, responseLength) 
   || !hasSuccessStatusWord(responseBuffer, *responseLength)) {
@@ -378,9 +378,9 @@ bool cie_PN532::sendCommand(byte* command, const byte commandLength, byte* respo
   @returns  A boolean value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
-bool cie_PN532::internalAuthenticate(byte* responseBuffer, word* responseLength, byte* challenge, const byte challengeLength) {
+bool cie_PN532::internalAuthenticate(byte *responseBuffer, word *responseLength, byte *challenge, const byte challengeLength) {
   byte internalAuthenticateCommandLength = 6+challengeLength;
-  byte* internalAuthenticateCommand = new byte[internalAuthenticateCommandLength] {
+  byte *internalAuthenticateCommand = new byte[internalAuthenticateCommandLength] {
     0x00, //CLA
     0x88, //INS: INTERNAL AUTHENTICATE PK-DH scheme
     0x00, //P1: algorithm reference -> no further information (information available in the current SE)
@@ -413,19 +413,19 @@ bool cie_PN532::internalAuthenticate(byte* responseBuffer, word* responseLength,
   @returns A boolean value indicating whether the response was valid or not
 */
 /**************************************************************************/
-bool cie_PN532::verifyInternalAuthenticateResponse(cie_Key* pubKey, byte* cypher, const word cypherLength, const byte* message, const word messageLength) {
+bool cie_PN532::verifyInternalAuthenticateResponse(cie_Key *pubKey, byte *cypher, const word cypherLength, const byte *message, const word messageLength) {
 
   return false;
 
   //To be implemented
   /*
-  BigNumber* message = new BigNumber();
+  BigNumber *message = new BigNumber();
   byteArrayToBigNumber(cypher, cypherLength, message);
   delete [] cypher;
-  BigNumber* modulus = new BigNumber();
+  BigNumber *modulus = new BigNumber();
   byteArrayToBigNumber(pubKey->modulus, pubKey->modulusLength, modulus);
 
-  BigNumber* exponent = new BigNumber();
+  BigNumber *exponent = new BigNumber();
   byteArrayToBigNumber(pubKey->exponent, pubKey->exponentLength, exponent);
   delete pubKey;
 
@@ -461,13 +461,13 @@ bool cie_PN532::verifyInternalAuthenticateResponse(cie_Key* pubKey, byte* cypher
   @returns  A boolean value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
-bool cie_PN532::mutualAuthenticate(byte* snIccBuffer, const byte snIccBufferLength, byte* rndIccBuffer, const byte rndIccBufferLength) {
+bool cie_PN532::mutualAuthenticate(byte *snIccBuffer, const byte snIccBufferLength, byte *rndIccBuffer, const byte rndIccBufferLength) {
 
   /*
   //Prepare randoms
-  byte* rndIfd = new byte[CHALLENGE_LENGTH];
+  byte *rndIfd = new byte[CHALLENGE_LENGTH];
   _nfc->generateRandomBytes(rndIfd, 0, CHALLENGE_LENGTH);
-  byte* kIfd = new byte[K_LENGTH];
+  byte *kIfd = new byte[K_LENGTH];
   _nfc->generateRandomBytes(kIfd, 0, CHALLENGE_LENGTH);
 
   delete [] rndIfd;
@@ -491,10 +491,10 @@ bool cie_PN532::mutualAuthenticate(byte* snIccBuffer, const byte snIccBufferLeng
 /**************************************************************************/
 bool cie_PN532::establishSecureMessaging() {
   /*word snIccLength = EF_SN_ICC_LENGTH;
-  byte* snIcc = new byte[snIccLength];
+  byte *snIcc = new byte[snIccLength];
 
   word rndIccLength = CHALLENGE_LENGTH + STATUS_WORD_LENGTH;
-  byte* rndIcc = new byte[rndIccLength];
+  byte *rndIcc = new byte[rndIccLength];
 
   //Steps
   //1. Send a READ BINARY command for the SN.ICC Elementary File
@@ -532,7 +532,7 @@ bool cie_PN532::establishSecureMessaging() {
   @returns  A boolean value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
-bool cie_PN532::getChallenge(byte* contentBuffer, word* contentLength) {
+bool cie_PN532::getChallenge(byte *contentBuffer, word *contentLength) {
   /*byte getChallengeCommand[] = {
     0x00, //CLA
     0x84, //INS: GET CHALLENGE
@@ -563,7 +563,7 @@ bool cie_PN532::getChallenge(byte* contentBuffer, word* contentLength) {
   @returns  A boolean value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
-bool cie_PN532::readElementaryFile(cie_EFPath filePath, byte* contentBuffer, word* contentLength, const byte lengthStrategy) {
+bool cie_PN532::readElementaryFile(cie_EFPath filePath, byte *contentBuffer, word *contentLength, const byte lengthStrategy) {
   //Some arguments passed around but more testable
   if (!determineLength(filePath, contentLength, lengthStrategy) ||
       !readBinaryContent(filePath, contentBuffer, READ_FROM_START, *contentLength)) {
@@ -715,7 +715,7 @@ bool cie_PN532::ensureDedicatedFileIsSelected (const byte df) {
   @returns  A boolean value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
-bool cie_PN532::determineLength(const cie_EFPath filePath, word* contentLength, const byte lengthStrategy) {
+bool cie_PN532::determineLength(const cie_EFPath filePath, word *contentLength, const byte lengthStrategy) {
   switch (lengthStrategy) {
     case FIXED_LENGTH:
     //do nothing, size is already known
@@ -752,7 +752,7 @@ bool cie_PN532::determineLength(const cie_EFPath filePath, word* contentLength, 
   @returns  A boolean value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
-bool cie_PN532::readBinaryContent(const cie_EFPath filePath, byte* contentBuffer, word startingOffset, const word contentLength) {
+bool cie_PN532::readBinaryContent(const cie_EFPath filePath, byte *contentBuffer, word startingOffset, const word contentLength) {
   byte fileId;
   switch (filePath.selectionMode) {
     case SELECT_BY_EFID:
@@ -789,7 +789,7 @@ bool cie_PN532::readBinaryContent(const cie_EFPath filePath, byte* contentBuffer
       (byte) (contentPageLength + preambleOctets) //Le: bytes to be returned in the response
     };
     word responseLength = ((byte) contentPageLength) + preambleOctets + STATUS_WORD_LENGTH;
-    byte* responseBuffer = new byte[responseLength];  
+    byte *responseBuffer = new byte[responseLength];  
     success = sendCommand(readCommand, sizeof(readCommand), responseBuffer, &responseLength);
     //Copy data over to the buffer
     if (success) {
@@ -820,7 +820,7 @@ bool cie_PN532::readBinaryContent(const cie_EFPath filePath, byte* contentBuffer
   @returns  A boolean value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
-bool cie_PN532::readKey(const cie_EFPath filePath, cie_Key* key) {
+bool cie_PN532::readKey(const cie_EFPath filePath, cie_Key *key) {
   //This is the fasted way but assumes we'll find a 2048-bit key and a 24-bit exponent valued 0x010001
   //TODO: proper BER parsing by using the cie_BerReader class
   key->exponentLength = 3;
@@ -913,7 +913,7 @@ bool cie_PN532::selectCieDedicatedFile(void) {
     @returns  A value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
-bool cie_PN532::hasSuccessStatusWord(byte* response, const word responseLength) {
+bool cie_PN532::hasSuccessStatusWord(byte *response, const word responseLength) {
   byte msByte = response[responseLength-2];
   byte lsByte = response[responseLength-1];
   bool success = msByte == 0x90 && lsByte == 0x00;
@@ -982,10 +982,10 @@ word cie_PN532::clamp(const word value, const byte maxValue) {
 
 */
 /**************************************************************************/
-void calculateSk(const byte valueType, byte* kIfd, byte* kIcc, byte* sk, byte* skLength) {
+void calculateSk(const byte valueType, byte *kIfd, byte *kIcc, byte *sk, byte *skLength) {
   //7.1.4 Secure messaging - Session keys computation 
   //http://www.unsads.com/specs/IASECC/IAS_ECC_v1.0.1_UK.pdf
-  byte* hash;
+  byte *hash;
 
   //Here we could use: https://github.com/Snowda/CryptoC
   //Sha256.init();

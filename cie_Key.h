@@ -19,9 +19,9 @@
 class cie_Key {
   public:
 	~cie_Key();
-	byte* exponent;
+	byte *exponent;
 	byte exponentLength;
-	byte* modulus;
+	byte *modulus;
 	word modulusLength;
 };
 #endif

@@ -18,7 +18,7 @@
 
 //Can we chain constructors in this version of C++ to avoid repetitions?
 //SomeType() : SomeType(42) {}
-cie_AtrReader::cie_AtrReader (cie_PN532* cie) :
+cie_AtrReader::cie_AtrReader (cie_PN532 *cie) :
 _cie(cie)
 {
 }
@@ -34,7 +34,7 @@ _cie(cie)
   @returns  A value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
-bool cie_AtrReader::detectLength(const cie_EFPath filePath, word* contentLength) {
+bool cie_AtrReader::detectLength(const cie_EFPath filePath, word *contentLength) {
   //The EF.ATR record has a minimum of 33 bytes
   //Please refer to EF.ATR content here http://www.unsads.com/specs/IASECC/IAS_ECC_v1.0.1_UK.pdf#page=19
   const byte chunkSize = 4;

@@ -82,7 +82,7 @@ bool cie_Nfc_Adafruit::detectCard() {
   @returns  A boolean value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
-bool cie_Nfc_Adafruit::sendCommand(byte* command, byte commandLength, byte* response, word* responseLength) {
+bool cie_Nfc_Adafruit::sendCommand(byte *command, byte commandLength, byte *response, word *responseLength) {
   bool success = _nfc->inDataExchange(command, commandLength, response, responseLength);
   return success;
 }
@@ -98,7 +98,7 @@ bool cie_Nfc_Adafruit::sendCommand(byte* command, byte commandLength, byte* resp
 
 */
 /**************************************************************************/
-void cie_Nfc_Adafruit::generateRandomBytes(byte* buffer, const word offset, const byte length) {
+void cie_Nfc_Adafruit::generateRandomBytes(byte *buffer, const word offset, const byte length) {
   randomSeed(analogRead(0)*micros()); //Use an unconnected analog pin as the random seed
   for (word i = offset; i<offset+length; i++) {
     buffer[i] = (byte) random(256);

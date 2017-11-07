@@ -87,7 +87,7 @@ class cie_PN532
  public:
   cie_PN532();
   cie_PN532(byte clk, byte miso, byte mosi, byte ss);
-  cie_PN532(cie_Nfc* nfc);
+  cie_PN532(cie_Nfc *nfc);
   ~cie_PN532();
   bool verbose;
 
@@ -97,39 +97,39 @@ class cie_PN532
 
   
   // Read binary content of unencrypted Elementary Files
-  bool     read_EF_DH(byte* contentBuffer, word* contentLength);
-  bool     read_EF_ATR(byte* contentBuffer, word* contentLength);
-  bool     read_EF_SN_ICC(byte* contentBuffer, word* contentLength);
-  bool     read_EF_ID_Servizi(byte* contentBuffer, word* contentLength);
-  bool     read_EF_Int_Kpub(cie_Key* key);
-  bool     read_EF_Servizi_Int_Kpub(cie_Key* key);
+  bool     read_EF_DH(byte *contentBuffer, word *contentLength);
+  bool     read_EF_ATR(byte *contentBuffer, word *contentLength);
+  bool     read_EF_SN_ICC(byte *contentBuffer, word *contentLength);
+  bool     read_EF_ID_Servizi(byte *contentBuffer, word *contentLength);
+  bool     read_EF_Int_Kpub(cie_Key *key);
+  bool     read_EF_Servizi_Int_Kpub(cie_Key *key);
   bool     isCardValid(); //Call this to verify it's not a clone
 
   // File access
-  bool     readElementaryFile(const cie_EFPath filePath, byte* contentBuffer, word* contentLength, const byte lengthStrategy);
-  bool     readBinaryContent(const cie_EFPath filePath, byte* contentBuffer, word offset, const word contentLength);
-  bool     readKey(const cie_EFPath filePath, cie_Key* key);
+  bool     readElementaryFile(const cie_EFPath filePath, byte *contentBuffer, word *contentLength, const byte lengthStrategy);
+  bool     readBinaryContent(const cie_EFPath filePath, byte *contentBuffer, word offset, const word contentLength);
+  bool     readKey(const cie_EFPath filePath, cie_Key *key);
 
   // Utility
-  void     printHex(byte* buffer, const word length);
-  bool     print_EF_SOD(word* contentLength);
+  void     printHex(byte *buffer, const word length);
+  bool     print_EF_SOD(word *contentLength);
   bool     parse_EF_SOD(cieBerTripleCallbackFunc callback);
 
  private:
   //fields
-  cie_Nfc* _nfc;
-  cie_BerReader* _berReader;
-  cie_AtrReader* _atrReader;
+  cie_Nfc *_nfc;
+  cie_BerReader *_berReader;
+  cie_AtrReader *_atrReader;
   byte _currentDedicatedFile;
   unsigned long _currentElementaryFile;
 
   //PN532 data exchange methods
-  virtual bool sendCommand(byte* command, const byte commandLength, byte* response, word* responseLength);
+  virtual bool sendCommand(byte *command, const byte commandLength, byte *response, word *responseLength);
 
 
   //methods
   void initFields();
-  bool sendCommand(byte* command, const word commandLength);
+  bool sendCommand(byte *command, const word commandLength);
   bool select_SDO_Servizi_Int_Kpriv();
   bool ensureSelected(const cie_EFPath filePath);
   bool ensureDedicatedFileIsSelected(const byte df);
@@ -138,17 +138,17 @@ class cie_PN532
   bool selectIasApplication(void);
   bool selectRootMasterFile(void);
   bool selectCieDedicatedFile(void);
-  bool determineLength(const cie_EFPath filePath, word* contentLength, const byte lengthStrategy);
-  bool hasSuccessStatusWord(byte* response, const word responseLength);
+  bool determineLength(const cie_EFPath filePath, word *contentLength, const byte lengthStrategy);
+  bool hasSuccessStatusWord(byte *response, const word responseLength);
   word clamp(const word value, const byte maxValue);
   
   //authentication related methods
   bool establishSecureMessaging();
-  bool getChallenge(byte* contentBuffer, word* contentLength);
-  bool mutualAuthenticate(byte* snIccBuffer, const byte snIccBufferLength, byte* rndIccBuffer, const byte rndIccBufferLength);
-  bool internalAuthenticate(byte* responseBuffer, word* responseLength, byte* challenge, const byte challengeLength);
-  bool verifyInternalAuthenticateResponse(cie_Key* pubKey, byte* cypher, const word cypherLength, const byte* message, const word messageLength);
-  void calculateSk(const byte valueType, byte* kIfd, byte* kIcc, byte* sk, byte* skLength);
+  bool getChallenge(byte *contentBuffer, word *contentLength);
+  bool mutualAuthenticate(byte *snIccBuffer, const byte snIccBufferLength, byte *rndIccBuffer, const byte rndIccBufferLength);
+  bool internalAuthenticate(byte *responseBuffer, word *responseLength, byte *challenge, const byte challengeLength);
+  bool verifyInternalAuthenticateResponse(cie_Key *pubKey, byte *cypher, const word cypherLength, const byte *message, const word messageLength);
+  void calculateSk(const byte valueType, byte *kIfd, byte *kIcc, byte *sk, byte *skLength);
 };
 
 

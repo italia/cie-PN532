@@ -4,10 +4,10 @@
 #include <Arduino.h>
 struct cie_Command {
   public:
-    byte* command;
+    byte *command;
     byte commandOffset;
     byte commandLength;
-    byte* response;
+    byte *response;
     word responseLength;
 };
 

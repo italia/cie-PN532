@@ -9,20 +9,20 @@ class cie_Nfc_Mock: public cie_Nfc {
     ~cie_Nfc_Mock();
     void begin();
     bool detectCard();
-    bool sendCommand(byte* command, byte commandLength, byte* response, word* responseLength);
+    bool sendCommand(byte *command, byte commandLength, byte *response, word *responseLength);
 
     //unit testing helper functions
     void expectCommands(const byte count);
-    void expectCommand(byte* command, const byte commandLength, const byte commandOffset, word* response, const byte responseLength);
+    void expectCommand(byte *command, const byte commandLength, const byte commandOffset, word *response, const byte responseLength);
     bool allExpectedCommandsExecuted();
 
   private:
     void clear();
-    bool areEqual(byte* originalBuffer, byte* comparedBuffer, const byte offset, const byte length);
-    void printHex(const byte * data, const byte numBytes);
-    void generateRandomBytes(byte* buffer, const word offset, const byte length);
+    bool areEqual(byte *originalBuffer, byte *comparedBuffer, const byte offset, const byte length);
+    void printHex(const byte  *data, const byte numBytes);
+    void generateRandomBytes(byte *buffer, const word offset, const byte length);
 
-    cie_Command* _expectedCommands;
+    cie_Command *_expectedCommands;
     byte _expectedCommandsCount;
     byte _executedCommandsCount;
     byte _attemptedCommandsCount;

@@ -26,7 +26,7 @@ Check out the links above for our tutorials and wiring diagrams
 //cie_PN532
 test(hasSuccessStatusWord_must_return_true_when_the_last_octets_in_a_response_are_0x9000)
 {
-  cie_Nfc_Mock* mock = new cie_Nfc_Mock();
+  cie_Nfc_Mock *mock = new cie_Nfc_Mock();
   cie_PN532 cie(mock);
 
   byte response1[] = {0x60, 0x03, 0x90, 0x00};
@@ -41,7 +41,7 @@ test(hasSuccessStatusWord_must_return_true_when_the_last_octets_in_a_response_ar
 
 test(clamp_must_return_the_lesser_of_the_two_values)
 {
-  cie_Nfc_Mock* mock = new cie_Nfc_Mock();
+  cie_Nfc_Mock *mock = new cie_Nfc_Mock();
   cie_PN532 cie;
 
   word largeValue = 0xFFFF;
@@ -57,7 +57,7 @@ test(clamp_must_return_the_lesser_of_the_two_values)
 
 test(selectIasApplication_must_send_a_select_command_only_if_it_was_not_already_selected) {
 
-  cie_Nfc_Mock* mock = new cie_Nfc_Mock();
+  cie_Nfc_Mock *mock = new cie_Nfc_Mock();
   cie_PN532 cie(mock);
 
   byte selectIasCommand[] = { 

@@ -17,7 +17,7 @@
 
 //Please refer to https://en.wikipedia.org/wiki/X.690#Identifier_octets
 
-cie_BerReader::cie_BerReader (cie_PN532* cie) :
+cie_BerReader::cie_BerReader (cie_PN532 *cie) :
 _cie(cie),
 _currentOffset(0)
 {   
@@ -35,7 +35,7 @@ _currentOffset(0)
   @returns  A value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
-bool cie_BerReader::readTriples(const cie_EFPath filePath, cieBerTripleCallbackFunc callback, word* length, const byte maxDepth) {
+bool cie_BerReader::readTriples(const cie_EFPath filePath, cieBerTripleCallbackFunc callback, word *length, const byte maxDepth) {
   resetCursor();
   if (maxDepth < 1) {
     PN532DEBUGPRINT.println(F("Warning: you choose a maxDepth of 0 which won't read any triple"));
@@ -44,7 +44,7 @@ bool cie_BerReader::readTriples(const cie_EFPath filePath, cieBerTripleCallbackF
 
   byte currentDepth = 1;
   byte triplesCount = 0;
-  cie_BerTriple* tripleStack = new cie_BerTriple[maxDepth];
+  cie_BerTriple *tripleStack = new cie_BerTriple[maxDepth];
   bool willEncapsulate = false; 
 
   byte oid_subjectKeyIdentifier[] = {0x67, 0x81, 0x08, 0x01, 0x01, 0x01}; //2.5.29.14 
@@ -172,7 +172,7 @@ bool cie_BerReader::readTriples(const cie_EFPath filePath, cieBerTripleCallbackF
   @returns  A value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
-bool cie_BerReader::readTriple(const cie_EFPath filePath, cie_BerTriple* triple, word* length) {
+bool cie_BerReader::readTriple(const cie_EFPath filePath, cie_BerTriple *triple, word *length) {
   
   byte tagOctets, lengthOctets;
   if (!detectTag(filePath, &triple->classification, &triple->encoding, &triple->type, &tagOctets) ||
@@ -196,7 +196,7 @@ bool cie_BerReader::readTriple(const cie_EFPath filePath, cie_BerTriple* triple,
   @returns  A value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
-bool cie_BerReader::readTripleValue(const cie_BerTriple triple, byte* buffer) {
+bool cie_BerReader::readTripleValue(const cie_BerTriple triple, byte *buffer) {
   resetCursor();
   //TODO leggi valore
   return true;
@@ -215,7 +215,7 @@ bool cie_BerReader::readTripleValue(const cie_BerTriple triple, byte* buffer) {
   @returns  A value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
-bool cie_BerReader::detectLength(const cie_EFPath filePath, word* contentOffset, word* contentLength, byte* lengthOctets) {  
+bool cie_BerReader::detectLength(const cie_EFPath filePath, word *contentOffset, word *contentLength, byte *lengthOctets) {  
   if (!readOctet(filePath, lengthOctets)) {
     PN532DEBUGPRINT.println(F("Couldn't detect length of a BER encoded file"));
     return false;
@@ -236,7 +236,7 @@ bool cie_BerReader::detectLength(const cie_EFPath filePath, word* contentOffset,
         return false;
       }
       *contentLength = 0;
-      byte* buffer = new byte[*lengthOctets];
+      byte *buffer = new byte[*lengthOctets];
       readOctets(filePath, buffer, *lengthOctets);
       //The following octets encode, as big-endian, the length (which may be 0) as a number of octets.
       for (byte i = 0; i < *lengthOctets; i++)
@@ -270,7 +270,7 @@ bool cie_BerReader::detectLength(const cie_EFPath filePath, word* contentOffset,
   @returns  A value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
-bool cie_BerReader::detectTag (const cie_EFPath filePath, byte* classification, byte* encoding, unsigned int* type, byte* tagOctets) {
+bool cie_BerReader::detectTag (const cie_EFPath filePath, byte *classification, byte *encoding, unsigned int *type, byte *tagOctets) {
 
   byte tag = 0x00;
   *tagOctets = 0;
@@ -329,7 +329,7 @@ bool cie_BerReader::detectTag (const cie_EFPath filePath, byte* classification, 
   @returns  A value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
-bool cie_BerReader::readOctets(const cie_EFPath filePath, byte* buffer, const word offset, const word length) {
+bool cie_BerReader::readOctets(const cie_EFPath filePath, byte *buffer, const word offset, const word length) {
   if (!_cie->readBinaryContent(filePath, buffer, offset, length)) {
     return false;
   }
@@ -349,7 +349,7 @@ bool cie_BerReader::readOctets(const cie_EFPath filePath, byte* buffer, const wo
   @returns  A value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
-bool cie_BerReader::readOctets(const cie_EFPath filePath, byte* buffer, const word length) {
+bool cie_BerReader::readOctets(const cie_EFPath filePath, byte *buffer, const word length) {
   return readOctets(filePath, buffer, _currentOffset, length);
 }
 
@@ -363,12 +363,12 @@ bool cie_BerReader::readOctets(const cie_EFPath filePath, byte* buffer, const wo
   @returns  A value indicating whether the operation succeeded or not
 */
 /**************************************************************************/
-bool cie_BerReader::readOctet(const cie_EFPath filePath, byte* octet) {
+bool cie_BerReader::readOctet(const cie_EFPath filePath, byte *octet) {
   return readOctets(filePath, octet, _currentOffset, 1);
 }
 
 
-bool cie_BerReader::areEqual(byte* buffer1, byte length1, byte* buffer2, byte length2) {
+bool cie_BerReader::areEqual(byte *buffer1, byte length1, byte *buffer2, byte length2) {
    if (length1 != length2) {
      return false;
    }

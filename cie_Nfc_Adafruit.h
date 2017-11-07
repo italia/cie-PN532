@@ -25,11 +25,11 @@ class cie_Nfc_Adafruit : public cie_Nfc {
 
     void begin();
     bool detectCard();
-    bool sendCommand(byte* command, byte commandLength, byte* response, word* responseLength);
-    void generateRandomBytes(byte* buffer, const word offset, const byte length);
+    bool sendCommand(byte *command, byte commandLength, byte *response, word *responseLength);
+    void generateRandomBytes(byte *buffer, const word offset, const byte length);
 
   private:
-    Adafruit_PN532* _nfc;
+    Adafruit_PN532 *_nfc;
 };
 
 #endif

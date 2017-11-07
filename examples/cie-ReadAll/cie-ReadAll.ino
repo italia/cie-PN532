@@ -77,9 +77,9 @@ void loop(void) {
   Serial.println(F("Read complete, you can remove the card now"));
   delay(5000);
 }
-void readValue(readValueFunc func, const char* name) {
+void readValue(readValueFunc func, const char *name) {
   word bufferLength = 600;
-  byte* buffer = new byte[bufferLength];
+  byte *buffer = new byte[bufferLength];
   unsigned long startedAt = millis();
   bool success = (cie.*func)(buffer, &bufferLength);
   if (success) {
@@ -98,8 +98,8 @@ void readValue(readValueFunc func, const char* name) {
   printFreeMemory();
 }
 
-void readKey(readKeyFunc func, const char* name) {
-  cie_Key* key = new cie_Key();
+void readKey(readKeyFunc func, const char *name) {
+  cie_Key *key = new cie_Key();
   unsigned long startedAt = millis();
   bool success = (cie.*func)(key);
   if (success) {
