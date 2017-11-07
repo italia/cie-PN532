@@ -11,6 +11,7 @@ ___
 
 ## Prerequisites
 This library depends upon a modified version of the **Adafruit_PN532** library which you can obtain from this GitHub Repository.
+
 https://github.com/BrightSoul/Adafruit-PN532
 
 You must install the Adafruit_PN532 and cie_PN532 in your Arduino _libraries_ directory.
