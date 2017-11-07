@@ -6,9 +6,9 @@ Libreria Arduino per la lettura della **Carta Italiana Elettronica** mediante il
 Prerequisiti
 --------------
 
-Questa libreria dipende dalla più complessa e articolata libreria Adafruit_PN532 che è possibile ottenere dalla seguente repository su GitHub.
+Questa libreria dipende dalla più complessa e articolata libreria Adafruit_PN532 che è possibile ottenere (in versione modificata) dalla seguente repository su GitHub.
 
-    https://github.com/adafruit/Adafruit-PN532
+    https://github.com/BrightSoul/Adafruit-PN532
 
 È fondamentale installare entrambe le librerie Adafruit_PN532 e cie_PN532 nella directory ``/libraries`` di Arduino. Puoi seguire le istruzioni anche sulla guida ufficiale messa a diposizione da Arduino.
 
