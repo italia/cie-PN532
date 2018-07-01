@@ -414,38 +414,8 @@ bool cie_PN532::internalAuthenticate(byte *responseBuffer, word *responseLength,
 */
 /**************************************************************************/
 bool cie_PN532::verifyInternalAuthenticateResponse(cie_Key *pubKey, byte *cypher, const word cypherLength, const byte *message, const word messageLength) {
-
-  return false;
-
   //To be implemented
-  /*
-  BigNumber *message = new BigNumber();
-  byteArrayToBigNumber(cypher, cypherLength, message);
-  delete [] cypher;
-  BigNumber *modulus = new BigNumber();
-  byteArrayToBigNumber(pubKey->modulus, pubKey->modulusLength, modulus);
-
-  BigNumber *exponent = new BigNumber();
-  byteArrayToBigNumber(pubKey->exponent, pubKey->exponentLength, exponent);
-  delete pubKey;
-
-  message->powMod(*exponent, *modulus);
-  
-  delete exponent;
-  delete modulus;
-
-  bool success = true;
-  for (word i = cypherLength-messageLength; i < cypherLength; i++) {
-    if (message[i] != cypher[i]) {
-      success = false;
-      break;
-    }
-  }
-
-  delete message;
-
-  return success;
-  */
+  return false;
 }
 
 
