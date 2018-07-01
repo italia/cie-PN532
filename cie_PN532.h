@@ -27,7 +27,6 @@ class cie_BerTriple;
 class cie_BerReader;
 class cie_AtrReader;
 
-#include <BigNumber.h>
 #include "cie_EFPath.h"
 #include "cie_AtrReader.h"
 #include "cie_BerReader.h"
