@@ -45,7 +45,7 @@ class cie_BerReader
     bool readTriple(const cie_EFPath filePath, cie_BerTriple *triple, word *length);
     bool readTripleValue(const cie_BerTriple triple, byte *buffer);
     bool detectLength(const cie_EFPath filePath, word *contentOffset, word *contentLength, byte *lengthOctets);
-    bool detectTag (const cie_EFPath filePath, byte *classification, byte *encoding, word *type, byte *tagOctets);
+    bool detectTag (const cie_EFPath filePath, byte *classification, byte *encoding, unsigned int *type, byte *tagOctets);
     bool readOctets(const cie_EFPath filePath, byte *buffer, const word offset, const word length);
     bool readOctets(const cie_EFPath filePath, byte *buffer, const word length);
     bool readOctet(const cie_EFPath filePath, byte *octet);
